@@ -1,0 +1,7 @@
+from enum import Enum
+
+
+class DEAL_STATUS(Enum):
+    DEACTIVATED = "DEACTIVATED"
+    ACTIVATED = "ACTIVATED"
+    CANCELLED = "CANCELLED"

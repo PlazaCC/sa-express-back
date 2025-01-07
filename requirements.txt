@@ -1,0 +1,6 @@
+pytest
+python-dotenv
+pydantic
+boto3
+aws_lambda_powertools
+setuptools
