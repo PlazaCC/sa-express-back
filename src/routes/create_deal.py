@@ -3,21 +3,23 @@ from datetime import time
 import uuid
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
+from src.shared.domain.enums.role_enum import ROLE
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
+from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
 from src.shared.infra.repositories.repository import Repository
 
 
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
-        try:
-            if request.data.get('requester_user') is None:
-                raise MissingParameters('requester_user')
-            
-            requester_user = request.data.get('requester_user')
+        try:         
+            requester_user = UserApiGatewayDTO(**request.data.get('requester_user'))
+
+            if requester_user.role != ROLE.OPERADOR:
+                raise ForbiddenAction('Usuário não autorizado')
 
             if request.data.get('bet_id') is None:
                 raise MissingParameters('bet_id')
@@ -77,8 +79,9 @@ class Usecase:
 
         return deal_created.to_dict()
 
-def function_handler(request):
-    http_request = LambdaHttpRequest(request)
+def function_handler(event, context):
+    http_request = LambdaHttpRequest(data=event)
+    http_request.data['requester_user'] = event.get('requestContext', {}).get('authorizer', {}).get('claims', None)
     response = Controller.execute(http_request)
     http_response = LambdaHttpResponse(status_code=response.status_code, body=response.body, headers=response.headers)
     
