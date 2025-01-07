@@ -36,7 +36,7 @@ class Usecase:
         self.deal_repo = self.repository.deal_repo
 
     def execute(self) -> dict:
-        deals = self.deal_repo.get_all_active_deals()
+        deals = self.deal_repo.get_all_deals()
         return [deal.to_dict() for deal in deals]
 
 def function_handler(request):

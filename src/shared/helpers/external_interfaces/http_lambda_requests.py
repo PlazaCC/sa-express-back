@@ -1,6 +1,7 @@
 import json
-from src.helpers.external_interfaces.http_models import HttpRequest, HttpResponse
 from flask import make_response, jsonify
+
+from src.shared.helpers.external_interfaces.http_models import HttpRequest, HttpResponse
 
 class LambdaHttpResponse(HttpResponse):
     """

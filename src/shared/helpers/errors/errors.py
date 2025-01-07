@@ -9,11 +9,11 @@ class BaseError(Exception):
 
 class EntityError(BaseError):
     def __init__(self, message: str):
-        super().__init__(f'Campo {message} não é válido')
+        super().__init__(f"Parâmetro inválido: {message}")
 
 class MissingParameters(BaseError):
     def __init__(self, message: str):
-        super().__init__(f'Campo {message} está faltando')
+        super().__init__(f'Parâmetro ausente: {message}')
 
 class NoItemsFound(BaseError):
     def __init__(self, message: str):
@@ -25,7 +25,7 @@ class DuplicatedItem(BaseError):
         
 class ForbiddenAction(BaseError):
     def __init__(self, message: str):
-        super().__init__(f'Ação proibida: {message}')
+        super().__init__(f'Ação não permitida: {message}')
 
 class DatabaseException(BaseError):
     def __init__(self, message: str):

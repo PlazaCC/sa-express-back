@@ -1,8 +1,8 @@
 from typing import Any
 from warnings import warn
 
-from src.helpers.enum.http_status_code_enum import HttpStatusCodeEnum
-from src.helpers.external_interfaces.external_interface import IRequest, IResponse
+from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
+
 
 
 class HttpRequest(IRequest):

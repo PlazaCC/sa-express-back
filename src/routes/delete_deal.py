@@ -1,4 +1,8 @@
 
+from datetime import time
+import uuid
+from src.shared.domain.entities.deal import Deal
+from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
@@ -14,8 +18,18 @@ class Controller:
                 raise MissingParameters('requester_user')
             
             requester_user = request.data.get('requester_user')
+
+            if request.data.get('bet_id') is None:
+                raise MissingParameters('bet_id')
             
-            response = Usecase().execute()
+            if request.data.get('deal_id') is None:
+                raise MissingParameters('deal_id')
+
+            response = Usecase().execute(
+                bet_id=request.data.get('bet_id'),
+                deal_id=request.data.get('deal_id'),
+            )
+            
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
@@ -35,9 +49,14 @@ class Usecase:
         self.repository = Repository(deal_repo=True)
         self.deal_repo = self.repository.deal_repo
 
-    def execute(self) -> dict:
-        deals = self.deal_repo.get_all_active_deals()
-        return [deal.to_dict() for deal in deals]
+    def execute(self, bet_id: str, deal_id: str) -> dict:
+
+        deal = self.deal_repo.delete_deal(
+            bet_id=bet_id,
+            deal_id=deal_id
+        )
+
+        return deal.to_dict()
 
 def function_handler(request):
     http_request = LambdaHttpRequest(request)

@@ -1,8 +1,7 @@
 from typing import Any
 
-from src.helpers.enum.http_status_code_enum import HttpStatusCodeEnum
-from src.helpers.external_interfaces.http_models import HttpResponse
-
+from src.shared.helpers.enum.http_status_code_enum import HttpStatusCodeEnum
+from src.shared.helpers.external_interfaces.http_models import HttpResponse
 
 class OK(HttpResponse):
     def __init__(self, body: Any = None) -> None:
