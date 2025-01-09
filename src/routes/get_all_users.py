@@ -20,9 +20,13 @@ class Controller:
             if requested_user.role != ROLE.ADMIN:
                 raise ForbiddenAction('Usuário não autorizado')
             
-            requester_user = request.data.get('requester_user')
+            page = request.data.get('page')
             
-            response = Usecase().execute()
+            if page is None:
+                raise MissingParameters('page')
+            
+            
+            response = Usecase().execute(page=page)
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
@@ -42,7 +46,7 @@ class Usecase:
         self.repository = Repository(auth_repo=True)
         self.auth_repo = self.repository.auth_repo
 
-    def execute(self) -> dict:
+    def execute(self, page: int) -> dict:
         users = self.auth_repo.get_all_users()
         return [user.to_dict() for user in users]
 
