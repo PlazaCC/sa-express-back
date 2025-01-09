@@ -13,8 +13,6 @@ class Repository:
             deal_repo: bool = False,
             auth_repo: bool = False
     ):
-        self.session = None
-
         if Environments.stage == STAGE.TEST:
             self._initialize_mock_repositories(
                  deal_repo
