@@ -9,8 +9,8 @@ class User(BaseModel): # Cognito
   phone: str
   role: ROLE
   user_status: USER_STATUS
-  created_at: str
-  updated_at: str
+  created_at: int
+  updated_at: int 
   email_verified: bool
   enabled: bool
   
@@ -36,8 +36,8 @@ class User(BaseModel): # Cognito
       phone=data['phone'],
       role=ROLE[data['role']],
       user_status=USER_STATUS[data['user_status']],
-      created_at=data['created_at'],
-      updated_at=data['updated_at'],
+      created_at=int(data['created_at']),  # Converted to timestamp
+      updated_at=int(data['updated_at']),  # Converted to timestamp
       email_verified=data['email_verified'],
       enabled=data['enabled']
     )
