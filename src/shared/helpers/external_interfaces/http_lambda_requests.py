@@ -1,6 +1,4 @@
 import json
-from flask import make_response, jsonify
-
 from src.shared.helpers.external_interfaces.http_models import HttpRequest, HttpResponse
 
 class LambdaHttpResponse(HttpResponse):
@@ -49,45 +47,6 @@ class LambdaHttpResponse(HttpResponse):
             "headers": self.headers,
             "isBase64Encoded": False
         }
-
-    def __repr__(self):
-        return (
-            f"HttpResponse(status_code={self.status_code}, body={self.body}, headers={self.headers})"
-        )
-
-class CloudFunctionHttpResponse(HttpResponse):
-    status_code: int = 200
-    body: any = {"message": "No response"}
-    headers: dict = {"Content-Type": "application/json"}
-
-    def __init__(self, body: any = None, status_code: int = None, headers: dict = None, **kwargs) -> None:
-        _body = body or LambdaHttpResponse.body
-        _headers = headers or LambdaHttpResponse.headers
-        _headers['Access-Control-Allow-Origin'] = '*'
-
-        _status_code = status_code or LambdaHttpResponse.status_code
-
-        if kwargs.get("add_default_cors_headers", True):
-            _headers.update({"Access-Control-Allow-Origin": "*"})
-
-        super().__init__(body=_body, headers=_headers, status_code=_status_code)
-
-    def to_flask_response(self):
-        """
-        Converts the response into a Flask-compatible response.
-
-        Returns:
-            A Flask response object.
-        """
-        if isinstance(self.body, dict):
-            response = jsonify(self.body)
-        else:
-            response = make_response(self.body)
-
-        response.status_code = self.status_code
-        response.headers = self.headers
-
-        return response
 
     def __repr__(self):
         return (
@@ -157,33 +116,6 @@ class LambdaHttpRequest(HttpRequest):
         self.query_string_parameters = data.get("queryStringParameters")
         self.request_context = data.get("requestContext")
         self.http = LambdaDefaultHTTP(self.request_context.get("external_interfaces") if self.request_context else None)
-
-class CloudFunctionHttpRequest(HttpRequest):
-    """
-    A class to represent an HTTP request for Google Cloud Functions.
-    Google Cloud Functions use Flask for handling HTTP requests.
-    """
-
-    def __init__(self, request) -> None:
-        """
-        Constructor for GCPHttpRequest.
-
-        Args:
-            request (Request): The Flask request object provided by GCP.
-        """
-
-        _headers = dict(request.headers)
-        _query_string_parameters = request.args.to_dict()
-        _body = request.get_json(silent=True) or request.data.decode('utf-8') if request.data else None
-
-        super().__init__(body=_body, headers=_headers, query_params=_query_string_parameters)
-
-        self.method = request.method
-        self.path = request.path
-        self.full_path = request.full_path
-        self.host = request.host
-        self.remote_addr = request.remote_addr
-        self.authorization = request.authorization
 
 class HttpResponseRedirect(HttpResponse):
 
