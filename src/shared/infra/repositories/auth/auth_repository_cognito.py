@@ -10,9 +10,7 @@ from src.shared.domain.entities.user import User
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.repositories.auth_repository_interface import IAuthRepository
 from src.shared.environments import Environments
-from src.shared.helpers.errors.domain_errors import EntityError
-from src.shared.helpers.errors.usecase_errors import DuplicatedItem, ForbiddenAction, InvalidCredentials, InvalidTokenError, NoItemsFound
-from src.shared.infra.dtos.user_cognito_dto import UserCognitoDTO
+from src.shared.helpers.errors.errors import DuplicatedItem, EntityError, ForbiddenAction
 
 
 class AuthRepositoryCognito(IAuthRepository):
@@ -61,7 +59,7 @@ class AuthRepositoryCognito(IAuthRepository):
         except self.client.exceptions.InvalidParameterException as e:
             raise EntityError(e.response.get('Error').get('Message'))
     
-    def create_user(self, email: str, name: str, role: ROLE) -> User:
+    def create_user(self, email: str, name: str, phone, role: ROLE) -> User:
 
         cognito_attributes = [
             {
@@ -71,6 +69,10 @@ class AuthRepositoryCognito(IAuthRepository):
             {
                 "Name": "name",
                 "Value": name
+            },
+            {
+                "Phone": "phone",
+                "Value": phone
             },
             {
                 "Name": "custom:general_role",
