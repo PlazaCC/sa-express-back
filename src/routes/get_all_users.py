@@ -4,7 +4,7 @@ from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, Missi
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.infra.repositories.repository import Repository
 
 
@@ -15,9 +15,9 @@ class Controller:
             if request.data.get('requester_user') is None:
                 raise MissingParameters('requester_user')
             
-            requested_user = UserApiGatewayDTO(**request.data.get('requester_user'))
+            requester_user = AuthAuthorizerDTO(**request.data.get('requester_user'))
             
-            if requested_user.role != ROLE.ADMIN:
+            if requester_user.role != ROLE.ADMIN:
                 raise ForbiddenAction('Usuário não autorizado')
             
             page = request.data.get('page')

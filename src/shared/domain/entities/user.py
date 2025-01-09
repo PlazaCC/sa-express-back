@@ -1,13 +1,11 @@
 from pydantic import BaseModel
-
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
-
 
 class User(BaseModel): # Cognito
   user_id: int
   name: str
-  email: int
+  email: str
   phone: str
   role: ROLE
   user_status: USER_STATUS

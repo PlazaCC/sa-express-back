@@ -8,7 +8,7 @@ from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, Missi
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import BadRequest, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.infra.repositories.repository import Repository
 
 
@@ -16,7 +16,7 @@ class  Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
-            requested_user = UserApiGatewayDTO(**request.data.get('requester_user'))
+            requested_user = AuthAuthorizerDTO(**request.data.get('requester_user'))
             
             if requested_user.role != ROLE.ADMIN:
                 raise ForbiddenAction('Usuário não autorizado')

@@ -1,16 +1,12 @@
-import datetime
-import json
-import time
 from typing import Tuple, List
-
 import boto3
 from botocore.exceptions import ClientError
-
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.repositories.auth_repository_interface import IAuthRepository
 from src.shared.environments import Environments
-from src.shared.helpers.errors.errors import DuplicatedItem, EntityError, ForbiddenAction
+from src.shared.helpers.errors.errors import DuplicatedItem, EntityError, ForbiddenAction, InvalidTokenError
+from src.shared.infra.repositories.dtos.user_cognito_dto import UserCognitoDTO
 
 
 class AuthRepositoryCognito(IAuthRepository):
@@ -156,7 +152,7 @@ class AuthRepositoryCognito(IAuthRepository):
         except ClientError as e:
             errorCode = e.response.get('Error').get('Code')
             if errorCode == 'NotAuthorizedException':
-                raise InvalidTokenError(message="token")
+                raise InvalidTokenError(message=e.response.get('Error').get('Message'))
             else:
                 raise ForbiddenAction(message=e.response.get('Error').get('Message'))
     

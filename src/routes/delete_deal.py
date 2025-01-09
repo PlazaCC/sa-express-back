@@ -3,6 +3,7 @@ from datetime import time
 import uuid
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
+from src.shared.domain.enums.role_enum import ROLE
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
@@ -18,6 +19,9 @@ class Controller:
                 raise MissingParameters('requester_user')
             
             requester_user = request.data.get('requester_user')
+
+            if requester_user.role != ROLE.ADMIN and requester_user.role != ROLE.OPERADOR:
+                raise ForbiddenAction('Usuário não autorizado')
 
             if request.data.get('bet_id') is None:
                 raise MissingParameters('bet_id')
