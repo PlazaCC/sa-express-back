@@ -25,39 +25,41 @@ class AuthRepositoryCognito(IAuthRepository):
         self.client_id = Environments.get_envs().app_client_id
     
     
-    def get_all_users(self) -> List[User]:
-        # pagination
+    def get_all_users(self, page: int) -> List[User]:
         try:
             kwargs = {
-                'UserPoolId': self.user_pool_id
+                'UserPoolId': self.user_pool_id,
+                'Limit': 20
             }
 
             all_users = list()
             users_remain = True
             next_page = None
 
-            while users_remain:
+            while users_remain and len(all_users) < page * 20:
                 if next_page:
                     kwargs['PaginationToken'] = next_page
                 response = self.client.list_users(**kwargs)
 
-
                 all_users.extend(response["Users"])
                 next_page = response.get('PaginationToken', None)
                 users_remain = next_page is not None
-        
-            all_users = [UserCognitoDTO.from_cognito(user).to_entity() for user in all_users]
 
-            for user in all_users:
+            paginated_users = all_users[(page - 1) * 20: page * 20]
+
+            all_users_entities = [UserCognitoDTO.from_cognito(user).to_entity() for user in paginated_users]
+
+            for user in all_users_entities:
                 user.systems = self.get_groups_for_user(user.email)
-            
-            return all_users
+
+            return all_users_entities
 
         except self.client.exceptions.ResourceNotFoundException as e:
             raise EntityError(e.response.get('Error').get('Message'))
 
         except self.client.exceptions.InvalidParameterException as e:
             raise EntityError(e.response.get('Error').get('Message'))
+
     
     def create_user(self, email: str, name: str, phone, role: ROLE) -> User:
 
