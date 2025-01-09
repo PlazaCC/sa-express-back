@@ -8,6 +8,7 @@ class User(BaseModel): # Cognito
   user_id: int
   name: str
   email: int
+  phone: str
   role: ROLE
   user_status: USER_STATUS
   created_at: str
@@ -20,6 +21,7 @@ class User(BaseModel): # Cognito
       "user_id": self.user_id,
       "name": self.name,
       "email": self.email,
+      "phone": self.phone,
       "role": self.role.value,
       "user_status": self.user_status.value,
       "created_at": self.created_at,
@@ -33,6 +35,7 @@ class User(BaseModel): # Cognito
       user_id=data['user_id'],
       name=data['name'],
       email=data['email'],
+      phone=data['phone'],
       role=ROLE[data['role']],
       user_status=USER_STATUS[data['user_status']],
       created_at=data['created_at'],
