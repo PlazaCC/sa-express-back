@@ -72,9 +72,7 @@ class Usecase:
         )
         
         user_created = self.auth_repo.create_user(
-            email=email, 
-            name=name, 
-            role=role
+            user
         )
         return user_created.to_dict()
     
