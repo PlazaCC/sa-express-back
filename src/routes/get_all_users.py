@@ -47,7 +47,7 @@ class Usecase:
         self.auth_repo = self.repository.auth_repo
 
     def execute(self, page: int) -> dict:
-        users = self.auth_repo.get_all_users()
+        users = self.auth_repo.get_all_users(page)
         return [user.to_dict() for user in users]
 
 def function_handler(event, context):
