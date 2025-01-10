@@ -113,7 +113,7 @@ class AuthRepositoryCognito(IAuthRepository):
     
     def update_user(self, email: str, attributes_to_update: dict, enabled: bool = None) -> User:
         try:
-            response = self.client.admin_update_user_attributes(
+            self.client.admin_update_user_attributes(
                 UserPoolId=self.user_pool_id,
                 Username=email,
                 UserAttributes=[{'Name': UserCognitoDTO.TO_COGNITO_DICT[key], 'Value': value} for key, value in attributes_to_update.items()]
