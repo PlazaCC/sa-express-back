@@ -40,7 +40,7 @@ class Test_TXMock:
             users.append(user)
 
         return users
-
+    
     def test_vaults(self):
         users = self.generate_users({
             'num': 10,

@@ -12,21 +12,35 @@ class TX(BaseModel):
     logs: list[str]
     tx_status: TX_STATUS
 
+    @staticmethod
+    def from_dict_static(data):
+        vaults = [ Vault.from_tx_snapshot(v) for v in data.vaults ]
+
+        return TX(
+            tx_id=data['tx_id'],
+            user_id=data['user_id'],
+            timestamp=data['timestamp'],
+            vaults=vaults,
+            instructions=data['instructions'],
+            logs=data['logs'],
+            tx_status=TX_STATUS[data['tx_status']]
+        )
+
     def to_dict(self):
-        vault_dicts = [ v.to_dict() for v in self.vaults ]
+        vaults = [ v.to_tx_snapshot() for v in self.vaults ]
 
         return {
             "tx_id": self.tx_id,
             "user_id": self.user_id,
             "timestamp": self.timestamp,
-            "vaults": vault_dicts,
+            "vaults": vaults,
             "instructions": self.instructions,
             "logs": self.logs,
             "tx_status": self.tx_status.value
         }
     
     def from_dict(self, data: dict) -> 'TX':
-        vaults = [ Vault().from_dict(v) for v in data.vaults ]
+        vaults = [ Vault.from_tx_snapshot(v) for v in data.vaults ]
 
         return TX(
             tx_id=data['tx_id'],

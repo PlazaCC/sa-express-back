@@ -21,6 +21,24 @@ class Vault(BaseModel):
             locked=locked
         )
     
+    @staticmethod
+    def from_dict_static(data):
+        return Vault(
+            vault_id=data['vault_id'],
+            user_id=data['user_id'],
+            balance=data['balance'],
+            locked=data['locked']
+        )
+    
+    @staticmethod
+    def from_tx_snapshot(data: dict) -> 'Vault':
+        return Vault(
+            vault_id=data['vault_id'],
+            user_id=data['user_id'],
+            balance=data['balance'],
+            locked=False
+        )
+    
     def to_dict(self):
         return {
             "vault_id": self.vault_id,
@@ -36,3 +54,10 @@ class Vault(BaseModel):
             balance=data['balance'],
             locked=data['locked']
         )
+    
+    def to_tx_snapshot(self):
+        return {
+            "vault_id": self.vault_id,
+            "user_id": self.user_id,
+            "balance": self.balance
+        }
