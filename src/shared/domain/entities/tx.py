@@ -4,7 +4,7 @@ from src.shared.domain.entities.vault import Vault
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 
 class TX(BaseModel):
-    tx_id: int
+    tx_id: str
     user_id: int
     timestamp: str
     vaults: list[Vault]
@@ -30,13 +30,13 @@ class TX(BaseModel):
         vaults = [ v.to_tx_snapshot() for v in self.vaults ]
 
         return {
-            "tx_id": self.tx_id,
-            "user_id": self.user_id,
-            "timestamp": self.timestamp,
-            "vaults": vaults,
-            "instructions": self.instructions,
-            "logs": self.logs,
-            "tx_status": self.tx_status.value
+            'tx_id': self.tx_id,
+            'user_id': self.user_id,
+            'timestamp': self.timestamp,
+            'vaults': vaults,
+            'instructions': self.instructions,
+            'logs': self.logs,
+            'tx_status': self.tx_status.value
         }
     
     def from_dict(self, data: dict) -> 'TX':

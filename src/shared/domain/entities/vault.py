@@ -37,9 +37,9 @@ class Vault(BaseModel):
     
     def to_dict(self):
         return {
-            "user_id": self.user_id,
-            "balance": str(self.balance),
-            "locked": self.locked
+            'user_id': self.user_id,
+            'balance': str(self.balance),
+            'locked': self.locked
         }
     
     def from_dict(self, data: dict) -> 'Vault':
@@ -51,6 +51,6 @@ class Vault(BaseModel):
     
     def to_tx_snapshot(self):
         return {
-            "user_id": self.user_id,
-            "balance": str(self.balance)
+            'user_id': self.user_id,
+            'balance': str(self.balance)
         }
