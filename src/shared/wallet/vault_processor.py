@@ -24,7 +24,7 @@ class VaultProcessor:
             await self.cache.set_vault(rep_vault)
 
             return None, rep_vault
-
+        
         vault = Vault.from_user(user, config)
 
         (set_rep_error, _) = await self.repository.set_vault(vault)

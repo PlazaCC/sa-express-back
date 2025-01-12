@@ -119,8 +119,7 @@ class PayGateMock:
         pass
 
 class Test_TXMock:
-    @pytest.mark.asyncio
-    async def test_vaults(self):
+    def get_back_context(self):
         cache = CacheMock()
         repository = RepositoryMock()
         pay_gate = PayGateMock()
@@ -129,6 +128,12 @@ class Test_TXMock:
             'num': 10,
             'userStatus': [ USER_STATUS.CONFIRMED.value ]
         })
+
+        return (cache, repository, pay_gate)
+
+    @pytest.mark.asyncio
+    async def test_vaults(self):
+        (cache, repository, pay_gate) = self.get_back_context()
         
         tx_proc = TXProcessor(cache, repository, pay_gate)
 
@@ -141,48 +146,27 @@ class Test_TXMock:
 
             (vault_error, user_vault) = await tx_proc.vault_proc.create_if_not_exists(user, config)
 
+            assert vault_error is None
+
             total_balance += user_vault.balance
 
-        print('total_balance', total_balance)
+        assert len([ k for k in cache.vaults_by_user_id ]) > 0
+        assert total_balance > 0
+    
+    @pytest.mark.asyncio
+    async def test_deposits(self):
+        (cache, repository, pay_gate) = self.get_back_context()
 
-        # for key in cache.vaults_by_user_id:
-        #     print(key, cache.vaults_by_user_id[key])
+        tx_proc = TXProcessor(cache, repository, pay_gate)
 
-        for _ in range(0, 10):
-            from_vault = repository.get_random_vault()
-
-            while True:
-                to_vault = repository.get_random_vault()
-
-                if to_vault.user_id != from_vault.user_id:
-                    break
-
-            if from_vault.balance == 0:
-                continue
-            
-            print('from_vault', from_vault)
-            print('to_vault', to_vault)
-
-            amount = from_vault.balance * Decimal(0.15)
-
-            print('amount', amount)
-
-            transfer = TXTransferInstruction(from_vault.user_id, to_vault.user_id, amount)
-
-            print('transfer', transfer.to_tx_snapshot())
-            
-            tx = TX(
-                tx_id=str(uuid.uuid4()),
-                user_id=from_vault.user_id,
-                timestamp=str(datetime.now().timestamp()),
-                vaults=[ from_vault, to_vault ],
-                instructions=[ transfer ],
-                logs=[],
-                tx_status=TX_STATUS.NEW
-            )
-
-            print(tx.to_dict())
-            break
+        # create tx
+        # validate tx
+        # call paygate and wait webhook
+        # execute instructions and update vaults
+        # verify if zero sum
 
         assert True
 
+    @pytest.mark.asyncio
+    async def test_withdrawals(self):
+        assert True
