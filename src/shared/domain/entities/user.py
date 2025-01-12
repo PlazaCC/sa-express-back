@@ -14,6 +14,20 @@ class User(BaseModel): # Cognito
   updated_at: str
   email_verified: bool
   enabled: bool
+
+  @staticmethod
+  def from_dict_static(data):
+    return User(
+      user_id=data['user_id'],
+      name=data['name'],
+      email=data['email'],
+      role=ROLE[data['role']],
+      user_status=USER_STATUS[data['user_status']],
+      created_at=data['created_at'],
+      updated_at=data['updated_at'],
+      email_verified=data['email_verified'],
+      enabled=data['enabled']
+    )
   
   def to_dict(self):
     return {

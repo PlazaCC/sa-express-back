@@ -4,18 +4,16 @@ from decimal import Decimal
 from src.shared.domain.entities.user import User
 
 class Vault(BaseModel):
-    vault_id: int
     user_id: int
     balance: Decimal
     locked: bool
 
     @staticmethod
-    def from_user(vault_id: int, user: User, config: object):
+    def from_user(user: User, config: object):
         balance = Decimal(config['balance']) if 'balance' in config else Decimal('0')
         locked = config['locked'] if 'locked' in config else False
 
         return Vault(
-            vault_id=vault_id, 
             user_id=user.user_id, 
             balance=balance,
             locked=locked
@@ -24,40 +22,35 @@ class Vault(BaseModel):
     @staticmethod
     def from_dict_static(data):
         return Vault(
-            vault_id=data['vault_id'],
             user_id=data['user_id'],
-            balance=data['balance'],
+            balance=Decimal(data['balance']),
             locked=data['locked']
         )
     
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'Vault':
         return Vault(
-            vault_id=data['vault_id'],
             user_id=data['user_id'],
-            balance=data['balance'],
+            balance=Decimal(data['balance']),
             locked=False
         )
     
     def to_dict(self):
         return {
-            "vault_id": self.vault_id,
             "user_id": self.user_id,
-            "balance": self.balance,
+            "balance": str(self.balance),
             "locked": self.locked
         }
     
     def from_dict(self, data: dict) -> 'Vault':
         return Vault(
-            vault_id=data['vault_id'],
             user_id=data['user_id'],
-            balance=data['balance'],
+            balance=Decimal(data['balance']),
             locked=data['locked']
         )
     
     def to_tx_snapshot(self):
         return {
-            "vault_id": self.vault_id,
             "user_id": self.user_id,
-            "balance": self.balance
+            "balance": str(self.balance)
         }
