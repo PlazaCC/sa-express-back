@@ -22,11 +22,11 @@ class DealRepositoryDynamo(IDealRepository):
 
     def __init__(self):
         self.dynamo = DynamoDatasource(
-            dynamo_table_name=Environments.get_envs().dynamo_profile_table_name,
+            dynamo_table_name=Environments.get_envs().dynamo_table_name,
             region=Environments.get_envs().region,
-            partition_key=Environments.get_envs().dynamo_profile_partition_key,
-            sort_key=Environments.get_envs().dynamo_profile_sort_key,
-            gsi_partition_key=Environments.get_envs().dynamo_profile_gsi_partition_key,
+            partition_key=Environments.get_envs().dynamo_partition_key,
+            sort_key=Environments.get_envs().dynamo_sort_key,
+            gsi_partition_key=Environments.get_envs().dynamo_gsi_partition_key,
         )
     
     def create_deal(self, deal: Deal) -> Deal:

@@ -45,9 +45,6 @@ class AuthRepositoryCognito(IAuthRepository):
 
             all_users_entities = [UserCognitoDTO.from_cognito(user).to_entity() for user in paginated_users]
 
-            for user in all_users_entities:
-                user.systems = self.get_groups_for_user(user.email)
-
             return all_users_entities
 
         except self.client.exceptions.ResourceNotFoundException as e:
@@ -104,7 +101,6 @@ class AuthRepositoryCognito(IAuthRepository):
                 return None
 
             user = UserCognitoDTO.from_cognito(response).to_entity()
-            user.systems = self.get_groups_for_user(email)
                 
             return user
 
