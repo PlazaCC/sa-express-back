@@ -11,7 +11,8 @@ from src.shared.domain.entities.tx import TX
 from src.shared.wallet.tx_processor import TXProcessor
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.instructions.transfer import TXTransferInstruction
-from src.shared.wallet.templates.deposit import create_deposit_tx, create_withdrawal_tx
+from src.shared.wallet.templates.deposit import create_deposit_tx
+from src.shared.wallet.templates.withdrawal import create_withdrawal_tx
 
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
