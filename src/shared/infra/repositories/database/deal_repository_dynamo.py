@@ -1,5 +1,5 @@
 from typing import List
-from src.environments import Environments
+from src.shared.environments import Environments
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
 from src.shared.domain.repositories.deal_repository_interface import IDealRepository

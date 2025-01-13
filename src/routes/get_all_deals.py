@@ -12,9 +12,7 @@ class Controller:
         try:
             if request.data.get('requester_user') is None:
                 raise MissingParameters('requester_user')
-            
-            requester_user = request.data.get('requester_user')
-            
+                        
             response = Usecase().execute()
             return OK(body=response)
         except MissingParameters as error:

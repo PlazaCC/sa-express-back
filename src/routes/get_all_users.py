@@ -1,8 +1,10 @@
 
+from src.shared.domain.enums.role_enum import ROLE
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.infra.repositories.repository import Repository
 
 
@@ -12,8 +14,19 @@ class Controller:
         try:
             if request.data.get('requester_user') is None:
                 raise MissingParameters('requester_user')
-                        
-            response = Usecase().execute()
+            
+            requester_user = AuthAuthorizerDTO(**request.data.get('requester_user'))
+            
+            if requester_user.role != ROLE.ADMIN:
+                raise ForbiddenAction('Usuário não autorizado')
+            
+            page = request.data.get('page')
+            
+            if page is None:
+                raise MissingParameters('page')
+            
+            
+            response = Usecase().execute(page=page)
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
@@ -30,12 +43,12 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(deal_repo=True)
-        self.deal_repo = self.repository.deal_repo
+        self.repository = Repository(auth_repo=True)
+        self.auth_repo = self.repository.auth_repo
 
-    def execute(self) -> dict:
-        deals = self.deal_repo.get_all_active_deals()
-        return [deal.to_dict() for deal in deals]
+    def execute(self, page: int) -> dict:
+        users = self.auth_repo.get_all_users(page)
+        return [user.to_dict() for user in users]
 
 def function_handler(event, context):
     http_request = LambdaHttpRequest(data=event)
