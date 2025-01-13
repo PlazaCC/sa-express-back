@@ -37,7 +37,7 @@ class IacStack(Stack):
  
         self.rest_api = RestApi(self, f"SAExpress_RestApi_{self.github_ref_name}",
                                 rest_api_name=f"SAExpress_RestApi_{self.github_ref_name}",
-                                description="This is the SAExpress RestApi",
+                                description="This is the SA Express RestApi",
                                 default_cors_preflight_options={
                                     "allow_origins": Cors.ALL_ORIGINS,
                                     "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

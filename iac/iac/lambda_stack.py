@@ -42,6 +42,7 @@ class LambdaStack(Construct):
             method="POST",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
+            authorizer=authorizer
 
         )
 
