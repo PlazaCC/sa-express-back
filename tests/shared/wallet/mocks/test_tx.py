@@ -10,6 +10,7 @@ from src.shared.domain.entities.vault import Vault
 from src.shared.domain.entities.tx import TX
 
 from src.shared.wallet.tx_processor import TXProcessor
+from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.instructions.transfer import TXTransferInstruction
 
 from src.shared.domain.enums.role_enum import ROLE
@@ -32,6 +33,9 @@ class CacheMock:
         self.vaults_by_user_id[vault.user_id] = vault.to_dict()
 
         return None, vault.user_id
+    
+    def get_all_vaults(self):
+        return [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
 
 class RepositoryMock:
     def __init__(self):
@@ -39,27 +43,27 @@ class RepositoryMock:
         self.vaults = []
 
     def _generate_users(self, config):
-        num = config['num'] if 'num' in config else 1
+        num_users = config['num_users'] if 'num_users' in config else 1
 
-        roleList = config['role'] if 'role' in config else ([ r.value for r in ROLE ])
-        userStatusList = config['userStatus'] if 'userStatus' in config else ([ s.value for s in USER_STATUS ])
+        role_list = config['role'] if 'role' in config else ([ r.value for r in ROLE ])
+        user_status_list = config['user_status'] if 'user_status' in config else ([ s.value for s in USER_STATUS ])
 
         now = datetime.now()
 
         users = []
 
-        for i in range(num):
+        for i in range(num_users):
             name = 'user-mock-' + str(i)
 
-            role = random.choice(roleList)
-            userStatus = random.choice(userStatusList)
+            role = random.choice(role_list)
+            user_status = random.choice(user_status_list)
 
             user = User.from_dict_static({
                 "user_id": i,
                 "name": name,
                 "email": i,
                 "role": role,
-                "user_status": userStatus,
+                "user_status": user_status,
                 "created_at": str(now.timestamp()),
                 "updated_at": str(now.timestamp()),
                 "email_verified": True,
@@ -119,43 +123,64 @@ class PayGateMock:
         pass
 
 class Test_TXMock:
-    def get_back_context(self):
+    async def get_back_context(self, config: dict):
         cache = CacheMock()
         repository = RepositoryMock()
         pay_gate = PayGateMock()
 
-        repository.generate_users({
-            'num': 10,
-            'userStatus': [ USER_STATUS.CONFIRMED.value ]
-        })
+        if 'num_users' in config and config['num_users'] > 0:
+            repository.generate_users(config)
+
+        if 'create_vaults' in config:
+            create_vaults_config = config['create_vaults']
+
+            vault_proc = VaultProcessor(cache, repository)
+
+            users = repository.get_all_users()
+
+            for user in users:
+                (vault_error, _) = await vault_proc.create_if_not_exists(user, { 
+                    'balance': str(random.uniform(1000, 10000)) if create_vaults_config['random_balance'] else '0',
+                    'balanceLocked': '0',
+                    'locked': create_vaults_config['locked']
+                })
+
+                assert vault_error is None
 
         return (cache, repository, pay_gate)
 
     @pytest.mark.asyncio
     async def test_vaults(self):
-        (cache, repository, pay_gate) = self.get_back_context()
-        
-        tx_proc = TXProcessor(cache, repository, pay_gate)
+        (cache, repository, pay_gate) = await self.get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
 
-        users = repository.get_all_users()
+        cached_vaults = cache.get_all_vaults()
+
+        assert len(cached_vaults) > 0
 
         total_balance = 0
 
-        for user in users:
-            config = { 'balance': str(random.uniform(1000, 10000)), 'locked': True }
+        for vault in cached_vaults:
+            total_balance += vault.balance
 
-            (vault_error, user_vault) = await tx_proc.vault_proc.create_if_not_exists(user, config)
-
-            assert vault_error is None
-
-            total_balance += user_vault.balance
-
-        assert len([ k for k in cache.vaults_by_user_id ]) > 0
         assert total_balance > 0
     
     @pytest.mark.asyncio
     async def test_deposits(self):
-        (cache, repository, pay_gate) = self.get_back_context()
+        (cache, repository, pay_gate) = await self.get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
 
         tx_proc = TXProcessor(cache, repository, pay_gate)
 

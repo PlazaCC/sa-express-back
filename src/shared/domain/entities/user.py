@@ -16,7 +16,7 @@ class User(BaseModel): # Cognito
   enabled: bool
 
   @staticmethod
-  def from_dict_static(data):
+  def from_dict_static(data) -> 'User':
     return User(
       user_id=data['user_id'],
       name=data['name'],

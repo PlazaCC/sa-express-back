@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.entities.vault import Vault
@@ -7,6 +7,8 @@ from src.shared.wallet.instructions.base import TXBaseInstruction
 from src.shared.wallet.instructions.mutate import TXMutateInstruction
 
 class TX(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     tx_id: str
     user_id: int
     timestamp: str
