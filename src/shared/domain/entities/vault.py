@@ -41,12 +41,26 @@ class Vault(BaseModel):
             balanceLocked=Decimal(0),
             locked=False
         )
+    
+    @staticmethod
+    def default_config():
+        return { 'balance': '0', 'balanceLocked': '0', 'locked': False }
 
     @staticmethod
-    def from_user(user: User, config: object) -> 'Vault':
+    def from_user(user: User, config: dict = default_config()) -> 'Vault':
         return Vault(
             type=VAULT_TYPE.USER,
             user_id=user.user_id,
+            balance=Decimal(config['balance']),
+            balanceLocked=Decimal(config['balanceLocked']),
+            locked=config['locked']
+        )
+    
+    @staticmethod
+    def from_user_id(user_id: int, config: dict = default_config()) -> 'Vault':
+        return Vault(
+            type=VAULT_TYPE.USER,
+            user_id=user_id,
             balance=Decimal(config['balance']),
             balanceLocked=Decimal(config['balanceLocked']),
             locked=config['locked']
@@ -68,7 +82,7 @@ class Vault(BaseModel):
     def from_dict(self, data: dict) -> 'Vault':
         return Vault.from_dict_static(data)
 
-    def to_tx_snapshot(self) -> object:
+    def to_tx_snapshot(self) -> dict:
         result = {
             'type': self.type.value,
         }

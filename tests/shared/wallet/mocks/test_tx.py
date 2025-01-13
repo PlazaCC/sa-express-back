@@ -1,4 +1,3 @@
-import uuid
 import pytest
 import random
 import asyncio
@@ -12,6 +11,7 @@ from src.shared.domain.entities.tx import TX
 from src.shared.wallet.tx_processor import TXProcessor
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.instructions.transfer import TXTransferInstruction
+from src.shared.wallet.templates.deposit import create_deposit_tx, create_withdrawal_tx
 
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
@@ -185,6 +185,22 @@ class Test_TXMock:
         tx_proc = TXProcessor(cache, repository, pay_gate)
 
         # create tx
+        for _ in range(0, 10):
+            from_vault = repository.get_random_vault()
+            to_vault = repository.get_random_vault()
+
+            amount = from_vault.balance * Decimal(0.15)
+            
+            tx = create_deposit_tx({
+                'user_id': from_vault.user_id,
+                'from_vault': from_vault,
+                'to_vault': to_vault,
+                'amount': amount
+            })
+            
+            print(tx.to_tx_snapshot())
+            break
+        
         # validate tx
         # call paygate and wait webhook
         # execute instructions and update vaults

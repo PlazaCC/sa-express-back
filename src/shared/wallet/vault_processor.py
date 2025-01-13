@@ -6,7 +6,7 @@ class VaultProcessor:
         self.cache = cache
         self.repository = repository
     
-    async def create_if_not_exists(self, user: User, config: object) -> Vault:
+    async def create_if_not_exists(self, user: User, config: dict) -> Vault:
         (cache_error, cache_vault) = await self.cache.get_vault_by_user_id(user.user_id)
 
         if cache_error is not None:

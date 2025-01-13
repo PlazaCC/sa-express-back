@@ -1,3 +1,4 @@
+import uuid
 from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
@@ -32,6 +33,10 @@ class TX(BaseModel):
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'TX':
         return TX.from_dict_static(data)
+    
+    @staticmethod
+    def random_id():
+        return str(uuid.uuid4())
 
     def to_dict(self) -> dict:
         return {
@@ -47,5 +52,5 @@ class TX(BaseModel):
     def from_dict(self, data: dict) -> 'TX':
         return TX.from_dict_static(data)
 
-    def to_tx_snapshot(self) -> object:
+    def to_tx_snapshot(self) -> dict:
         return self.to_dict()
