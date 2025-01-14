@@ -39,19 +39,19 @@ class VaultProcessor:
 
         return None, vault
     
-    def filter_lockable_vaults(self, vaults: list[Vault]):
+    def filter_lockable_vaults(self, vaults: list[Vault]) -> None:
         return [ v for v in vaults if v.type != VAULT_TYPE.SERVER_UNLIMITED ]
     
-    async def lock_all(self, vaults: list[Vault]):
-        lockable_vaults = self.filter_lockable_vaults(vaults)
+    async def lock(self, vaults: Vault | list[Vault]):
+        lockable_vaults = self.filter_lockable_vaults(vaults if isinstance(vaults, list) else [ vaults ])
 
         if len(lockable_vaults) == 0:
             return
-
+        
         await asyncio.gather(*[ self.cache.lock_vault(v) for v in lockable_vaults ])
 
-    async def unlock_all(self, vaults: list[Vault]):
-        lockable_vaults = self.filter_lockable_vaults(vaults)
+    async def unlock(self, vaults: Vault | list[Vault]) -> None:
+        lockable_vaults = self.filter_lockable_vaults(vaults if isinstance(vaults, list) else [ vaults ])
 
         if len(lockable_vaults) == 0:
             return

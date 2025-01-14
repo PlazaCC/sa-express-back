@@ -4,16 +4,16 @@ import asyncio
 from decimal import Decimal
 from datetime import datetime
 
+from src.shared.domain.enums.role_enum import ROLE
+from src.shared.domain.enums.user_status_enum import USER_STATUS
+
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 
 from src.shared.wallet.tx_processor import TXProcessor
 from src.shared.wallet.vault_processor import VaultProcessor
-from src.shared.wallet.templates.deposit import create_deposit_tx
-from src.shared.wallet.templates.withdrawal import create_withdrawal_tx
-
-from src.shared.domain.enums.role_enum import ROLE
-from src.shared.domain.enums.user_status_enum import USER_STATUS
+from src.shared.wallet.tx_templates.deposit import create_deposit_tx
+from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 
 pytest_plugins = ('pytest_asyncio')
 
@@ -221,12 +221,7 @@ class Test_TXMock:
 
             amount = Decimal(150)
             
-            tx = create_deposit_tx({
-                'user_id': signer.user_id,
-                'from_server': True,
-                'to_vault': to_vault,
-                'amount': amount
-            })
+            tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
 
             txs.append((signer, tx))
 

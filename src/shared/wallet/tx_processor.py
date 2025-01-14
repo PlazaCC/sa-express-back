@@ -27,21 +27,21 @@ class TXProcessor:
         
         tx.user_id = signer.user_id
         tx.logs = []
-
+        
         signer_access_error = self.validate_signer_access(signer, tx)
 
         if signer_access_error is not None:
             return signer_access_error
 
-        await self.vault_proc.lock_all(tx.vaults)
-        
+        await self.vault_proc.lock(tx.vaults)
+
         # instruction execution simulation
         # commit ready ?
         # yes: execute instructions (cached simulation)
         # no: (case deposit/withdrawal): call paygate, get payment data/reference and store in tx logs (update status)
         # wait paygate webhook response and commit tx (execute instructions)
         
-        await self.vault_proc.unlock_all(tx.vaults)
+        await self.vault_proc.unlock(tx.vaults)
         
         return None
     
