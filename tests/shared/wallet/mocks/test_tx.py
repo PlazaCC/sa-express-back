@@ -30,7 +30,7 @@ class CacheMock:
 
         return None, None
     
-    async def set_vault(self, vault):
+    async def set_vault(self, vault: Vault):
         self.vaults_by_user_id[vault.user_id] = vault.to_dict()
 
         return None, vault.user_id
@@ -43,7 +43,7 @@ class RepositoryMock:
         self.users = []
         self.vaults = []
 
-    def _generate_users(self, config):
+    def _generate_users(self, config: dict):
         num_users = config['num_users'] if 'num_users' in config else 1
 
         role_list = config['role'] if 'role' in config else ([ r.value for r in ROLE ])
@@ -75,7 +75,7 @@ class RepositoryMock:
 
         return users
 
-    def generate_users(self, config):
+    def generate_users(self, config: dict):
         users = self._generate_users(config)
 
         if 'append' in config:
@@ -85,12 +85,17 @@ class RepositoryMock:
 
         return self.users
 
-    async def get_vault_by_user_id(self, user_id):
+    async def get_user_by_user_id(self, user_id: int):
+        rep_user = next((u for u in self.users if u['user_id'] == user_id), None)
+
+        return (None, User.from_dict_static(rep_user)) if rep_user is not None else (None, None)
+
+    async def get_vault_by_user_id(self, user_id: int):
         rep_vault = next((v for v in self.vaults if v['user_id'] == user_id), None)
 
         return (None, Vault.from_dict_static(rep_vault)) if rep_vault is not None else (None, None)
     
-    async def set_vault(self, vault):
+    async def set_vault(self, vault: Vault):
         (get_error, rep_vault) = await self.get_vault_by_user_id(vault.user_id)
 
         if get_error is not None:
@@ -178,33 +183,37 @@ class Test_TXMock:
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
-                'random_balance': True,
+                'random_balance': False,
                 'locked': False
             }
         })
 
-        tx_proc = TXProcessor(cache, repository, pay_gate)
+        txs = []
 
-        # create tx
         for _ in range(0, 10):
-            from_vault = repository.get_random_vault()
             to_vault = repository.get_random_vault()
+            (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
 
-            amount = from_vault.balance * Decimal(0.15)
+            amount = Decimal(150)
             
             tx = create_deposit_tx({
-                'user_id': from_vault.user_id,
-                'from_vault': from_vault,
+                'user_id': signer.user_id,
+                'from_server': True,
                 'to_vault': to_vault,
                 'amount': amount
             })
-            
-            print(tx.to_tx_snapshot())
-            break
+
+            txs.append((signer, tx))
+
+        assert(len(txs) > 0)
+
+        tx_proc = TXProcessor(cache, repository, pay_gate)
+
+        for (signer, tx) in txs:
+            stage_tx_res = await tx_proc.sign(signer, tx)
+
+            print('stage_tx_res', stage_tx_res)
         
-        # validate tx
-        # call paygate and wait webhook
-        # execute instructions and update vaults
         # verify if zero sum
 
         assert True

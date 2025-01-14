@@ -1,4 +1,4 @@
-from enum import Enum
+from src.shared.domain.entities.user import User
 
 class TXBaseInstruction:
     @staticmethod
@@ -11,5 +11,5 @@ class TXBaseInstruction:
     def to_tx_snapshot(self) -> dict:
         pass
 
-class TX_INSTRUCTION_TYPE(Enum):
-    TRANSFER = 'TRANSFER'
+    def validate_signer_access(self, user: User) -> str | None:
+        pass

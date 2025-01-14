@@ -2,6 +2,7 @@ import uuid
 from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
+from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.instructions.base import TXBaseInstruction

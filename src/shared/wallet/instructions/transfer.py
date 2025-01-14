@@ -1,7 +1,12 @@
 from decimal import Decimal
 
+from src.shared.domain.enums.role_enum import ROLE
+from src.shared.domain.enums.vault_type_num import VAULT_TYPE
+from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
-from src.shared.wallet.instructions.base import TXBaseInstruction, TX_INSTRUCTION_TYPE
+
+from src.shared.wallet.enums.tx_instruction_type import TX_INSTRUCTION_TYPE
+from src.shared.wallet.instructions.base import TXBaseInstruction
 
 class TXTransferInstruction(TXBaseInstruction):
     from_vault: Vault
@@ -28,3 +33,44 @@ class TXTransferInstruction(TXBaseInstruction):
             'to_vault': self.to_vault.to_tx_instr_snapshot(),
             'amount': str(self.amount)
         }
+    
+    def validate_signer_access(self, signer: User) -> str | None:
+        from_vault = self.from_vault
+
+        if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
+            return self.validate_signer_access_from_server_unlimited(signer)
+        
+        if from_vault.type == VAULT_TYPE.SERVER_LIMITED:
+            return self.validate_signer_access_from_server_limited(signer)
+            
+        if from_vault.type == VAULT_TYPE.USER:
+            return self.validate_signer_access_from_user(signer)
+
+        return 'Validate logic not implemented for this vault type'
+    
+    def validate_signer_access_from_server_unlimited(self, signer: User):
+        to_vault = self.to_vault
+
+        if to_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
+            return 'Useless transfer'
+        
+        if signer.role == ROLE.ADMIN:
+            return None
+        
+        if to_vault.user == VAULT_TYPE.USER and signer.user_id != to_vault.user_id:
+            return "Can't transfer from server to other users"
+
+        return None
+
+    def validate_signer_access_from_server_limited(self, signer: User):
+        if signer.role != ROLE.ADMIN:
+            return 'Only a admin can transfer from server limited vaults'
+        
+        return None
+
+    def validate_signer_access_from_user(self, signer: User):
+        if signer.role != ROLE.ADMIN:
+            if signer.user_id != self.from_vault.user_id:
+                return "Can't transfer from other users vaults"
+            
+        return None

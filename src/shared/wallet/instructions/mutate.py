@@ -1,6 +1,5 @@
+from src.shared.wallet.enums.tx_instruction_type import TX_INSTRUCTION_TYPE
 from src.shared.wallet.instructions.transfer import TXTransferInstruction
-
-from src.shared.wallet.instructions.base import TX_INSTRUCTION_TYPE
 
 class TXMutateInstruction:
     @staticmethod
