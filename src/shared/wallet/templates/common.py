@@ -17,16 +17,20 @@ def parse_build_params_user(build_params: dict) -> int | None:
 def parse_build_params_vault(build_params: dict, prefix: str, include_server=True) -> Vault | None:
     vault = None
 
-    vault_key = prefix + '_vault' if len(prefix) > 0 else 'vault'
-    user_key = prefix + '_user' if len(prefix) > 0 else 'user'
-    server_key = prefix + '_server' if len(prefix) > 0 else 'server'
+    def concat_prefix(field_name: str):
+        return prefix + '_' + field_name if len(prefix) > 0 else field_name
+    
+    vault_key = concat_prefix('vault')
+    user_key = concat_prefix('user')
+    user_id_key = concat_prefix('user_id')
+    server_key = concat_prefix('server')
 
     if vault_key in build_params:
         vault = build_params[vault_key]
     elif user_key in build_params:
         vault = Vault.from_user(build_params[user_key])
-    elif 'from_user_id' in build_params:
-        vault = Vault.from_user_id(build_params['from_user_id'])
+    elif user_id_key in build_params:
+        vault = Vault.from_user_id(build_params[user_id_key])
     elif include_server and server_key in build_params:
         vault = Vault.init_server_unlimited()
 
