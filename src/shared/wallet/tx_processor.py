@@ -18,37 +18,35 @@ class TXProcessor:
         self.pay_gate = pay_gate
         self.vault_proc = VaultProcessor(cache, repository)
 
-    async def sign(self, signer: User, tx: TX):
-        have_access = self.verify_signer_vault_access(signer, tx)
+    async def sign(self, signer: User, tx: TX) -> str | None:
+        # validate tx fields and instructions fields
+        
+        # validate signer access
+        signer_access_error = self.validate_signer_access(signer, tx)
 
-        # stage tx
+        if signer_access_error is not None:
+            return signer_access_error
+
+        # vault_proc -> lock all
+
+        # validate instructions execution
 
         # commit ready ?
 
         # call paygate and wait webhook
-        # execute instructions and update vaults
+        # commit tx
 
-        # vault_rpoc -> unlock all
-        pass
-
-    def verify_signer_vault_access(self, signer: User, tx: TX):
+        # vault_proc -> unlock all
+        return None
+    
+    def validate_signer_access(self, signer: User, tx: TX) -> str | None:
         for instruction in tx.instructions:
-            instruction.validate_signer_access(signer)
+            signer_access_error = instruction.validate_signer_access(signer)
 
-        quit()
-        pass
+            if signer_access_error is not None:
+                return signer_access_error
 
-    async def stage(self, signer: User, tx: TX):
-        # validate signer access on vaults
-
-
-        # vault_proc -> lock all
-
-        # validate if possible to execute instructions
-        # stage instructions
-
-        # return if pending commit
-        pass
+        return None
 
     async def commit(self, tx: TX):
         pass
