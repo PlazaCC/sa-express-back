@@ -19,7 +19,6 @@ class TXProcessor:
         self.vault_proc = VaultProcessor(cache, repository)
 
     async def sign(self, signer: User, tx: TX) -> str | None:
-        # validate tx and instructions fields
         fields_error = self.validate_tx_fields_before_sign(tx)
         
         if fields_error is not None:
@@ -28,7 +27,6 @@ class TXProcessor:
         tx.user_id = signer.user_id
         tx.logs = []
 
-        # validate signer access
         signer_access_error = self.validate_signer_access(signer, tx)
 
         if signer_access_error is not None:
@@ -36,7 +34,7 @@ class TXProcessor:
 
         # vault_proc -> lock all
 
-        # validate instructions execution
+        # validate instructions amounts & vault balances
 
         # commit ready ?
 

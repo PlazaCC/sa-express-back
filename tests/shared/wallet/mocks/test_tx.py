@@ -210,9 +210,9 @@ class Test_TXMock:
         tx_proc = TXProcessor(cache, repository, pay_gate)
 
         for (signer, tx) in txs:
-            sign_tx_res = await tx_proc.sign(signer, tx)
+            sign_error = await tx_proc.sign(signer, tx)
 
-            print('sign_tx_res', sign_tx_res)
+            assert sign_error is None
         
         # verify if zero sum
 
