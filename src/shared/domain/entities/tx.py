@@ -13,22 +13,26 @@ class TX(BaseModel):
 
     tx_id: str
     user_id: int
-    timestamp: str
+    create_timestamp: str
+    sign_timestamp: str | None
+    commit_timestamp: str | None
     vaults: list[Vault]
     instructions: list[TXBaseInstruction]
     logs: list[TXLogs]
-    tx_status: TX_STATUS
+    status: TX_STATUS
 
     @staticmethod
     def from_dict_static(data: dict) -> 'TX':
         return TX(
             tx_id=data['tx_id'],
             user_id=data['user_id'],
-            timestamp=data['timestamp'],
+            create_timestamp=data['create_timestamp'],
+            sign_timestamp=data['sign_timestamp'] if 'sign_timestamp' in data else None,
+            commit_timestamp=data['commit_timestamp'] if 'commit_timestamp' in data else None,
             vaults=[ Vault.from_tx_snapshot(v) for v in data['vaults'] ],
             instructions=[ TXMutateInstruction.from_tx_snapshot(i) for i in data['instructions'] ],
             logs=[ TXLogs.from_tx_snapshot(l) for l in data['logs'] ],
-            tx_status=TX_STATUS[data['tx_status']]
+            status=TX_STATUS[data['tx_status']]
         )
     
     @staticmethod
@@ -40,15 +44,23 @@ class TX(BaseModel):
         return str(uuid.uuid4())
 
     def to_dict(self) -> dict:
-        return {
+        result = {
             'tx_id': self.tx_id,
             'user_id': self.user_id,
-            'timestamp': self.timestamp,
+            'create_timestamp': self.create_timestamp,
             'vaults': [ v.to_tx_snapshot() for v in self.vaults ],
             'instructions': [ i.to_tx_snapshot() for i in self.instructions ],
             'logs': [ l.to_tx_snapshot() for l in self.logs ],
-            'tx_status': self.tx_status.value
+            'status': self.status.value
         }
+
+        if self.sign_timestamp is not None:
+            result['sign_timestamp'] = self.sign_timestamp
+
+        if self.commit_timestamp is not None:
+            result['commit_timestamp'] = self.commit_timestamp
+
+        return result
     
     def from_dict(self, data: dict) -> 'TX':
         return TX.from_dict_static(data)

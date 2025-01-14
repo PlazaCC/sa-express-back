@@ -21,9 +21,11 @@ def create_deposit_tx(build_params: dict) -> TX:
     return TX(
         tx_id=TX.random_id(),
         user_id=user_id,
-        timestamp=now_timestamp(),
+        create_timestamp=now_timestamp(),
+        sign_timestamp=None,
+        commit_timestamp=None,
         vaults=[ from_vault, to_vault ],
         instructions=[ transfer_instr ],
         logs=[],
-        tx_status=TX_STATUS.NEW
+        status=TX_STATUS.NEW
     )

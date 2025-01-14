@@ -48,7 +48,7 @@ class TXTransferInstruction(TXBaseInstruction):
 
         return 'Validate logic not implemented for this vault type'
     
-    def validate_signer_access_from_server_unlimited(self, signer: User):
+    def validate_signer_access_from_server_unlimited(self, signer: User) -> str | None:
         to_vault = self.to_vault
 
         if to_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -57,20 +57,23 @@ class TXTransferInstruction(TXBaseInstruction):
         if signer.role == ROLE.ADMIN:
             return None
         
-        if to_vault.user == VAULT_TYPE.USER and signer.user_id != to_vault.user_id:
+        if to_vault.type == VAULT_TYPE.USER and signer.user_id != to_vault.user_id:
             return "Can't transfer from server to other users"
-
+        
         return None
 
-    def validate_signer_access_from_server_limited(self, signer: User):
+    def validate_signer_access_from_server_limited(self, signer: User) -> str | None:
         if signer.role != ROLE.ADMIN:
             return 'Only a admin can transfer from server limited vaults'
         
         return None
 
-    def validate_signer_access_from_user(self, signer: User):
+    def validate_signer_access_from_user(self, signer: User) -> str | None:
         if signer.role != ROLE.ADMIN:
             if signer.user_id != self.from_vault.user_id:
                 return "Can't transfer from other users vaults"
             
         return None
+    
+    def get_vaults(self) -> list[Vault]:
+        return [ self.from_vault, self.to_vault ]

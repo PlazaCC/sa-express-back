@@ -1,4 +1,5 @@
 from src.shared.domain.entities.user import User
+from src.shared.domain.entities.vault import Vault
 
 class TXBaseInstruction:
     @staticmethod
@@ -12,4 +13,7 @@ class TXBaseInstruction:
         pass
 
     def validate_signer_access(self, user: User) -> str | None:
+        pass
+    
+    def get_vaults(self) -> list[Vault]:
         pass
