@@ -6,17 +6,14 @@ from datetime import datetime
 
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
-from src.shared.domain.entities.tx import TX
 
 from src.shared.wallet.tx_processor import TXProcessor
 from src.shared.wallet.vault_processor import VaultProcessor
-from src.shared.wallet.instructions.transfer import TXTransferInstruction
 from src.shared.wallet.templates.deposit import create_deposit_tx
 from src.shared.wallet.templates.withdrawal import create_withdrawal_tx
 
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
-from src.shared.domain.enums.tx_status_enum import TX_STATUS
 
 pytest_plugins = ('pytest_asyncio')
 
@@ -50,18 +47,18 @@ class CacheMock:
 
         return "Can't set vault without reference/id"
     
-    def get_all_vaults(self):
+    def get_all_vaults(self) -> list[Vault]:
         user_vaults = [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
         server_vaults = [ Vault.from_dict_static(self.vaults_by_server_ref[vk]) for vk in self.vaults_by_server_ref ]
 
         return user_vaults + server_vaults
     
-    async def lock_vault(self, vault: Vault):
+    async def lock_vault(self, vault: Vault) -> str | None:
         vault.locked = True
 
         return await self.set_vault(vault)
     
-    async def unlock_vault(self, vault: Vault):
+    async def unlock_vault(self, vault: Vault) -> str | None:
         vault.locked = False
 
         return await self.set_vault(vault)

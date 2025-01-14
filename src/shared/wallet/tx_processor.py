@@ -9,8 +9,8 @@ from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.instructions.transfer import TXTransferInstruction
 
 class TXProcessor:
-    MAX_INSTRUCTIONS=1
     MAX_VAULTS=2
+    MAX_INSTRUCTIONS=1
 
     def __init__(self, cache, repository, pay_gate):
         self.cache = cache
@@ -33,17 +33,14 @@ class TXProcessor:
         if signer_access_error is not None:
             return signer_access_error
 
-        # vault_proc -> lock all
         await self.vault_proc.lock_all(tx.vaults)
-
-        # validate instructions amount & vault balances
-
+        
+        # instruction execution simulation
         # commit ready ?
-
-        # call paygate and wait webhook
-        # commit tx
-
-        # vault_proc -> unlock all
+        # yes: execute instructions (cached simulation)
+        # no: (case deposit/withdrawal): call paygate, get payment data/reference and store in tx logs (update status)
+        # wait paygate webhook response and commit tx (execute instructions)
+        
         await self.vault_proc.unlock_all(tx.vaults)
         
         return None
