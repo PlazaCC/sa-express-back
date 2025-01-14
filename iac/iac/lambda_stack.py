@@ -15,7 +15,7 @@ class LambdaStack(Construct):
 
         function = lambda_.Function(
             self, module_name.title(),
-            code=lambda_.Code.from_asset(f"../src/routes/{module_name}.py"),
+            code=lambda_.Code.from_asset(f"../src/routes/{module_name}"),
             handler=f"{module_name}.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
             layers=[self.lambda_layer],
@@ -43,7 +43,6 @@ class LambdaStack(Construct):
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
             authorizer=authorizer
-
         )
 
         self.functions_that_need_cognito_permissions = [
