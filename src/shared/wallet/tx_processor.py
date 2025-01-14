@@ -55,6 +55,14 @@ class TXProcessor:
         
         if tx.commit_timestamp is not None:
             return 'Transaction already commited'
+
+        num_instructions = len(tx.instructions)
+
+        if num_instructions == 0:
+            return 'Transaction without instructions'
+
+        if num_instructions > TXProcessor.MAX_INSTRUCTIONS:
+            return f'Transaction with too many instructions (MAX {TXProcessor.MAX_INSTRUCTIONS})'
         
         defined_vaults = {}
 
