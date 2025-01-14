@@ -23,6 +23,7 @@ pytest_plugins = ('pytest_asyncio')
 class CacheMock:
     def __init__(self):
         self.vaults_by_user_id = {}
+        self.vaults_by_server_ref = {}
 
     async def get_vault_by_user_id(self, user_id: int):
         if user_id in self.vaults_by_user_id:
@@ -30,13 +31,40 @@ class CacheMock:
 
         return None, None
     
-    async def set_vault(self, vault: Vault):
-        self.vaults_by_user_id[vault.user_id] = vault.to_dict()
+    async def get_vault_by_server_ref(self, server_ref: str):
+        if server_ref in self.vaults_by_server_ref:
+            return None, Vault.from_dict_static(self.vaults_by_server_ref[server_ref])
+        
+        return None, None
+    
+    async def set_vault(self, vault: Vault) -> str | None:
+        if vault.user_id is not None:
+            self.vaults_by_user_id[vault.user_id] = vault.to_dict()
 
-        return None, vault.user_id
+            return None
+        
+        if vault.server_ref is not None:
+            self.vaults_by_server_ref[vault.server_ref] = vault.to_dict()
+
+            return None
+
+        return "Can't set vault without reference/id"
     
     def get_all_vaults(self):
-        return [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
+        user_vaults = [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
+        server_vaults = [ Vault.from_dict_static(self.vaults_by_server_ref[vk]) for vk in self.vaults_by_server_ref ]
+
+        return user_vaults + server_vaults
+    
+    async def lock_vault(self, vault: Vault):
+        vault.locked = True
+
+        return await self.set_vault(vault)
+    
+    async def unlock_vault(self, vault: Vault):
+        vault.locked = False
+
+        return await self.set_vault(vault)
 
 class RepositoryMock:
     def __init__(self):

@@ -1,3 +1,6 @@
+import asyncio
+
+from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 
@@ -35,3 +38,23 @@ class VaultProcessor:
         await self.cache.set_vault(vault)
 
         return None, vault
+    
+    def filter_lockable_vaults(self, vaults: list[Vault]):
+        return [ v for v in vaults if v.type != VAULT_TYPE.SERVER_UNLIMITED ]
+    
+    async def lock_all(self, vaults: list[Vault]):
+        lockable_vaults = self.filter_lockable_vaults(vaults)
+
+        if len(lockable_vaults) == 0:
+            return
+
+        await asyncio.gather(*[ self.cache.lock_vault(v) for v in lockable_vaults ])
+
+    async def unlock_all(self, vaults: list[Vault]):
+        lockable_vaults = self.filter_lockable_vaults(vaults)
+
+        if len(lockable_vaults) == 0:
+            return
+        
+        await asyncio.gather(*[ self.cache.unlock_vault(v) for v in lockable_vaults ])
+

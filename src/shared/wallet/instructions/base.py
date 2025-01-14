@@ -11,7 +11,10 @@ class TXBaseInstruction:
 
     def to_tx_snapshot(self) -> dict:
         pass
-
+    
+    def validate_fields_before_sign(self) -> str | None:
+        pass
+    
     def validate_signer_access(self, user: User) -> str | None:
         pass
     

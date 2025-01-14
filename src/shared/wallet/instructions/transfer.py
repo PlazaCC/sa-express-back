@@ -34,6 +34,25 @@ class TXTransferInstruction(TXBaseInstruction):
             'amount': str(self.amount)
         }
     
+    def validate_fields_before_sign(self) -> str | None:
+        amount = self.amount
+
+        if amount == 0:
+            return "Can't transfer zero amount"
+        
+        if amount < 0 :
+            return "Can't transfer negative amount"
+        
+        from_vault = self.from_vault
+
+        if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
+            return None
+        
+        if amount > from_vault.balance:
+            return 'Amount is greater than vault balance'
+
+        return None
+    
     def validate_signer_access(self, signer: User) -> str | None:
         from_vault = self.from_vault
 
