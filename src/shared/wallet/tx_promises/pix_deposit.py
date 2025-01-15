@@ -34,12 +34,7 @@ class TXPIXDepositPromise(TXBasePromise):
 
         api_res = await tx_proc.paygate.create_pix_url(paygate_ref)
         
-        # if not api_res['success']:
-        #     return api_res['error'], None
-        
-        # return None, api_res['data']
+        if 'error' in api_res:
+            return TXLogs.failed(api_res['error'])
 
-        if api_res['error']:
-            return 
-
-        return TXLogs.successful(data: dict | None = None)
+        return TXLogs.successful(api_res['data'])

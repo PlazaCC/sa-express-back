@@ -24,17 +24,16 @@ class TXLogs:
 
     @staticmethod
     def failed(error: str) -> 'TXLogs':
-        # return TXTransferInstructionResult(success=False, timestamp=now_timestamp(), error=error)
-        pass
+        return TXLogs(error=error, timestamp=now_timestamp())
     
-    def __init__(self, is_error: bool, timestamp: str, data: dict | None = None):
-        self.is_error = is_error
+    def __init__(self, error: str, timestamp: str, data: dict | None = None):
+        self.error = error
         self.timestamp = timestamp
         self.data = data
 
     def to_tx_snapshot(self) -> dict:
         result = {
-            'is_error': self.is_error,
+            'error': self.error,
             'timestamp': self.timestamp,
         }
 

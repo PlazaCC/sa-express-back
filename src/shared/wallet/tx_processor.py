@@ -42,15 +42,9 @@ class TXProcessor:
 
         if not sim_state['any_promise']:
             return await self.commit_with_state(tx, sim_state)
-        
-        tx_promises = []
-
-        for tx_result in sim_results:
-            for promise in tx_result.promises:
-                tx_promises.append(promise)
 
         # TODO: handle request errors
-        await asyncio.gather(*[ txr.call(self) for txr in sim_results ])
+        await asyncio.gather(*[ txr.call_promise(self) for txr in sim_results ])
 
         tx.status = TX_STATUS.SIGNED
 

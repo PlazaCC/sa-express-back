@@ -26,6 +26,6 @@ def create_deposit_tx(build_params: dict) -> TX:
         commit_timestamp=None,
         vaults=[ from_vault, to_vault ],
         instructions=[ transfer_instr ],
-        logs=[],
+        logs={},
         status=TX_STATUS.NEW
     )
