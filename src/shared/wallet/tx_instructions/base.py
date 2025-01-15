@@ -1,6 +1,8 @@
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 
+from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
+
 class TXBaseInstruction:
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'TXBaseInstruction':
@@ -19,4 +21,7 @@ class TXBaseInstruction:
         pass
     
     def get_vaults(self) -> list[Vault]:
+        pass
+
+    async def execute(self, instruction_id: int, state: dict) -> tuple[dict, TXBaseInstructionResult]:
         pass

@@ -48,12 +48,10 @@ class TXProcessor:
             for promise in result.promises:
                 txPromises.append(promise)
 
-        # TODO: handle request errors (store inside tx)
+        # TODO: handle request errors
         await asyncio.gather(*[ txp.call(self) for txp in txPromises ])
 
-        # update tx status/data
         tx.status = TX_STATUS.SIGNED
-        # data ?
 
         # TODO: handle repository errors
         await self.repository.set_transaction(tx)
@@ -181,13 +179,21 @@ class TXProcessor:
             state = next_state
 
         return state, results
-
-    async def commit_with_state(self, tx: TX, exec_state: dict):
-        print('exec_state', exec_state)
-
+    
+    async def commit_with_state(self, tx: TX, exec_state: dict) -> str | None:
         tx.status = TX_STATUS.COMMITED
+
+        for vault in tx.vaults:
+            vault_state = exec_state['vaults'][vault.to_identity_key()]
+
+            vault.update_state(vault_state)
+
+            # TODO: handle cache/rep errors
+            await asyncio.gather(self.cache.set_vault(vault), self.repository.set_vault(vault))
+
+        # TODO: handle repository errors
+        await self.repository.set_transaction(tx)
 
         await self.vault_proc.unlock(tx.vaults)
 
-    def deposit_debug_timeout(self):
-        pass
+        return None

@@ -145,3 +145,7 @@ class Vault(BaseModel):
 
     def total_balance(self):
         return self.balance - self.balanceLocked
+    
+    def update_state(self, next_state: dict) -> None:
+        self.balance = next_state['balance']
+        self.balanceLocked = next_state['balanceLocked']
