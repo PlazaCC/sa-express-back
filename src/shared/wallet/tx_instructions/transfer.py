@@ -132,14 +132,14 @@ class TXTransferInstruction(TXBaseInstruction):
             if deposit_pix_key is None:
                 return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{to_vault_key}\"")
 
-            return state, TXTransferInstructionResult.succesful([ 
+            return state, TXTransferInstructionResult.successful(
                 TXPIXDepositPromise(
                     tx_id=state['tx_id'],
                     instruction_id=instruction_id,
                     pix_key=to_vault.pix_key, 
                     amount=self.amount
                 )
-            ])
+            )
         
         if from_sign and is_withdrawal:
             withdrawal_pix_key = from_vault.pix_key
@@ -147,7 +147,7 @@ class TXTransferInstruction(TXBaseInstruction):
             if withdrawal_pix_key is None:
                 return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{from_vault_key}\"")
 
-            return state, TXTransferInstructionResult.succesful([ 
+            return state, TXTransferInstructionResult.successful([ 
                 TXPIXWithdrawalPromise(
                     tx_id=state['tx_id'],
                     instruction_id=instruction_id,
@@ -156,4 +156,4 @@ class TXTransferInstruction(TXBaseInstruction):
                 )
             ])
 
-        return state, TXTransferInstructionResult.succesful()
+        return state, TXTransferInstructionResult.successful()

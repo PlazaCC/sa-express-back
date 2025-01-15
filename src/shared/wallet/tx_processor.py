@@ -4,6 +4,7 @@ from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 
+from src.shared.wallet.utils import error_with_instruction_sufix
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
 
@@ -42,14 +43,14 @@ class TXProcessor:
         if not sim_state['any_promise']:
             return await self.commit_with_state(tx, sim_state)
         
-        txPromises = []
+        tx_promises = []
 
-        for result in sim_results:
-            for promise in result.promises:
-                txPromises.append(promise)
+        for tx_result in sim_results:
+            for promise in tx_result.promises:
+                tx_promises.append(promise)
 
         # TODO: handle request errors
-        await asyncio.gather(*[ txp.call(self) for txp in txPromises ])
+        await asyncio.gather(*[ txr.call(self) for txr in sim_results ])
 
         tx.status = TX_STATUS.SIGNED
 
@@ -144,7 +145,7 @@ class TXProcessor:
             signer_access_error = tx.instructions[i].validate_signer_access(signer)
 
             if signer_access_error is not None:
-                return signer_access_error + f' at instruction {str(i)}'
+                return error_with_instruction_sufix(signer_access_error, i)
 
         return None
     
@@ -171,13 +172,13 @@ class TXProcessor:
 
             results[i] = instr_result
 
-            if not instr_result.success:
-               state['error'] = instr_result.error
+            if instr_result.with_error():
+               state['error'] = error_with_instruction_sufix(instr_result.error, i)
                break
-
-            if len(instr_result.promises) > 0:
+            
+            if instr_result.promise is not None:
                 state['any_promise'] = True
-
+            
             state = next_state
 
         return state, results
@@ -186,7 +187,8 @@ class TXProcessor:
         tx.status = TX_STATUS.COMMITED
 
         for vault in tx.vaults:
-            vault_state = exec_state['vaults'][vault.to_identity_key()]
+            vault_key = vault.to_identity_key()
+            vault_state = exec_state['vaults'][vault_key]
 
             vault.locked = False
             vault.update_state(vault_state)

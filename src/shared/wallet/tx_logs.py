@@ -1,24 +1,44 @@
+
+from src.shared.wallet.utils import now_timestamp
+
 class TXLogs:
-    is_error: bool
-    message: str
+    error: str
     timestamp: str
+    data: dict | None
 
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'TXLogs':
         return TXLogs(
-            is_error=data['is_error'],
-            message=data['message'],
-            timestamp=data['timestamp']
+            error=data['error'],
+            timestamp=data['timestamp'],
+            data=data['data'] if 'data' in data else None,
         )
     
-    def __init__(self, is_error: bool, message: str, timestamp: str):
+    @staticmethod
+    def successful(data: dict | None = None) -> 'TXLogs':
+        return TXLogs(
+            error='',
+            timestamp=now_timestamp(),
+            data=data
+        )
+
+    @staticmethod
+    def failed(error: str) -> 'TXLogs':
+        # return TXTransferInstructionResult(success=False, timestamp=now_timestamp(), error=error)
+        pass
+    
+    def __init__(self, is_error: bool, timestamp: str, data: dict | None = None):
         self.is_error = is_error
-        self.message = message
         self.timestamp = timestamp
+        self.data = data
 
     def to_tx_snapshot(self) -> dict:
-        return {
+        result = {
             'is_error': self.is_error,
-            'message': self.message,
-            'timestamp': self.timestamp
+            'timestamp': self.timestamp,
         }
+
+        if self.data is not None:
+            result['data'] = self.data
+
+        return result

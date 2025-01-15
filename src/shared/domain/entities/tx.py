@@ -18,7 +18,7 @@ class TX(BaseModel):
     commit_timestamp: str | None
     vaults: list[Vault]
     instructions: list[TXBaseInstruction]
-    logs: list[TXLogs]
+    logs: dict[TXLogs]
     status: TX_STATUS
 
     @staticmethod
@@ -31,7 +31,7 @@ class TX(BaseModel):
             commit_timestamp=data['commit_timestamp'] if 'commit_timestamp' in data else None,
             vaults=[ Vault.from_tx_snapshot(v) for v in data['vaults'] ],
             instructions=[ TXMutateInstruction.from_tx_snapshot(i) for i in data['instructions'] ],
-            logs=[ TXLogs.from_tx_snapshot(l) for l in data['logs'] ],
+            logs={ k: TXLogs.from_tx_snapshot(l) for k, l in data['logs'] },
             status=TX_STATUS[data['tx_status']]
         )
     
@@ -50,7 +50,7 @@ class TX(BaseModel):
             'create_timestamp': self.create_timestamp,
             'vaults': [ v.to_tx_snapshot() for v in self.vaults ],
             'instructions': [ i.to_tx_snapshot() for i in self.instructions ],
-            'logs': [ l.to_tx_snapshot() for l in self.logs ],
+            'logs': { k: l.to_tx_snapshot() for k, l in self.logs },
             'status': self.status.value
         }
 

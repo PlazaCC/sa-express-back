@@ -1,37 +1,49 @@
+from typing import Any
+
 from src.shared.wallet.utils import now_timestamp
+from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
 from src.shared.wallet.tx_promises.base import TXBasePromise
 
 class TXTransferInstructionResult(TXBaseInstructionResult):
-    success: bool
-    timestamp: str
     error: str
-    promises: list[TXBasePromise]
+    timestamp: str
+    promise: TXBasePromise | None
 
     @staticmethod
-    def succesful(promises: list[TXBasePromise] = []):
+    def successful(promise: TXBasePromise | None = None) -> 'TXTransferInstructionResult':
         return TXTransferInstructionResult(
-            success=True, 
-            timestamp=now_timestamp(), 
-            error='', 
-            promises=promises
+            error='',
+            timestamp=now_timestamp(),
+            promise=promise
         )
     
     @staticmethod
     def failed(error: str) -> 'TXTransferInstructionResult':
-        return TXTransferInstructionResult(success=False, timestamp=now_timestamp(), error=error)
+        return TXTransferInstructionResult(timestamp=now_timestamp(), error=error)
 
-    def __init__(self, success: bool, timestamp: str, error: str = '', \
-        promises: list[TXBasePromise] = []):
-        self.success = success
-        self.timestamp = timestamp
+    def __init__(self, error: str, timestamp: str, promise: TXBasePromise | None = None):
         self.error = error
-        self.promises = promises
+        self.timestamp = timestamp
+        self.promise = promise
 
-    def to_dict(self):
-        return {
-            'success': self.success,
-            'timestamp': self.timestamp,
+    def to_dict(self) -> dict:
+        result = {
             'error': self.error,
-            'promises': [ p.to_dict() for p in self.promises ]
+            'timestamp': self.timestamp,
         }
+
+        if self.promise is not None:
+            result['promise'] = self.promise.to_dict()
+
+        return result
+
+    def with_error(self) -> bool:
+        return self.error != ''
+
+    async def call_promise(self, tx_proc: Any) -> TXLogs | None:
+        if self.promise is None:
+            return None
+
+        return await self.promise.call(tx_proc)
+        

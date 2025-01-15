@@ -175,13 +175,17 @@ class RepositoryMock:
 
 class PayGateMock:
     def __init__(self):
-        pass
+        self.payment_references = {}
 
     async def create_pix_url(self, paygate_ref: str) -> dict:
+        paydata = {
+            'pixUrl': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551'
+        }
+
+        self.payment_references[paygate_ref] = paydata
+
         return {
-            'success': True,
-            'pix_url': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551',
-            'reference': paygate_ref
+            'data': paydata
         }
     
     async def trigger_pix_payment_webhook(self, pix_key: PIXKey):
