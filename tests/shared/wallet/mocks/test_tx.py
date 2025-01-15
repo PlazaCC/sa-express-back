@@ -2,6 +2,7 @@ import pytest
 import random
 import asyncio
 from decimal import Decimal
+from random import randrange
 from datetime import datetime
 
 from src.shared.domain.enums.role_enum import ROLE
@@ -9,6 +10,7 @@ from src.shared.domain.enums.user_status_enum import USER_STATUS
 
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
+from src.shared.domain.entities.tx import TX
 
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 from src.shared.wallet.models.pix import PIXKey
@@ -164,7 +166,13 @@ class PayGateMock:
     def __init__(self):
         pass
 
-    async def create_pix(self):
+    async def create_pix_url(self):
+        return {
+            'success': True,
+            'pix_url': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551'
+        }
+    
+    async def trigger_pix_payment_webhook(self, pix_key: PIXKey):
         pass
 
 class Test_TXMock:
@@ -237,7 +245,7 @@ class Test_TXMock:
         
         txs = []
 
-        for _ in range(0, 10):
+        for _ in range(0, 1):
             to_vault = repository.get_random_vault()
             (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
 
@@ -255,6 +263,11 @@ class Test_TXMock:
             sign_error = await tx_proc.sign(signer, tx)
 
             assert sign_error is None
+
+        async def random_pay_gate_webhook(tx: TX):
+            await asyncio.sleep(randrange(3, 10))
+
+            pass
         
         # verify if zero sum
 

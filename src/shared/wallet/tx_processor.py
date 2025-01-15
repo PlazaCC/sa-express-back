@@ -1,3 +1,5 @@
+import asyncio
+
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
@@ -32,20 +34,26 @@ class TXProcessor:
 
         await self.vault_proc.lock(tx.vaults)
 
-        # instruction execution simulation
         sim_state, sim_results = await self.exec_tx_instructions(tx)
 
-        print('sim_state', sim_state)
+        if sim_state['error'] is not None:
+            return sim_state['error']
 
-        for r in sim_results:
-            print('sim_results', r.to_dict())
+        if not sim_state['any_promise']:
+            return await self.commit_with_state(tx, sim_state)
+        
+        txPromises = []
 
-        print('')
+        for result in sim_results:
+            for promise in result.promises:
+                txPromises.append(promise)
 
-        # commit ready ?
-        # yes: execute instructions (cached simulation)
-        # no: (case deposit/withdrawal): call paygate, get payment data/reference and store in tx logs (update status)
-        # wait paygate webhook response and commit tx (execute instructions)
+        # TODO: handle request errors (store inside tx)
+        await asyncio.gather(*[ txp.call(self) for txp in txPromises ])
+
+        # update tx status/data
+        tx.status = TX_STATUS.SIGNED
+        
         
         await self.vault_proc.unlock(tx.vaults)
         
@@ -139,9 +147,9 @@ class TXProcessor:
     
     async def exec_tx_instructions(self, tx :TX) -> tuple[dict, list[TXBaseInstructionResult | None]]:
         state = {
-            'success': True,
-            'error': '',
-            'vaults': {}
+            'error': None,
+            'vaults': {},
+            'any_promise': False 
         }
         
         for vault in tx.vaults:
@@ -160,12 +168,22 @@ class TXProcessor:
             results[i] = instr_result
 
             if not instr_result.success:
-               state['success'] = False
+               state['error'] = instr_result.error
                break
+
+            if len(instr_result.promises) > 0:
+                state['any_promise'] = True
 
             state = next_state
 
         return state, results
 
-    async def commit(self, tx: TX):
+    async def commit_with_state(self, tx: TX, exec_state: dict):
+        print('exec_state', exec_state)
+
+        tx.status = TX_STATUS.COMMITED
+
+        await self.vault_proc.unlock(tx.vaults)
+
+    def deposit_debug_timeout(self):
         pass

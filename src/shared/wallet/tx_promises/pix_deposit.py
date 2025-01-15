@@ -23,7 +23,9 @@ class TXPIXDepositPromise(TXBasePromise):
     def is_resolved(self):
         return self.paygate_response is not None
     
-    async def call(self):
+    async def call(self, tx_proc):
+        # pay_gate = tx_proc.pay_gate
+        # api_res = await pay_gate.create_pix_url()
         pass
     
     async def resolve(self):
