@@ -20,7 +20,7 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
     
     @staticmethod
     def failed(error: str) -> 'TXTransferInstructionResult':
-        return TXTransferInstructionResult(timestamp=now_timestamp(), error=error)
+        return TXTransferInstructionResult(error=error, timestamp=now_timestamp())
 
     def __init__(self, error: str, timestamp: str, promise: TXBasePromise | None = None):
         self.error = error
@@ -41,9 +41,9 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
     def with_error(self) -> bool:
         return self.error != ''
 
-    async def call_promise(self, tx_proc: Any) -> TXLogs | None:
+    async def call_promise(self, tx_proc: Any) -> TXLogs:
         if self.promise is None:
-            return None
+            return TXLogs.successful()
 
         return await self.promise.call(tx_proc)
         

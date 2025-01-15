@@ -1,4 +1,3 @@
-
 from src.shared.wallet.utils import now_timestamp
 
 class TXLogs:
@@ -41,3 +40,6 @@ class TXLogs:
             result['data'] = self.data
 
         return result
+    
+    def with_error(self) -> bool:
+        return self.error != ''

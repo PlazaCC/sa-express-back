@@ -26,7 +26,7 @@ class TXProcessor:
             return fields_error
         
         tx.user_id = signer.user_id
-        tx.logs = []
+        tx.logs = {}
         
         signer_access_error = self.validate_signer_access(signer, tx)
 
