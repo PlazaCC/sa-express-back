@@ -98,7 +98,7 @@ class Vault(BaseModel):
         result = {
             'type': self.type.value,
         }
-
+        
         if self.user_id is not None:
             result['user_id'] = self.user_id
 
@@ -121,4 +121,12 @@ class Vault(BaseModel):
             return 'USER_' + str(self.user_id)
 
         return 'UNKNOWN'
+    
+    def to_tx_execution_state(self) -> tuple[str, dict]:
+        state = {
+            'balance': Decimal(self.balance),
+            'balanceLocked': Decimal(self.balanceLocked),
+        }
+
+        return self.to_identity_key(), state
 

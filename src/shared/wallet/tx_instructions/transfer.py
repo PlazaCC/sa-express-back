@@ -6,7 +6,9 @@ from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 
 from src.shared.wallet.enums.tx_instruction_type import TX_INSTRUCTION_TYPE
-from src.shared.wallet.instructions.base import TXBaseInstruction
+from src.shared.wallet.utils import now_timestamp
+from src.shared.wallet.tx_instructions.base import TXBaseInstruction
+from src.shared.wallet.tx_instruction_results.transfer import TXTransferInstructionResult
 
 class TXTransferInstruction(TXBaseInstruction):
     from_vault: Vault
@@ -96,3 +98,19 @@ class TXTransferInstruction(TXBaseInstruction):
     
     def get_vaults(self) -> list[Vault]:
         return [ self.from_vault, self.to_vault ]
+    
+    async def execute(self, state: dict) -> tuple[dict, TXTransferInstructionResult]:
+        from_vault = self.from_vault
+
+        if from_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
+            from_vault_key = from_vault.to_identity_key()
+            from_vault_state = state['vaults'][from_vault_key]
+
+            from_vault_state.balance -= self.amount
+
+            if from_vault_state.balance < 0:
+                return state, TXTransferInstructionResult.failed(f'Amount too low on vault "{from_vault_key}"')
+        
+        # detect pay gate
+        
+        return state, TXTransferInstructionResult.succesful()

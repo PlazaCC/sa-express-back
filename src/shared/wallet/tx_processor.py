@@ -1,12 +1,9 @@
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
-from src.shared.domain.entities.vault import Vault
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
-from src.shared.domain.enums.vault_type_num import VAULT_TYPE
-from src.shared.domain.enums.user_status_enum import USER_STATUS
 
 from src.shared.wallet.vault_processor import VaultProcessor
-from src.shared.wallet.instructions.transfer import TXTransferInstruction
+from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
 
 class TXProcessor:
     MAX_VAULTS=2
@@ -36,6 +33,12 @@ class TXProcessor:
         await self.vault_proc.lock(tx.vaults)
 
         # instruction execution simulation
+        sim_state, sim_results = await self.exec_tx_instructions(tx)
+
+        print('sim_state', sim_state)
+        print('sim_results', sim_results)
+        print('')
+
         # commit ready ?
         # yes: execute instructions (cached simulation)
         # no: (case deposit/withdrawal): call paygate, get payment data/reference and store in tx logs (update status)
@@ -131,5 +134,32 @@ class TXProcessor:
 
         return None
     
+    async def exec_tx_instructions(self, tx :TX) -> tuple[dict, list[TXBaseInstructionResult | None]]:
+        state = {
+            'vaults': {}
+        }
+
+        for vault in tx.vaults:
+            vault_key, vault_state = vault.to_tx_execution_state()
+
+            if vault_key not in state['vaults']:
+                state['vaults'][vault_key] = vault_state
+
+        num_instructions = len(tx.instructions)
+
+        results = [ None for _ in range(0, num_instructions) ]
+
+        for i in range(0, num_instructions):
+            next_state, instr_result = await tx.instructions[i].execute(state)
+
+            results[i] = instr_result
+
+            if not instr_result.success:
+               break
+
+            state = next_state
+
+        return state, results
+
     async def commit(self, tx: TX):
         pass

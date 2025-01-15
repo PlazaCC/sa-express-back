@@ -1,8 +1,4 @@
-from datetime import datetime
 from src.shared.domain.entities.vault import Vault
-
-def now_timestamp() -> str:
-    return str(int(datetime.now().timestamp() * 1000))
 
 def parse_build_params_user(build_params: dict) -> int | None:
     user_id = None

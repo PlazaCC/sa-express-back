@@ -212,7 +212,7 @@ class Test_TXMock:
                 'locked': False
             }
         })
-
+        
         txs = []
 
         for _ in range(0, 10):
