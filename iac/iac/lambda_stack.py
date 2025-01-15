@@ -37,6 +37,14 @@ class LambdaStack(Construct):
                                                  compatible_runtimes=[lambda_.Runtime.PYTHON_3_9]
                                                  )
 
+        self.adm_update_user = self.create_lambda_api_gateway_integration(
+            module_name="adm_update_user",
+            method="PUT",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+        
         self.create_deal = self.create_lambda_api_gateway_integration(
             module_name="create_deal",
             method="POST",
@@ -45,10 +53,55 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
-        self.functions_that_need_cognito_permissions = [
+        self.create_user = self.create_lambda_api_gateway_integration(
+            module_name="create_user",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
 
+        self.delete_deal = self.create_lambda_api_gateway_integration(
+            module_name="delete_deal",
+            method="DELETE",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_actives_deals = self.create_lambda_api_gateway_integration(
+            module_name="get_actives_deals",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_all_deals = self.create_lambda_api_gateway_integration(
+            module_name="get_all_deals",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.get_all_users = self.create_lambda_api_gateway_integration(
+            module_name="get_all_users",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.functions_that_need_cognito_permissions = [
+            self.adm_update_user,
+            self.create_user,
+            self.get_all_users
         ]
 
         self.functions_that_need_dynamo_permissions = [
             self.create_deal,
+            self.delete_deal,
+            self.get_actives_deals,
+            self.get_all_deals
         ]
