@@ -29,14 +29,15 @@ class TXPIXDepositPromise(TXBasePromise):
     
     def to_paygate_ref(self) -> str:
         return f'{self.tx_id}-INSTR-{self.instruction_id}'
-    
-    def is_resolved(self):
+
+    def is_resolved(self) -> bool:
         return self.paygate_response is not None
     
-    async def call(self, tx_proc):
+    async def call(self, tx_proc) -> str | None:
         # paygate = tx_proc.paygate
         # api_res = await paygate.create_pix_url()
-        pass
+        
+        return None
     
-    async def resolve(self):
+    async def resolve(self) -> str | None:
         pass

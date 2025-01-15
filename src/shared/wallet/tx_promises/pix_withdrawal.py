@@ -35,8 +35,8 @@ class TXPIXWithdrawalPromise(TXBasePromise):
     def is_resolved(self):
         return self.paygate_response is not None
     
-    async def call(self, tx_proc):
-        pass
+    async def call(self, tx_proc) -> str | None:
+        return None
     
-    async def resolve(self):
+    async def resolve(self) -> str | None:
         pass
