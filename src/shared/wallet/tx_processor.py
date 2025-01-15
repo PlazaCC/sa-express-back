@@ -53,6 +53,8 @@ class TXProcessor:
 
         tx.status = TX_STATUS.SIGNED
 
+        # update balance locked (withdrawal)
+
         # TODO: handle repository errors
         await self.repository.set_transaction(tx)
         
