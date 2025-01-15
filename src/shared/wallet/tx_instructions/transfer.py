@@ -100,7 +100,7 @@ class TXTransferInstruction(TXBaseInstruction):
     def get_vaults(self) -> list[Vault]:
         return [ self.from_vault, self.to_vault ]
     
-    async def execute(self, instruction_id: int, state: dict) -> tuple[dict, TXTransferInstructionResult]:
+    async def execute(self, instruction_id: int, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
         to_vault = self.to_vault
 
@@ -121,12 +121,12 @@ class TXTransferInstruction(TXBaseInstruction):
         if to_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
             to_vault_state = state['vaults'][to_vault_key]
 
-            if is_withdrawal:
+            if from_sign and is_withdrawal:
                 to_vault_state['balanceLocked'] += self.amount
             else:
                 to_vault_state['balance'] += self.amount
 
-        if is_deposit:
+        if from_sign and is_deposit:
             deposit_pix_key = to_vault.pix_key
 
             if deposit_pix_key is None:
@@ -141,7 +141,7 @@ class TXTransferInstruction(TXBaseInstruction):
                 )
             ])
         
-        if is_withdrawal:
+        if from_sign and is_withdrawal:
             withdrawal_pix_key = from_vault.pix_key
 
             if withdrawal_pix_key is None:

@@ -34,7 +34,7 @@ class TXProcessor:
 
         await self.vault_proc.lock(tx.vaults)
 
-        sim_state, sim_results = await self.exec_tx_instructions(tx)
+        sim_state, sim_results = await self.exec_tx_instructions(tx, from_sign=True)
 
         if sim_state['error'] is not None:
             return sim_state['error']
@@ -146,7 +146,7 @@ class TXProcessor:
 
         return None
     
-    async def exec_tx_instructions(self, tx :TX) -> tuple[dict, list[TXBaseInstructionResult | None]]:
+    async def exec_tx_instructions(self, tx: TX, from_sign: bool) -> tuple[dict, list[TXBaseInstructionResult | None]]:
         state = {
             'tx_id': tx.tx_id,
             'error': None,
@@ -165,7 +165,7 @@ class TXProcessor:
         results = [ None for _ in range(0, num_instructions) ]
 
         for i in range(0, num_instructions):
-            next_state, instr_result = await tx.instructions[i].execute(i, state)
+            next_state, instr_result = await tx.instructions[i].execute(i, state, from_sign)
 
             results[i] = instr_result
 
