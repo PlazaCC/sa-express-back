@@ -140,6 +140,7 @@ class TXProcessor:
     async def exec_tx_instructions(self, tx :TX) -> tuple[dict, list[TXBaseInstructionResult | None]]:
         state = {
             'success': True,
+            'error': '',
             'vaults': {}
         }
         

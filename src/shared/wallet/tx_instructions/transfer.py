@@ -143,7 +143,7 @@ class TXTransferInstruction(TXBaseInstruction):
                 return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{from_vault_key}\"")
 
             return state, TXTransferInstructionResult.succesful([ 
-                TXPIXDepositPromise(pix_key=from_vault.pix_key, amount=self.amount) 
+                TXPIXWithdrawalPromise(pix_key=from_vault.pix_key, amount=self.amount) 
             ])
 
         return state, TXTransferInstructionResult.succesful()
