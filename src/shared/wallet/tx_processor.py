@@ -11,11 +11,11 @@ class TXProcessor:
     MAX_VAULTS=2
     MAX_INSTRUCTIONS=1
 
-    def __init__(self, cache, repository, pay_gate):
+    def __init__(self, cache, repository, paygate):
         self.cache = cache
         self.repository = repository
 
-        self.pay_gate = pay_gate
+        self.paygate = paygate
         self.vault_proc = VaultProcessor(cache, repository)
 
     async def sign(self, signer: User, tx: TX) -> str | None:
@@ -53,7 +53,10 @@ class TXProcessor:
 
         # update tx status/data
         tx.status = TX_STATUS.SIGNED
-        
+        # data ?
+
+        # TODO: handle repository errors
+        await self.repository.set_transaction(tx)
         
         await self.vault_proc.unlock(tx.vaults)
         
@@ -147,6 +150,7 @@ class TXProcessor:
     
     async def exec_tx_instructions(self, tx :TX) -> tuple[dict, list[TXBaseInstructionResult | None]]:
         state = {
+            'tx_id': tx.tx_id,
             'error': None,
             'vaults': {},
             'any_promise': False 
@@ -163,7 +167,7 @@ class TXProcessor:
         results = [ None for _ in range(0, num_instructions) ]
 
         for i in range(0, num_instructions):
-            next_state, instr_result = await tx.instructions[i].execute(state)
+            next_state, instr_result = await tx.instructions[i].execute(i, state)
 
             results[i] = instr_result
 

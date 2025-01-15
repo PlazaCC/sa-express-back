@@ -71,6 +71,7 @@ class RepositoryMock:
     def __init__(self):
         self.users = []
         self.vaults = []
+        self.transactions = []
 
     def _generate_users(self, config: dict):
         num_users = config['num_users'] if 'num_users' in config else 1
@@ -162,6 +163,16 @@ class RepositoryMock:
 
         return await self.set_vault(rep_vault)
 
+    async def set_transaction(self, tx: TX):
+        rep_tx = next((t for t in self.transactions if t['tx_id'] == tx.tx_id), None)
+        
+        if rep_tx is not None:
+            self.transactions = [ t for t in self.transactions if t['tx_id'] != tx.tx_id ]
+
+        self.transactions.append(tx.to_dict())
+
+        return None
+
 class PayGateMock:
     def __init__(self):
         pass
@@ -179,7 +190,7 @@ class Test_TXMock:
     async def get_back_context(self, config: dict):
         cache = CacheMock()
         repository = RepositoryMock()
-        pay_gate = PayGateMock()
+        paygate = PayGateMock()
 
         if 'num_users' in config and config['num_users'] > 0:
             repository.generate_users(config)
@@ -208,11 +219,11 @@ class Test_TXMock:
                 
                 await cache.set_vault(user_vault)
 
-        return (cache, repository, pay_gate)
+        return (cache, repository, paygate)
 
     @pytest.mark.asyncio
     async def test_vaults(self):
-        (cache, repository, pay_gate) = await self.get_back_context({
+        (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
@@ -234,7 +245,7 @@ class Test_TXMock:
     
     @pytest.mark.asyncio
     async def test_deposits(self):
-        (cache, repository, pay_gate) = await self.get_back_context({
+        (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
@@ -257,14 +268,14 @@ class Test_TXMock:
 
         assert(len(txs) > 0)
 
-        tx_proc = TXProcessor(cache, repository, pay_gate)
+        tx_proc = TXProcessor(cache, repository, paygate)
 
         for (signer, tx) in txs:
             sign_error = await tx_proc.sign(signer, tx)
 
             assert sign_error is None
 
-        async def random_pay_gate_webhook(tx: TX):
+        async def random_paygate_webhook(tx: TX):
             await asyncio.sleep(randrange(3, 10))
 
             pass

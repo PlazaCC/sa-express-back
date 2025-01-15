@@ -100,7 +100,7 @@ class TXTransferInstruction(TXBaseInstruction):
     def get_vaults(self) -> list[Vault]:
         return [ self.from_vault, self.to_vault ]
     
-    async def execute(self, state: dict) -> tuple[dict, TXTransferInstructionResult]:
+    async def execute(self, instruction_id: int, state: dict) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
         to_vault = self.to_vault
 
@@ -133,7 +133,12 @@ class TXTransferInstruction(TXBaseInstruction):
                 return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{to_vault_key}\"")
 
             return state, TXTransferInstructionResult.succesful([ 
-                TXPIXDepositPromise(pix_key=to_vault.pix_key, amount=self.amount) 
+                TXPIXDepositPromise(
+                    tx_id=state['tx_id'],
+                    instruction_id=instruction_id,
+                    pix_key=to_vault.pix_key, 
+                    amount=self.amount
+                )
             ])
         
         if is_withdrawal:
@@ -143,7 +148,12 @@ class TXTransferInstruction(TXBaseInstruction):
                 return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{from_vault_key}\"")
 
             return state, TXTransferInstructionResult.succesful([ 
-                TXPIXWithdrawalPromise(pix_key=from_vault.pix_key, amount=self.amount) 
+                TXPIXWithdrawalPromise(
+                    tx_id=state['tx_id'],
+                    instruction_id=instruction_id,
+                    pix_key=from_vault.pix_key, 
+                    amount=self.amount
+                )
             ])
 
         return state, TXTransferInstructionResult.succesful()
