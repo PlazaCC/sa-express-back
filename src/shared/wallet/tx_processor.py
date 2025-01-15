@@ -179,13 +179,14 @@ class TXProcessor:
             state = next_state
 
         return state, results
-    
+
     async def commit_with_state(self, tx: TX, exec_state: dict) -> str | None:
         tx.status = TX_STATUS.COMMITED
 
         for vault in tx.vaults:
             vault_state = exec_state['vaults'][vault.to_identity_key()]
 
+            vault.locked = False
             vault.update_state(vault_state)
 
             # TODO: handle cache/rep errors
@@ -193,7 +194,5 @@ class TXProcessor:
 
         # TODO: handle repository errors
         await self.repository.set_transaction(tx)
-
-        await self.vault_proc.unlock(tx.vaults)
 
         return None
