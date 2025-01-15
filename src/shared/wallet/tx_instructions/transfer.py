@@ -8,6 +8,8 @@ from src.shared.domain.entities.vault import Vault
 from src.shared.wallet.enums.tx_instruction_type import TX_INSTRUCTION_TYPE
 from src.shared.wallet.tx_instructions.base import TXBaseInstruction
 from src.shared.wallet.tx_instruction_results.transfer import TXTransferInstructionResult
+from src.shared.wallet.tx_promises.pix_deposit import TXPIXDepositPromise
+from src.shared.wallet.tx_promises.pix_withdrawal import TXPIXWithdrawalPromise
 
 class TXTransferInstruction(TXBaseInstruction):
     from_vault: Vault
@@ -48,10 +50,10 @@ class TXTransferInstruction(TXBaseInstruction):
 
         if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
             return None
-        
-        if amount > from_vault.balance:
-            return 'Amount is greater than vault balance'
 
+        if amount > from_vault.total_balance():
+            return 'Amount is greater than vault balance'
+        
         return None
     
     def validate_signer_access(self, signer: User) -> str | None:
@@ -102,21 +104,46 @@ class TXTransferInstruction(TXBaseInstruction):
         from_vault = self.from_vault
         to_vault = self.to_vault
 
+        from_vault_key = from_vault.to_identity_key()
+        to_vault_key = to_vault.to_identity_key()
+
+        is_deposit = from_vault.type == VAULT_TYPE.SERVER_UNLIMITED and to_vault.type == VAULT_TYPE.USER
+        is_withdrawal = from_vault.type == VAULT_TYPE.USER and to_vault.type == VAULT_TYPE.SERVER_UNLIMITED
+
         if from_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
-            from_vault_key = from_vault.to_identity_key()
             from_vault_state = state['vaults'][from_vault_key]
 
-            from_vault_state.balance -= self.amount
+            from_vault_state['balance'] -= self.amount
 
             if from_vault_state.balance < 0:
                 return state, TXTransferInstructionResult.failed(f'Amount too low on vault "{from_vault_key}"')
+            
+        if to_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
+            to_vault_state = state['vaults'][to_vault_key]
+
+            if is_withdrawal:
+                to_vault_state['balanceLocked'] += self.amount
+            else:
+                to_vault_state['balance'] += self.amount
+
+        if is_deposit:
+            deposit_pix_key = to_vault.pix_key
+
+            if deposit_pix_key is None:
+                return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{to_vault_key}\"")
+
+            return state, TXTransferInstructionResult.succesful([ 
+                TXPIXDepositPromise(pix_key=to_vault.pix_key, amount=self.amount) 
+            ])
         
-        # deposit
-        if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED and to_vault.type == VAULT_TYPE.USER:
-            pass
-        
-        # withdrawal
-        if from_vault.type == VAULT_TYPE.USER and to_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
-            pass
+        if is_withdrawal:
+            withdrawal_pix_key = from_vault.pix_key
+
+            if withdrawal_pix_key is None:
+                return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{from_vault_key}\"")
+
+            return state, TXTransferInstructionResult.succesful([ 
+                TXPIXDepositPromise(pix_key=from_vault.pix_key, amount=self.amount) 
+            ])
 
         return state, TXTransferInstructionResult.succesful()

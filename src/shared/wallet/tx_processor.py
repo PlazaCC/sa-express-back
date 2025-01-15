@@ -36,7 +36,10 @@ class TXProcessor:
         sim_state, sim_results = await self.exec_tx_instructions(tx)
 
         print('sim_state', sim_state)
-        print('sim_results', sim_results)
+
+        for r in sim_results:
+            print('sim_results', r.to_dict())
+
         print('')
 
         # commit ready ?

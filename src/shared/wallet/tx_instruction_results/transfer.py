@@ -27,3 +27,11 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
         self.timestamp = timestamp
         self.error = error
         self.promises = promises
+
+    def to_dict(self):
+        return {
+            'success': self.success,
+            'timestamp': self.timestamp,
+            'error': self.error,
+            'promises': [ p.to_dict() for p in self.promises ]
+        }

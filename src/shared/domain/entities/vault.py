@@ -143,3 +143,5 @@ class Vault(BaseModel):
 
         return self.to_identity_key(), state
 
+    def total_balance(self):
+        return self.balance - self.balanceLocked
