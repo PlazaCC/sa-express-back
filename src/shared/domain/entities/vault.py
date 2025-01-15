@@ -1,16 +1,21 @@
 from decimal import Decimal
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
 
+from src.shared.wallet.models.pix import PIXKey
+
 class Vault(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     type: VAULT_TYPE
     user_id: int | None
     balance: Decimal
     balanceLocked: Decimal
     locked: bool
     server_ref: str | None
+    pix_key: PIXKey | None
     
     @staticmethod
     def from_dict_static(data: dict) -> 'Vault':
@@ -20,7 +25,8 @@ class Vault(BaseModel):
             balance=Decimal(data['balance']),
             balanceLocked=Decimal(data['balanceLocked']),
             locked=data['locked'],
-            server_ref=data['server_ref'] if 'server_ref' in data else None
+            server_ref=data['server_ref'] if 'server_ref' in data else None,
+            pix_key=PIXKey.from_dict_static(data['pix_key']) if 'pix_key' in data else None
         )
 
     @staticmethod
@@ -31,7 +37,8 @@ class Vault(BaseModel):
             balance=Decimal(0),
             balanceLocked=Decimal(0),
             locked=False,
-            server_ref=data['server_ref'] if 'server_ref' in data else None
+            server_ref=data['server_ref'] if 'server_ref' in data else None,
+            pix_key=None
         )
     
     @staticmethod
@@ -46,7 +53,8 @@ class Vault(BaseModel):
             balance=Decimal(0),
             balanceLocked=Decimal(0),
             locked=False,
-            server_ref=None
+            server_ref=None,
+            pix_key=None
         )
     
     @staticmethod
@@ -61,7 +69,8 @@ class Vault(BaseModel):
             balance=Decimal(config['balance']),
             balanceLocked=Decimal(config['balanceLocked']),
             locked=config['locked'],
-            server_ref=None
+            server_ref=None,
+            pix_key=None
         )
     
     @staticmethod
@@ -72,7 +81,8 @@ class Vault(BaseModel):
             balance=Decimal(config['balance']),
             balanceLocked=Decimal(config['balanceLocked']),
             locked=config['locked'],
-            server_ref=None
+            server_ref=None,
+            pix_key=None
         )
     
     def to_dict(self) -> dict:
@@ -88,6 +98,9 @@ class Vault(BaseModel):
 
         if self.server_ref is not None:
             result['server_ref'] = self.server_ref
+
+        if self.pix_key is not None:
+            result['pix_key'] = self.pix_key.to_dict()
         
         return result
     

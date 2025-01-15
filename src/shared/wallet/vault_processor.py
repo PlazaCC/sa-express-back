@@ -30,7 +30,7 @@ class VaultProcessor:
         
         vault = Vault.from_user(user, config)
 
-        (set_rep_error, _) = await self.repository.set_vault(vault)
+        set_rep_error = await self.repository.set_vault(vault)
 
         if set_rep_error is not None:
             return set_rep_error, None

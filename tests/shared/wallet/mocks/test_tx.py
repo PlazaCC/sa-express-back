@@ -10,6 +10,8 @@ from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 
+from src.shared.wallet.enums.pix import PIX_KEY_TYPE
+from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.tx_processor import TXProcessor
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_templates.deposit import create_deposit_tx
@@ -124,14 +126,16 @@ class RepositoryMock:
         (get_error, rep_vault) = await self.get_vault_by_user_id(vault.user_id)
 
         if get_error is not None:
-            return get_error, None
+            return get_error
 
         if rep_vault is not None:
-            return None, rep_vault.user_id
+            rep_vault_key = rep_vault.to_identity_key()
+
+            self.vaults = [ v for v in self.vaults if Vault.from_dict_static(v).to_identity_key() != rep_vault_key ]
 
         self.vaults.append(vault.to_dict())
 
-        return None, vault.user_id
+        return None
 
     def get_all_users(self):
         return ([ User.from_dict_static(u) for u in self.users ])
@@ -145,6 +149,16 @@ class RepositoryMock:
         rep_vault = next((v for v in self.vaults if v['user_id'] == user.user_id), None)
 
         return Vault.from_dict_static(rep_vault) if rep_vault is not None else None
+    
+    async def set_vault_pix_by_user_id(self, user_id: int, pix_key: PIXKey):
+        (_, rep_vault) = await self.get_vault_by_user_id(user_id)
+
+        if rep_vault is None:
+            return None
+        
+        rep_vault.pix_key = pix_key
+
+        return await self.set_vault(rep_vault)
 
 class PayGateMock:
     def __init__(self):
@@ -177,6 +191,14 @@ class Test_TXMock:
                 })
 
                 assert vault_error is None
+
+                pix_key = PIXKey(type=PIX_KEY_TYPE.CPF, value='00000000000')
+
+                await repository.set_vault_pix_by_user_id(user.user_id, pix_key)
+
+                (_, user_vault) = await repository.get_vault_by_user_id(user.user_id)
+                
+                await cache.set_vault(user_vault)
 
         return (cache, repository, pay_gate)
 

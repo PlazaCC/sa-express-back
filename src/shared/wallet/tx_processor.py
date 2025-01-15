@@ -136,9 +136,10 @@ class TXProcessor:
     
     async def exec_tx_instructions(self, tx :TX) -> tuple[dict, list[TXBaseInstructionResult | None]]:
         state = {
+            'success': True,
             'vaults': {}
         }
-
+        
         for vault in tx.vaults:
             vault_key, vault_state = vault.to_tx_execution_state()
 
@@ -155,6 +156,7 @@ class TXProcessor:
             results[i] = instr_result
 
             if not instr_result.success:
+               state['success'] = False
                break
 
             state = next_state
