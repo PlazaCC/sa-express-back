@@ -12,7 +12,7 @@ class Vault(BaseModel):
     type: VAULT_TYPE
     user_id: int | None
     balance: Decimal
-    balanceLocked: Decimal
+    balance_locked: Decimal
     locked: bool
     server_ref: str | None
     pix_key: PIXKey | None
@@ -23,7 +23,7 @@ class Vault(BaseModel):
             type=VAULT_TYPE[data['type']],
             user_id=data['user_id'] if 'user_id' in data else None,
             balance=Decimal(data['balance']),
-            balanceLocked=Decimal(data['balanceLocked']),
+            balance_locked=Decimal(data['balance_locked']),
             locked=data['locked'],
             server_ref=data['server_ref'] if 'server_ref' in data else None,
             pix_key=PIXKey.from_dict_static(data['pix_key']) if 'pix_key' in data else None
@@ -35,7 +35,7 @@ class Vault(BaseModel):
             type=VAULT_TYPE[data['type']],
             user_id=data['user_id'] if 'user_id' in data else None,
             balance=Decimal(0),
-            balanceLocked=Decimal(0),
+            balance_locked=Decimal(0),
             locked=False,
             server_ref=data['server_ref'] if 'server_ref' in data else None,
             pix_key=None
@@ -51,7 +51,7 @@ class Vault(BaseModel):
             type=VAULT_TYPE.SERVER_UNLIMITED,
             user_id=None,
             balance=Decimal(0),
-            balanceLocked=Decimal(0),
+            balance_locked=Decimal(0),
             locked=False,
             server_ref=None,
             pix_key=None
@@ -59,7 +59,7 @@ class Vault(BaseModel):
     
     @staticmethod
     def default_config():
-        return { 'balance': '0', 'balanceLocked': '0', 'locked': False }
+        return { 'balance': '0', 'balance_locked': '0', 'locked': False }
 
     @staticmethod
     def from_user(user: User, config: dict = default_config()) -> 'Vault':
@@ -67,7 +67,7 @@ class Vault(BaseModel):
             type=VAULT_TYPE.USER,
             user_id=user.user_id,
             balance=Decimal(config['balance']),
-            balanceLocked=Decimal(config['balanceLocked']),
+            balance_locked=Decimal(config['balance_locked']),
             locked=config['locked'],
             server_ref=None,
             pix_key=None
@@ -79,17 +79,21 @@ class Vault(BaseModel):
             type=VAULT_TYPE.USER,
             user_id=user_id,
             balance=Decimal(config['balance']),
-            balanceLocked=Decimal(config['balanceLocked']),
+            balance_locked=Decimal(config['balance_locked']),
             locked=config['locked'],
             server_ref=None,
             pix_key=None
         )
     
+    @staticmethod
+    def get_tx_execution_state_total_balance(state: dict):
+        return state['balance'] - state['balance_locked']
+    
     def to_dict(self) -> dict:
         result = {
             'type': self.type.value,
             'balance': str(self.balance),
-            'balanceLocked': str(self.balanceLocked),
+            'balance_locked': str(self.balance_locked),
             'locked': self.locked
         }
 
@@ -138,14 +142,14 @@ class Vault(BaseModel):
     def to_tx_execution_state(self) -> tuple[str, dict]:
         state = {
             'balance': Decimal(self.balance),
-            'balanceLocked': Decimal(self.balanceLocked),
+            'balance_locked': Decimal(self.balance_locked),
         }
 
         return self.to_identity_key(), state
 
     def total_balance(self):
-        return self.balance - self.balanceLocked
+        return self.balance - self.balance_locked
     
     def update_state(self, next_state: dict) -> None:
         self.balance = next_state['balance']
-        self.balanceLocked = next_state['balanceLocked']
+        self.balance_locked = next_state['balance_locked']

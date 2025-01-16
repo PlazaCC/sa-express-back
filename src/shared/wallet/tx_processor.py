@@ -71,7 +71,7 @@ class TXProcessor:
             vault_key = vault.to_identity_key()
             vault_state = sim_state['vaults'][vault_key]
 
-            vault.balanceLocked = vault_state['balanceLocked']
+            vault.balance_locked = vault_state['balance_locked']
 
             # TODO: handle cache/rep errors
             await self.vault_proc.persist_vault(vault)

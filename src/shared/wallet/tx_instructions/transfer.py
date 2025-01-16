@@ -126,22 +126,23 @@ class TXTransferInstruction(TXBaseInstruction):
 
         if from_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
             from_vault_state = state['vaults'][from_vault_key]
+            
+            if is_withdrawal:
+                if from_sign:
+                    from_vault_state['balance_locked'] += self.amount
+                else:
+                    from_vault_state['balance_locked'] -= self.amount
+                    from_vault_state['balance'] -= self.amount
+            else:
+                from_vault_state['balance'] -= self.amount
 
-            from_vault_state['balance'] -= self.amount
-
-            if from_vault_state.balance < 0:
+            if Vault.get_tx_execution_state_total_balance(from_vault_state) < 0:
                 return state, TXTransferInstructionResult.failed(f'Amount too low on vault "{from_vault_key}"')
             
         if to_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
             to_vault_state = state['vaults'][to_vault_key]
 
-            if is_withdrawal:
-                if from_sign:
-                    to_vault_state['balanceLocked'] += self.amount
-                else:
-                    to_vault_state['balanceLocked'] -= self.amount
-            else:
-                to_vault_state['balance'] += self.amount
+            to_vault_state['balance'] += self.amount
 
         if from_sign and is_deposit:
             deposit_pix_key = to_vault.pix_key
