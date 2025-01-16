@@ -276,9 +276,11 @@ class Test_TXMock:
         tx_proc = TXProcessor(cache, repository, paygate)
 
         for (signer, tx) in txs:
-            sign_error = await tx_proc.sign(signer, tx)
+            sign_result = await tx_proc.sign(signer, tx)
 
-            assert sign_error is None
+            assert sign_result.without_error()
+
+            print(sign_result.to_dict())
 
         async def random_paygate_webhook(tx: TX):
             await asyncio.sleep(randrange(3, 10))

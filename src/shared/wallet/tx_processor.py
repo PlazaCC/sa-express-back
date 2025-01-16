@@ -77,7 +77,7 @@ class TXProcessor:
         
         await self.vault_proc.unlock(tx.vaults)
         
-        return None
+        return TXSignResult.successful()
     
     def validate_tx_fields_before_sign(self, tx: TX) -> str | None:
         if tx.status != TX_STATUS.NEW:

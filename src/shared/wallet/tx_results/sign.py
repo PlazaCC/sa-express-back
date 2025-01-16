@@ -18,3 +18,15 @@ class TXSignResult:
     def __init__(self, error: str, timestamp: str):
         self.error = error
         self.timestamp = timestamp
+
+    def to_dict(self):
+        return {
+            'error': self.error,
+            'timestamp': self.timestamp
+        }
+
+    def with_error(self):
+        return self.error != ''
+    
+    def without_error(self):
+        return self.error == ''

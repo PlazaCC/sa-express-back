@@ -40,6 +40,9 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
 
     def with_error(self) -> bool:
         return self.error != ''
+    
+    def without_error(self) -> bool:
+        return self.error == ''
 
     def with_promise(self) -> bool:
         return self.promise is not None
