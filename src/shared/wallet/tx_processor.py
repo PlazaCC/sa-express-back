@@ -310,7 +310,7 @@ class TXProcessor:
 
             vault_key = vault.to_identity_key()
             vault_state = next_state['vaults'][vault_key]
-
+            
             vault.update_state(vault_state)
 
             # TODO: handle cache/rep errors
@@ -326,6 +326,9 @@ class TXProcessor:
                 break
         
         tx.status = TX_STATUS.COMMITTED if all_resolved else TX_STATUS.PARTIALLY_COMMITTED
+
+        # TODO: handle repository errors
+        await self.repository.set_transaction(tx)
         
         await self.vault_proc.unlock(tx.vaults)
 
