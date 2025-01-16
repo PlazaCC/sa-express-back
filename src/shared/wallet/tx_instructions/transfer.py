@@ -140,7 +140,6 @@ class TXTransferInstruction(TXBaseInstruction):
                     to_vault_state['balanceLocked'] += self.amount
                 else:
                     to_vault_state['balanceLocked'] -= self.amount
-                    pass
             else:
                 to_vault_state['balance'] += self.amount
 
