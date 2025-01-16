@@ -29,12 +29,17 @@ class TXPIXDepositPromise(TXBasePromise):
     def to_paygate_ref(self) -> str:
         return f'{self.tx_id}-INSTR-{self.instruction_id}'
     
+    def to_log_key(self) -> str:
+        return f'INSTR-{self.instruction_id}'
+    
     async def call(self, tx_proc: Any) -> TXLogs:
         paygate_ref = self.to_paygate_ref()
 
         api_res = await tx_proc.paygate.create_pix_url(paygate_ref)
-        
-        if 'error' in api_res:
-            return TXLogs.failed(api_res['error'])
 
-        return TXLogs.successful(api_res['data'])
+        log_key = self.to_log_key()
+
+        if 'error' in api_res:
+            return TXLogs.failed(log_key, api_res['error'])
+
+        return TXLogs.successful(log_key, api_res['data'])

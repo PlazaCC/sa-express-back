@@ -49,7 +49,7 @@ class TX(BaseModel):
             'create_timestamp': self.create_timestamp,
             'vaults': [ v.to_tx_snapshot() for v in self.vaults ],
             'instructions': [ i.to_tx_snapshot() for i in self.instructions ],
-            'logs': { k: l.to_tx_snapshot() for k, l in self.logs },
+            'logs': { k: l.to_tx_snapshot() for k, l in self.logs.items() },
             'status': self.status.value
         }
 

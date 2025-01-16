@@ -4,9 +4,10 @@ from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 
-from src.shared.wallet.utils import error_with_instruction_sufix
+from src.shared.wallet.utils import now_timestamp, error_with_instruction_sufix
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
+from src.shared.wallet.tx_results.sign import TXSignResult
 
 class TXProcessor:
     MAX_VAULTS=2
@@ -19,11 +20,11 @@ class TXProcessor:
         self.paygate = paygate
         self.vault_proc = VaultProcessor(cache, repository)
 
-    async def sign(self, signer: User, tx: TX) -> str | None:
+    async def sign(self, signer: User, tx: TX) -> TXSignResult:
         fields_error = self.validate_tx_fields_before_sign(tx)
         
         if fields_error is not None:
-            return fields_error
+            return TXSignResult.failed(fields_error)
         
         tx.user_id = signer.user_id
         tx.logs = {}
@@ -31,22 +32,34 @@ class TXProcessor:
         signer_access_error = self.validate_signer_access(signer, tx)
 
         if signer_access_error is not None:
-            return signer_access_error
+            return TXSignResult.failed(signer_access_error)
 
         await self.vault_proc.lock(tx.vaults)
 
         sim_state, sim_results = await self.exec_tx_instructions(tx, from_sign=True)
 
         if sim_state['error'] is not None:
-            return sim_state['error']
+            return TXSignResult.failed(sim_state['error'])
 
         if not sim_state['any_promise']:
-            return await self.commit_with_state(tx, sim_state)
-
+            return await self.commit_from_sign(tx, sim_state)
+        
         # TODO: handle request errors
-        await asyncio.gather(*[ txr.call_promise(self) for txr in sim_results ])
+        logs = await asyncio.gather(*[ txr.call_promise(self) for txr in sim_results ])
 
+        tx_logs = {}
+
+        for log in logs:
+            if log.with_error():
+                return TXSignResult.failed(log.error)
+
+            tx_logs[log.key] = log
+        
+        tx.logs = tx_logs
         tx.status = TX_STATUS.SIGNED
+        tx.sign_timestamp = now_timestamp()
+        
+        print(tx.to_tx_snapshot())
 
         # update balance locked (withdrawal)
 
@@ -177,9 +190,7 @@ class TXProcessor:
 
         return state, results
 
-    async def commit_with_state(self, tx: TX, exec_state: dict) -> str | None:
-        tx.status = TX_STATUS.COMMITED
-
+    async def commit_from_sign(self, tx: TX, exec_state: dict) -> TXSignResult:
         for vault in tx.vaults:
             vault_key = vault.to_identity_key()
             vault_state = exec_state['vaults'][vault_key]
@@ -190,7 +201,14 @@ class TXProcessor:
             # TODO: handle cache/rep errors
             await asyncio.gather(self.cache.set_vault(vault), self.repository.set_vault(vault))
 
+        tx.status = TX_STATUS.COMMITED
+
+        now = now_timestamp()
+
+        tx.sign_timestamp = now
+        tx.commit_timestamp = now
+
         # TODO: handle repository errors
         await self.repository.set_transaction(tx)
 
-        return None
+        return TXSignResult.successful()

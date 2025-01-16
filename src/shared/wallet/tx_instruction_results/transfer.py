@@ -42,8 +42,5 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
         return self.error != ''
 
     async def call_promise(self, tx_proc: Any) -> TXLogs:
-        if self.promise is None:
-            return TXLogs.successful()
-
         return await self.promise.call(tx_proc)
         

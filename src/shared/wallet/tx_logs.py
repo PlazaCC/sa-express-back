@@ -1,6 +1,7 @@
 from src.shared.wallet.utils import now_timestamp
 
 class TXLogs:
+    key: str
     error: str
     timestamp: str
     data: dict | None
@@ -8,30 +9,39 @@ class TXLogs:
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'TXLogs':
         return TXLogs(
+            key=data['key'],
             error=data['error'],
             timestamp=data['timestamp'],
             data=data['data'] if 'data' in data else None,
         )
     
     @staticmethod
-    def successful(data: dict | None = None) -> 'TXLogs':
+    def successful(key: str, data: dict | None = None) -> 'TXLogs':
         return TXLogs(
+            key=key,
             error='',
             timestamp=now_timestamp(),
             data=data
         )
 
     @staticmethod
-    def failed(error: str) -> 'TXLogs':
-        return TXLogs(error=error, timestamp=now_timestamp())
+    def failed(key: str, error: str) -> 'TXLogs':
+        return TXLogs(
+            key=key,
+            error=error, 
+            timestamp=now_timestamp()
+        )
     
-    def __init__(self, error: str, timestamp: str, data: dict | None = None):
+    def __init__(self, key: str, error: str, timestamp: str, \
+        data: dict | None = None):
+        self.key = key
         self.error = error
         self.timestamp = timestamp
         self.data = data
 
     def to_tx_snapshot(self) -> dict:
         result = {
+            'key': self.key,
             'error': self.error,
             'timestamp': self.timestamp,
         }
