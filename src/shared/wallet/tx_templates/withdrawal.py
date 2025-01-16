@@ -22,10 +22,10 @@ def create_withdrawal_tx(build_params: dict) -> TX:
         tx_id=TX.random_id(),
         user_id=-1 if user_id is None else user_id,
         create_timestamp=now_timestamp(),
-        sign_timestamp=None,
-        commit_timestamp=None,
         vaults=[ from_vault, to_vault ],
         instructions=[ transfer_instr ],
         logs={},
-        status=TX_STATUS.NEW
+        status=TX_STATUS.NEW,
+        sign_result=None,
+        commit_result=None
     )

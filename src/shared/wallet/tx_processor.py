@@ -6,7 +6,7 @@ from src.shared.domain.entities.user import User
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 
-from src.shared.wallet.utils import now_timestamp, error_with_instruction_sufix
+from src.shared.wallet.utils import error_with_instruction_sufix
 from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_logs import TXLogs
@@ -25,11 +25,28 @@ class TXProcessor:
         self.paygate = paygate
         self.vault_proc = VaultProcessor(cache, repository)
 
+    async def persist_tx(self, tx: TX) -> None:
+        await asyncio.gather(self.cache.set_transaction(tx), self.repository.set_transaction(tx))
+
+        return None
+    
+    def get_tx_committed_stage(self, tx: TX) -> TX_STATUS:
+        all_resolved = True
+
+        for _, log in tx.logs.items():
+            if not log.resolved:
+                all_resolved = False
+                break
+        
+        return TX_STATUS.COMMITTED if all_resolved else TX_STATUS.PARTIALLY_COMMITTED
+        
     async def sign(self, signer: User, tx: TX) -> TXSignResult:
         fields_error = self.validate_tx_fields_before_sign(tx)
         
         if fields_error is not None:
-            return TXSignResult.failed(fields_error)
+            tx.sign_result = TXSignResult.failed(fields_error)
+
+            return tx.sign_result
         
         tx.user_id = signer.user_id
         tx.logs = {}
@@ -37,24 +54,27 @@ class TXProcessor:
         signer_access_error = self.validate_signer_access(signer, tx)
 
         if signer_access_error is not None:
-            return TXSignResult.failed(signer_access_error)
+            tx.sign_result = TXSignResult.failed(signer_access_error)
 
+            return tx.sign_result
+
+        # TODO: handle real cache errors
         tx.vaults = await self.vault_proc.lock(tx.vaults)
 
         sim_state, sim_results = await self.exec_tx_instructions(tx, from_sign=True)
 
         if sim_state['error'] is not None:
-            return TXSignResult.failed(sim_state['error'])
+            tx.sign_result = TXSignResult.failed(sim_state['error'])
+
+            return tx.sign_result
 
         if not sim_state['any_promise']:
             return await self.commit_from_sign(tx, sim_state)
         
-        # TODO: handle request errors
+        # TODO: handle real request errors
         logs = await asyncio.gather(*[ txr.call_promise(self) for txr in sim_results if txr.with_promise() ])
 
         tx_logs = {}
-
-        sign_result = TXSignResult.successful()
 
         for log in logs:
             if log.with_error():
@@ -62,13 +82,9 @@ class TXProcessor:
 
             tx_logs[log.key] = log
 
-            if log.populate_sign_data is not None:
-                for (field_key, field_value) in log.populate_sign_data():
-                    sign_result.data[field_key] = field_value
-
         tx.logs = tx_logs
         tx.status = TX_STATUS.SIGNED
-        tx.sign_timestamp = now_timestamp()
+        tx.sign_result = TXSignResult.successful()
 
         for vault in tx.vaults:
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -79,14 +95,21 @@ class TXProcessor:
 
             vault.balance_locked = vault_state['balance_locked']
 
-            # TODO: handle cache/rep errors
+            # TODO: handle real cache/rep errors
             await self.vault_proc.persist_vault(vault)
 
-        # TODO: handle repository errors
-        # TODO: store tx in cache also
-        await self.repository.set_transaction(tx)
+        # TODO: handle real cache/rep errors
+        await self.persist_tx(tx)
         
+        # TODO: handle real cache errors
         await self.vault_proc.unlock(tx.vaults)
+
+        sign_result = tx.sign_result.clone()
+
+        for log in logs:
+            if log.populate_sign_data is not None:
+                for (field_key, field_value) in log.populate_sign_data():
+                    sign_result.data[field_key] = field_value
         
         return sign_result
     
@@ -94,11 +117,8 @@ class TXProcessor:
         if tx.status != TX_STATUS.NEW:
             return 'Unsignable transaction status'
 
-        if tx.sign_timestamp is not None:
+        if tx.sign_result is not None or tx.commit_result is not None:
             return 'Transaction already signed'
-        
-        if tx.commit_timestamp is not None:
-            return 'Transaction already commited'
         
         num_vaults = len(tx.vaults)
 
@@ -227,24 +247,24 @@ class TXProcessor:
             vault_key = vault.to_identity_key()
             vault_state = exec_state['vaults'][vault_key]
 
+            # TODO: handle real cache errors
             vault.update_state(vault_state)
 
-            # TODO: handle cache/rep errors
+            # TODO: handle real cache/rep errors
             await self.vault_proc.persist_vault(vault)
 
         tx.status = TX_STATUS.COMMITED
-
-        now = now_timestamp()
-
-        tx.sign_timestamp = now
-        tx.commit_timestamp = now
-
-        # TODO: handle repository errors
-        await self.repository.set_transaction(tx)
         
+        tx.sign_result = TXSignResult.successful()
+        tx.commit_result = TXCommitResult.successful()
+
+        # TODO: handle real cache/rep errors
+        await self.persist_tx(tx)
+        
+        # TODO: handle real cache errors
         await self.vault_proc.unlock(tx.vaults)
 
-        return TXSignResult.successful()
+        return tx.sign_result
     
     async def get_tx_by_paygate_ref(self, paygate_ref: str) -> tuple[TX, int] | tuple[None, None]:
         try:
@@ -273,7 +293,7 @@ class TXProcessor:
             return (None, None)
 
         return (rep_tx, instr_index)
-    
+
     async def commit_tx(self, tx: TX, instr_index: int, paygate_tx_status: PAYGATE_TX_STATUS) -> TXCommitResult:
         if paygate_tx_status == PAYGATE_TX_STATUS.FAILED:
             return await self.commit_tx_failed(tx, instr_index)
@@ -297,6 +317,7 @@ class TXProcessor:
 
         instruction = tx.instructions[instr_index]
 
+        # TODO: handle real cache errors
         tx.vaults = await self.vault_proc.lock(tx.vaults)
 
         state = self.get_tx_state(tx)
@@ -308,7 +329,19 @@ class TXProcessor:
         if instr_result.with_error():
             error = error_with_instruction_sufix(instr_result.error, instr_index)
 
-            return TXCommitResult.failed(error)
+            commit_log.resolved = True
+            commit_log.error = instr_result.error
+
+            tx.status = self.get_tx_committed_stage(tx)
+            tx.commit_result = TXCommitResult.failed(error)
+            
+            # TODO: handle real cache/rep errors
+            await self.persist_tx(tx)
+
+            # TODO: handle real cache errors
+            await self.vault_proc.unlock(tx.vaults)
+
+            return tx.commit_result
 
         for vault in instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -317,27 +350,23 @@ class TXProcessor:
             vault_key = vault.to_identity_key()
             vault_state = next_state['vaults'][vault_key]
 
+            # TODO: handle real rep errors
             vault.update_state(vault_state)
 
-            # TODO: handle cache/rep errors
+            # TODO: handle real cache/rep errors
             await self.vault_proc.persist_vault(vault)
-
+        
         commit_log.resolved = True
-
-        all_resolved = True
-
-        for _, log in tx.logs.items():
-            if not log.resolved:
-                all_resolved = False
-                break
+        commit_log.error = ''
         
-        tx.status = TX_STATUS.COMMITTED if all_resolved else TX_STATUS.PARTIALLY_COMMITTED
-        tx.commit_timestamp = now_timestamp()
+        tx.status = self.get_tx_committed_stage(tx)
+        tx.commit_result = TXCommitResult.successful()
 
-        # TODO: handle repository errors
-        await self.repository.set_transaction(tx)
+        # TODO: handle real cache/rep errors
+        await self.persist_tx(tx)
         
+        # TODO: handle real cache errors
         await self.vault_proc.unlock(tx.vaults)
 
-        return TXCommitResult.successful()
+        return tx.commit_result
 

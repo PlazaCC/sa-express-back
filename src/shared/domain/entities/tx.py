@@ -6,6 +6,8 @@ from src.shared.domain.entities.vault import Vault
 from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_instructions.base import TXBaseInstruction
 from src.shared.wallet.tx_instructions.mutate import TXMutateInstruction
+from src.shared.wallet.tx_results.sign import TXSignResult
+from src.shared.wallet.tx_results.commit import TXCommitResult
 
 class TX(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -13,12 +15,12 @@ class TX(BaseModel):
     tx_id: str
     user_id: int
     create_timestamp: str
-    sign_timestamp: str | None
-    commit_timestamp: str | None
     vaults: list[Vault]
     instructions: list[TXBaseInstruction]
     logs: dict[str, TXLogs]
     status: TX_STATUS
+    sign_result: TXSignResult | None
+    commit_result: TXCommitResult | None
 
     @staticmethod
     def from_dict_static(data: dict) -> 'TX':
@@ -26,12 +28,12 @@ class TX(BaseModel):
             tx_id=data['tx_id'],
             user_id=data['user_id'],
             create_timestamp=data['create_timestamp'],
-            sign_timestamp=data['sign_timestamp'] if 'sign_timestamp' in data else None,
-            commit_timestamp=data['commit_timestamp'] if 'commit_timestamp' in data else None,
             vaults=[ Vault.from_tx_snapshot(v) for v in data['vaults'] ],
             instructions=[ TXMutateInstruction.from_tx_snapshot(i) for i in data['instructions'] ],
             logs={ k: TXLogs.from_tx_snapshot(l) for k, l in data['logs'].items() },
-            status=TX_STATUS[data['status']]
+            status=TX_STATUS[data['status']],
+            sign_result=TXSignResult.from_tx_snapshot(data['sign_result']) if 'sign_result' in data else None,
+            commit_result=TXCommitResult.from_tx_snapshot(data['commit_result']) if 'commit_result' in data else None
         )
     
     @staticmethod
@@ -59,14 +61,14 @@ class TX(BaseModel):
             'vaults': [ v.to_tx_snapshot() for v in self.vaults ],
             'instructions': [ i.to_tx_snapshot() for i in self.instructions ],
             'logs': { k: l.to_tx_snapshot() for k, l in self.logs.items() },
-            'status': self.status.value
+            'status': self.status.value,
         }
+        
+        if self.sign_result is not None:
+            result['sign_result'] = self.sign_result.to_tx_snapshot()
 
-        if self.sign_timestamp is not None:
-            result['sign_timestamp'] = self.sign_timestamp
-
-        if self.commit_timestamp is not None:
-            result['commit_timestamp'] = self.commit_timestamp
+        if self.commit_result is not None:
+            result['commit_result'] = self.commit_result.to_tx_snapshot()
 
         return result
     

@@ -27,6 +27,7 @@ class CacheMock:
     def __init__(self):
         self.vaults_by_user_id = {}
         self.vaults_by_server_ref = {}
+        self.transactions = {}
 
     async def get_vault_by_user_id(self, user_id: int):
         if user_id in self.vaults_by_user_id:
@@ -59,6 +60,11 @@ class CacheMock:
             return None
 
         return "Can't set vault without reference/id"
+    
+    async def set_transaction(self, tx: TX) -> str | None:
+        self.transactions[tx.tx_id] = tx.to_tx_snapshot()
+
+        return None
     
     def get_all_vaults(self) -> list[Vault]:
         user_vaults = [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
@@ -313,10 +319,8 @@ class Test_TXMock:
 
         for (signer, tx) in txs:
             sign_result = await tx_proc.sign(signer, tx)
-
+    
             assert sign_result.without_error()
-
-            print(sign_result.to_dict())
 
             webhooks.append(random_paygate_webhook())
 
