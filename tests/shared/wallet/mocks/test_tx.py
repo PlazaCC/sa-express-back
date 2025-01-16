@@ -309,6 +309,8 @@ class Test_TXMock:
 
             assert commit_result.without_error()
 
+            print(tx.to_tx_snapshot())
+
         for (signer, tx) in txs:
             sign_result = await tx_proc.sign(signer, tx)
 

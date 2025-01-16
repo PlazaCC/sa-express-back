@@ -287,7 +287,7 @@ class TXProcessor:
         commit_log = tx.logs[log_key]
 
         if commit_log.resolved:
-            return TXCommitResult.failed(f'Transaction log already resolved: "{commit_log}"')
+            return TXCommitResult.failed(f'Transaction log already resolved: "{log_key}"')
 
         instruction = tx.instructions[instr_index]
 
@@ -310,7 +310,7 @@ class TXProcessor:
 
             vault_key = vault.to_identity_key()
             vault_state = next_state['vaults'][vault_key]
-            
+
             vault.update_state(vault_state)
 
             # TODO: handle cache/rep errors
@@ -326,6 +326,7 @@ class TXProcessor:
                 break
         
         tx.status = TX_STATUS.COMMITTED if all_resolved else TX_STATUS.PARTIALLY_COMMITTED
+        tx.commit_timestamp = now_timestamp()
 
         # TODO: handle repository errors
         await self.repository.set_transaction(tx)
