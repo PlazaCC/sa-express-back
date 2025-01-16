@@ -175,21 +175,16 @@ class RepositoryMock:
 
 class PayGateMock:
     def __init__(self):
-        self.payment_references = {}
+        self.pending_payments = []
 
     async def create_pix_url(self, paygate_ref: str) -> dict:
-        paydata = {
-            'pixUrl': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551'
-        }
-
-        self.payment_references[paygate_ref] = paydata
+        self.pending_payments.append(paygate_ref)
 
         return {
-            'data': paydata
+            'data': {
+                'pixUrl': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551'
+            }
         }
-    
-    async def trigger_pix_payment_webhook(self, pix_key: PIXKey):
-        pass
 
 class Test_TXMock:
     async def get_back_context(self, config: dict):
@@ -274,20 +269,27 @@ class Test_TXMock:
         assert(len(txs) > 0)
 
         tx_proc = TXProcessor(cache, repository, paygate)
+        
+        webhooks = []
+
+        async def random_paygate_webhook():
+            await asyncio.sleep(randrange(3, 10))
+
+            paygate_ref = paygate.pending_payments.pop()
+
+            print('WEBHOOK !!!!', paygate_ref)
+            return None
 
         for (signer, tx) in txs:
             sign_result = await tx_proc.sign(signer, tx)
 
             assert sign_result.without_error()
 
-            print(sign_result.to_dict())
+            webhooks.append(random_paygate_webhook())
 
-        async def random_paygate_webhook(tx: TX):
-            await asyncio.sleep(randrange(3, 10))
-            pass
-        
+        await asyncio.gather(*webhooks)
+
         # verify if zero sum
-
         assert True
 
     @pytest.mark.asyncio
