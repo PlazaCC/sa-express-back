@@ -41,6 +41,11 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
     def with_error(self) -> bool:
         return self.error != ''
 
+    def with_promise(self) -> bool:
+        return self.promise is not None
+    
     async def call_promise(self, tx_proc: Any) -> TXLogs:
         return await self.promise.call(tx_proc)
+    
+    
         

@@ -45,7 +45,7 @@ class TXProcessor:
             return await self.commit_from_sign(tx, sim_state)
         
         # TODO: handle request errors
-        logs = await asyncio.gather(*[ txr.call_promise(self) for txr in sim_results ])
+        logs = await asyncio.gather(*[ txr.call_promise(self) for txr in sim_results if txr.with_promise() ])
 
         tx_logs = {}
 
@@ -58,7 +58,7 @@ class TXProcessor:
         tx.logs = tx_logs
         tx.status = TX_STATUS.SIGNED
         tx.sign_timestamp = now_timestamp()
-        
+
         print(tx.to_tx_snapshot())
 
         # update balance locked (withdrawal)

@@ -20,5 +20,8 @@ class TXBaseInstructionResult:
     def with_error(self) -> bool:
         pass
 
+    def with_promise(self) -> bool:
+        pass
+
     async def call_promise(self, tx_proc: Any) -> TXLogs | None:
         pass
