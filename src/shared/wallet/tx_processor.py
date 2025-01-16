@@ -21,8 +21,8 @@ class TXProcessor:
     def __init__(self, cache, repository, paygate):
         self.cache = cache
         self.repository = repository
-
         self.paygate = paygate
+        
         self.vault_proc = VaultProcessor(cache, repository)
 
     async def persist_tx(self, tx: TX) -> None:
