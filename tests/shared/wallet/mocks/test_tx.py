@@ -204,7 +204,7 @@ class PayGateMock:
 
         return {
             'data': {
-                'pixUrl': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551'
+                'pix_url': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551'
             }
         }
 
@@ -315,6 +315,8 @@ class Test_TXMock:
             sign_result = await tx_proc.sign(signer, tx)
 
             assert sign_result.without_error()
+
+            print(sign_result.to_dict())
 
             webhooks.append(random_paygate_webhook())
 

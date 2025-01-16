@@ -54,12 +54,18 @@ class TXProcessor:
 
         tx_logs = {}
 
+        sign_result = TXSignResult.successful()
+
         for log in logs:
             if log.with_error():
                 return TXSignResult.failed(log.error)
 
             tx_logs[log.key] = log
-        
+
+            if log.populate_sign_data is not None:
+                for (field_key, field_value) in log.populate_sign_data():
+                    sign_result.data[field_key] = field_value
+
         tx.logs = tx_logs
         tx.status = TX_STATUS.SIGNED
         tx.sign_timestamp = now_timestamp()
@@ -82,7 +88,7 @@ class TXProcessor:
         
         await self.vault_proc.unlock(tx.vaults)
         
-        return TXSignResult.successful()
+        return sign_result
     
     def validate_tx_fields_before_sign(self, tx: TX) -> str | None:
         if tx.status != TX_STATUS.NEW:

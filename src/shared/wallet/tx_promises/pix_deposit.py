@@ -39,4 +39,10 @@ class TXPIXDepositPromise(TXBasePromise):
         if 'error' in api_res:
             return TXLogs.failed(log_key, api_res['error'])
 
-        return TXLogs.successful(log_key, api_res['data'])
+        data = api_res['data']
+
+        log = TXLogs.successful(log_key, data)
+
+        log.populate_sign_data = lambda: [ ('pix_url', data['pix_url']) ]
+
+        return log

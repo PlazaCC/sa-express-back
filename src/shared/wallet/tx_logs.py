@@ -1,3 +1,6 @@
+from typing import Any
+from collections.abc import Callable
+
 from src.shared.wallet.utils import now_timestamp
 
 class TXLogs:
@@ -6,6 +9,8 @@ class TXLogs:
     timestamp: str
     data: dict | None
     resolved: bool
+
+    populate_sign_data: Callable[[], tuple[str, Any]] | None = None
 
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'TXLogs':
