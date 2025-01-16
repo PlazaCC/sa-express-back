@@ -1,4 +1,6 @@
+import uuid
 import asyncio
+from urllib import parse
 
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
@@ -73,6 +75,7 @@ class TXProcessor:
             await self.vault_proc.persist_vault(vault)
 
         # TODO: handle repository errors
+        # TODO: store tx in cache also
         await self.repository.set_transaction(tx)
         
         await self.vault_proc.unlock(tx.vaults)
@@ -224,3 +227,28 @@ class TXProcessor:
         await self.repository.set_transaction(tx)
 
         return TXSignResult.successful()
+    
+    async def get_tx_by_paygate_ref(self, paygate_ref: str) -> tuple[TX, int] | tuple[None, None]:
+        qs = dict(parse.parse_qsl(paygate_ref))
+
+        if 'TX' not in qs or TX.invalid_tx_id(qs['TX']):
+            return (None, None)
+        
+        if 'INSTR' not in qs:
+            return (None, None)
+        
+        instr_index = int(qs['INSTR']) if qs['INSTR'].isdecimal() else None
+
+        if instr_index is None or instr_index < 0:
+            return (None, None)
+
+        # TODO: verify cache first
+        (_, rep_tx) = await self.repository.get_transaction(qs['TX'])
+
+        if rep_tx is None:
+            return (None, None)
+        
+        if instr_index >= len(rep_tx.instructions):
+            return (None, None)
+
+        return (rep_tx, qs['INSTR'])

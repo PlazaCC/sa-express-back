@@ -172,6 +172,11 @@ class RepositoryMock:
         self.transactions.append(tx.to_dict())
 
         return None
+    
+    async def get_transaction(self, tx_id: str):
+        rep_tx = next((t for t in self.transactions if t['tx_id'] == tx_id), None)
+
+        return (None, TX.from_dict_static(rep_tx)) if rep_tx is not None else (None, None)
 
 class PayGateMock:
     def __init__(self):
@@ -273,11 +278,16 @@ class Test_TXMock:
         webhooks = []
 
         async def random_paygate_webhook():
-            await asyncio.sleep(randrange(3, 10))
+            # await asyncio.sleep(randrange(3, 10))
+            await asyncio.sleep(1)
 
             paygate_ref = paygate.pending_payments.pop()
 
-            print('WEBHOOK !!!!', paygate_ref)
+            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+
+            print('tx', tx.to_tx_snapshot())
+            print('instr_index', instr_index)
+
             return None
 
         for (signer, tx) in txs:

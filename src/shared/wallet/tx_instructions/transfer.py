@@ -137,7 +137,8 @@ class TXTransferInstruction(TXBaseInstruction):
                     tx_id=state['tx_id'],
                     instruction_id=instruction_id,
                     pix_key=to_vault.pix_key, 
-                    amount=self.amount
+                    amount=self.amount,
+                    resolved=False
                 )
             )
         
@@ -152,7 +153,8 @@ class TXTransferInstruction(TXBaseInstruction):
                     tx_id=state['tx_id'],
                     instruction_id=instruction_id,
                     pix_key=from_vault.pix_key, 
-                    amount=self.amount
+                    amount=self.amount,
+                    resolved=False
                 )
             ])
 

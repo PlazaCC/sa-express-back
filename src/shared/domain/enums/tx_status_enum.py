@@ -3,4 +3,5 @@ from enum import Enum
 class TX_STATUS(Enum):
     NEW = 'NEW'
     SIGNED = 'SIGNED'
-    COMMITED = 'COMMITED'
+    PARTIALLY_COMMITTED='PARTIALLY_COMMITTED'
+    COMMITTED = 'COMMITTED'

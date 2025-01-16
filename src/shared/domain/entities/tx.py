@@ -30,8 +30,8 @@ class TX(BaseModel):
             commit_timestamp=data['commit_timestamp'] if 'commit_timestamp' in data else None,
             vaults=[ Vault.from_tx_snapshot(v) for v in data['vaults'] ],
             instructions=[ TXMutateInstruction.from_tx_snapshot(i) for i in data['instructions'] ],
-            logs={ k: TXLogs.from_tx_snapshot(l) for k, l in data['logs'] },
-            status=TX_STATUS[data['tx_status']]
+            logs={ k: TXLogs.from_tx_snapshot(l) for k, l in data['logs'].items() },
+            status=TX_STATUS[data['status']]
         )
     
     @staticmethod
@@ -41,6 +41,15 @@ class TX(BaseModel):
     @staticmethod
     def random_id():
         return str(uuid.uuid4())
+
+    @staticmethod
+    def invalid_tx_id(tx_id: str) -> bool:
+        try:
+            uuid.UUID(tx_id, version=4)
+        except:
+            return True
+
+        return False
 
     def to_dict(self) -> dict:
         result = {
