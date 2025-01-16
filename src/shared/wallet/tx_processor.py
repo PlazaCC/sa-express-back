@@ -22,7 +22,7 @@ class TXProcessor:
         self.cache = cache
         self.repository = repository
         self.paygate = paygate
-        
+
         self.vault_proc = VaultProcessor(cache, repository)
 
     async def persist_tx(self, tx: TX) -> None:
@@ -30,7 +30,7 @@ class TXProcessor:
 
         return None
     
-    def get_tx_committed_stage(self, tx: TX) -> TX_STATUS:
+    def get_tx_committed_status(self, tx: TX) -> TX_STATUS:
         all_resolved = True
 
         for _, log in tx.logs.items():
@@ -247,7 +247,6 @@ class TXProcessor:
             vault_key = vault.to_identity_key()
             vault_state = exec_state['vaults'][vault_key]
 
-            # TODO: handle real cache errors
             vault.update_state(vault_state)
 
             # TODO: handle real cache/rep errors
@@ -300,9 +299,57 @@ class TXProcessor:
 
         if paygate_tx_status == PAYGATE_TX_STATUS.CONFIRMED:
             return await self.commit_tx_confirmed(tx, instr_index)
-
+    
     async def commit_tx_failed(self, tx: TX, instr_index: int) -> TXCommitResult:
-        return TXCommitResult.successful()
+        log_key = TXLogs.get_instruction_log_key(instr_index)
+
+        if log_key not in tx.logs:
+            return TXCommitResult.failed(f'Transaction log not found: "{log_key}"')
+        
+        commit_log = tx.logs[log_key]
+
+        if commit_log.resolved:
+            return TXCommitResult.failed(f'Transaction log already resolved: "{log_key}"')
+        
+        instruction = tx.instructions[instr_index]
+
+        # TODO: handle real cache errors
+        tx.vaults = await self.vault_proc.lock(tx.vaults)
+
+        state = self.get_tx_state(tx)
+
+        instruction.update_vaults(tx.vaults)
+
+        next_state, instr_result = await instruction.revert(instr_index, state)
+
+        if instr_result.with_error():
+            return await self.commit_instruction_failed_epilogue(tx, commit_log, instr_index, instr_result)
+        
+        for vault in instruction.get_vaults():
+            if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
+                continue
+
+            vault_key = vault.to_identity_key()
+            vault_state = next_state['vaults'][vault_key]
+
+            vault.update_state(vault_state)
+
+            # TODO: handle real cache/rep errors
+            await self.vault_proc.persist_vault(vault)
+        
+        commit_log.resolved = True
+        commit_log.error = ''
+        
+        tx.status = self.get_tx_committed_status(tx)
+        tx.commit_result = TXCommitResult.failed('Transaction failed on payment gateway')
+
+        # TODO: handle real cache/rep errors
+        await self.persist_tx(tx)
+        
+        # TODO: handle real cache errors
+        await self.vault_proc.unlock(tx.vaults)
+
+        return tx.commit_result
 
     async def commit_tx_confirmed(self, tx: TX, instr_index: int) -> TXCommitResult:
         log_key = TXLogs.get_instruction_log_key(instr_index)
@@ -327,21 +374,7 @@ class TXProcessor:
         next_state, instr_result = await instruction.execute(instr_index, state, from_sign=False)
 
         if instr_result.with_error():
-            error = error_with_instruction_sufix(instr_result.error, instr_index)
-
-            commit_log.resolved = True
-            commit_log.error = instr_result.error
-
-            tx.status = self.get_tx_committed_stage(tx)
-            tx.commit_result = TXCommitResult.failed(error)
-            
-            # TODO: handle real cache/rep errors
-            await self.persist_tx(tx)
-
-            # TODO: handle real cache errors
-            await self.vault_proc.unlock(tx.vaults)
-
-            return tx.commit_result
+            return await self.commit_instruction_failed_epilogue(tx, commit_log, instr_index, instr_result)
 
         for vault in instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -350,7 +383,6 @@ class TXProcessor:
             vault_key = vault.to_identity_key()
             vault_state = next_state['vaults'][vault_key]
 
-            # TODO: handle real rep errors
             vault.update_state(vault_state)
 
             # TODO: handle real cache/rep errors
@@ -359,12 +391,30 @@ class TXProcessor:
         commit_log.resolved = True
         commit_log.error = ''
         
-        tx.status = self.get_tx_committed_stage(tx)
+        tx.status = self.get_tx_committed_status(tx)
         tx.commit_result = TXCommitResult.successful()
 
         # TODO: handle real cache/rep errors
         await self.persist_tx(tx)
         
+        # TODO: handle real cache errors
+        await self.vault_proc.unlock(tx.vaults)
+
+        return tx.commit_result
+    
+    async def commit_instruction_failed_epilogue(self, tx: TX, commit_log: TXLogs, instr_index: int, \
+        instr_result: TXBaseInstructionResult) -> TXCommitResult:
+        error = error_with_instruction_sufix(instr_result.error, instr_index)
+
+        commit_log.resolved = True
+        commit_log.error = instr_result.error
+
+        tx.status = self.get_tx_committed_status(tx)
+        tx.commit_result = TXCommitResult.failed(error)
+        
+        # TODO: handle real cache/rep errors
+        await self.persist_tx(tx)
+
         # TODO: handle real cache errors
         await self.vault_proc.unlock(tx.vaults)
 

@@ -312,8 +312,10 @@ class Test_TXMock:
             assert instr_index is not None
 
             commit_result = await tx_proc.commit_tx(tx, instr_index, PAYGATE_TX_STATUS.CONFIRMED)
+            # commit_result = await tx_proc.commit_tx(tx, instr_index, PAYGATE_TX_STATUS.FAILED)
 
             assert commit_result.without_error()
+            # assert commit_result.with_error()
 
             print(tx.to_tx_snapshot())
 

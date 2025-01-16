@@ -32,3 +32,6 @@ class TXBaseInstruction:
     async def execute(self, instr_index: int, state: dict) -> tuple[dict, TXBaseInstructionResult]:
         pass
 
+    async def revert(self, instr_index: int, state: dict) -> tuple[dict, TXBaseInstructionResult]:
+        pass
+
