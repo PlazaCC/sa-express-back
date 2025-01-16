@@ -3,6 +3,7 @@ import asyncio
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
+from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 
 from src.shared.wallet.utils import now_timestamp, error_with_instruction_sufix
 from src.shared.wallet.vault_processor import VaultProcessor
@@ -59,9 +60,17 @@ class TXProcessor:
         tx.status = TX_STATUS.SIGNED
         tx.sign_timestamp = now_timestamp()
 
-        print(tx.to_tx_snapshot())
+        for vault in tx.vaults:
+            if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
+                continue
 
-        # update balance locked (withdrawal)
+            vault_key = vault.to_identity_key()
+            vault_state = sim_state['vaults'][vault_key]
+
+            vault.balanceLocked = vault_state['balanceLocked']
+
+            # TODO: handle cache/rep errors
+            await self.vault_proc.persist_vault(vault)
 
         # TODO: handle repository errors
         await self.repository.set_transaction(tx)
@@ -192,6 +201,9 @@ class TXProcessor:
 
     async def commit_from_sign(self, tx: TX, exec_state: dict) -> TXSignResult:
         for vault in tx.vaults:
+            if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
+                continue
+
             vault_key = vault.to_identity_key()
             vault_state = exec_state['vaults'][vault_key]
 
@@ -199,7 +211,7 @@ class TXProcessor:
             vault.update_state(vault_state)
 
             # TODO: handle cache/rep errors
-            await asyncio.gather(self.cache.set_vault(vault), self.repository.set_vault(vault))
+            await self.vault_proc.persist_vault(vault)
 
         tx.status = TX_STATUS.COMMITED
 
