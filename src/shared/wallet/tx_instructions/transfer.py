@@ -168,14 +168,14 @@ class TXTransferInstruction(TXBaseInstruction):
             if withdrawal_pix_key is None:
                 return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{from_vault_key}\"")
 
-            return state, TXTransferInstructionResult.successful([ 
+            return state, TXTransferInstructionResult.successful(
                 TXPIXWithdrawalPromise(
                     tx_id=state['tx_id'],
                     instr_index=instr_index,
                     pix_key=from_vault.pix_key, 
                     amount=self.amount
                 )
-            ])
+            )
 
         return state, TXTransferInstructionResult.successful()
     

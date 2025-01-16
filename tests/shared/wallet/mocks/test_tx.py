@@ -205,7 +205,7 @@ class PayGateMock:
     def __init__(self):
         self.pending_payments = []
 
-    async def create_pix_url(self, paygate_ref: str) -> dict:
+    async def create_pix_url(self, pix_key: PIXKey, paygate_ref: str) -> dict:
         self.pending_payments.append(paygate_ref)
 
         return {
@@ -213,6 +213,11 @@ class PayGateMock:
                 'pix_url': '00020126330014BR.GOV.BCB.PIX0111000000000005204000053039865406150.005802BR5904joao6009sao paulo621605121121212121216304E551'
             }
         }
+    
+    async def pix_withdraw(self, pix_key: PIXKey, paygate_ref: str) -> dict:
+        self.pending_payments.append(paygate_ref)
+
+        return {}
 
 class Test_TXMock:
     async def get_back_context(self, config: dict):
@@ -297,27 +302,63 @@ class Test_TXMock:
         assert(len(txs) > 0)
 
         tx_proc = TXProcessor(cache, repository, paygate)
+
+        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
+
+        assert True
+
+    @pytest.mark.asyncio
+    async def test_withdrawals(self):
+        (cache, repository, paygate) = await self.get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
         
+        txs = []
+
+        for _ in range(0, 1):
+            from_vault = repository.get_random_vault()
+            (_, signer) = await repository.get_user_by_user_id(from_vault.user_id)
+
+            amount = from_vault.balance * Decimal(0.1)
+            
+            tx = create_withdrawal_tx({ 'from_vault': from_vault, 'amount': amount })
+
+            txs.append((signer, tx))
+
+        assert(len(txs) > 0)
+
+        tx_proc = TXProcessor(cache, repository, paygate)
+
+        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
+
+        assert True
+
+    async def sign_txs(self, tx_proc: TXProcessor, txs: list[TX], paygate_tx_status: list[PAYGATE_TX_STATUS]):
         webhooks = []
 
         async def random_paygate_webhook():
-            # await asyncio.sleep(randrange(3, 10))
-            await asyncio.sleep(1)
+            await asyncio.sleep(randrange(1, 3))
 
-            paygate_ref = paygate.pending_payments.pop()
+            paygate_ref = tx_proc.paygate.pending_payments.pop()
             
             (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
             assert instr_index is not None
 
-            commit_result = await tx_proc.commit_tx(tx, instr_index, PAYGATE_TX_STATUS.CONFIRMED)
-            # commit_result = await tx_proc.commit_tx(tx, instr_index, PAYGATE_TX_STATUS.FAILED)
+            ptx_status = random.choice(paygate_tx_status)
 
-            assert commit_result.without_error()
-            # assert commit_result.with_error()
+            commit_result = await tx_proc.commit_tx(tx, instr_index, ptx_status)
 
-            print(tx.to_tx_snapshot())
+            if ptx_status == PAYGATE_TX_STATUS.CONFIRMED:
+                assert commit_result.without_error()
+            elif ptx_status == PAYGATE_TX_STATUS.FAILED:
+                assert commit_result.with_error()
 
         for (signer, tx) in txs:
             sign_result = await tx_proc.sign(signer, tx)
@@ -327,10 +368,3 @@ class Test_TXMock:
             webhooks.append(random_paygate_webhook())
 
         await asyncio.gather(*webhooks)
-
-        # verify if zero sum
-        assert True
-
-    @pytest.mark.asyncio
-    async def test_withdrawals(self):
-        assert True

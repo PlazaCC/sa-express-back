@@ -30,4 +30,11 @@ class TXPIXWithdrawalPromise(TXBasePromise):
         return f'TX={self.tx_id}&INSTR={self.instr_index}'
     
     async def call(self, tx_proc: Any) -> TXLogs:
-        pass
+        api_res = await tx_proc.paygate.pix_withdraw(self.pix_key, self.to_paygate_ref())
+
+        log_key = TXLogs.get_instruction_log_key(self.instr_index)
+
+        if 'error' in api_res:
+            return TXLogs.failed(log_key, api_res['error'])
+        
+        return TXLogs.successful(log_key)
