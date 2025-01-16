@@ -23,5 +23,12 @@ class TXBaseInstruction:
     def get_vaults(self) -> list[Vault]:
         pass
 
-    async def execute(self, instruction_id: int, state: dict) -> tuple[dict, TXBaseInstructionResult]:
+    def update_vaults(self, vaults: list[Vault]) -> None:
         pass
+
+    def update_vault(self, field_key: str, vaults: list[Vault]) -> None:
+        pass
+
+    async def execute(self, instr_index: int, state: dict) -> tuple[dict, TXBaseInstructionResult]:
+        pass
+

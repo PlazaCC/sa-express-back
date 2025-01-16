@@ -42,21 +42,23 @@ class VaultProcessor:
     def filter_lockable_vaults(self, vaults: list[Vault]) -> None:
         return [ v for v in vaults if v.type != VAULT_TYPE.SERVER_UNLIMITED ]
     
-    async def lock(self, vaults: Vault | list[Vault]):
-        lockable_vaults = self.filter_lockable_vaults(vaults if isinstance(vaults, list) else [ vaults ])
-
-        if len(lockable_vaults) == 0:
-            return
+    async def lock(self, vaults: Vault | list[Vault]) -> list[Vault]:
+        async def _lock(v: Vault):
+            if v.type == VAULT_TYPE.SERVER_UNLIMITED:
+                return v
+            
+            return await self.cache.lock_vault(v)
         
-        await asyncio.gather(*[ self.cache.lock_vault(v) for v in lockable_vaults ])
+        return await asyncio.gather(*[ _lock(v) for v in vaults ])
 
-    async def unlock(self, vaults: Vault | list[Vault]) -> None:
-        lockable_vaults = self.filter_lockable_vaults(vaults if isinstance(vaults, list) else [ vaults ])
-
-        if len(lockable_vaults) == 0:
-            return
+    async def unlock(self, vaults: Vault | list[Vault]) -> list[Vault]:
+        async def _unlock(v: Vault):
+            if v.type == VAULT_TYPE.SERVER_UNLIMITED:
+                return v
+            
+            return await self.cache.unlock_vault(v)
         
-        await asyncio.gather(*[ self.cache.unlock_vault(v) for v in lockable_vaults ])
+        return await asyncio.gather(*[ _unlock(v) for v in vaults ])
 
     async def persist_vault(self, vault: Vault) -> None:
         await asyncio.gather(self.cache.set_vault(vault), self.repository.set_vault(vault))

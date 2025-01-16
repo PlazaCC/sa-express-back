@@ -6,6 +6,7 @@ from random import randrange
 from datetime import datetime
 
 from src.shared.domain.enums.role_enum import ROLE
+from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 
 from src.shared.domain.entities.user import User
@@ -13,6 +14,7 @@ from src.shared.domain.entities.vault import Vault
 from src.shared.domain.entities.tx import TX
 
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
+from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.tx_processor import TXProcessor
 from src.shared.wallet.vault_processor import VaultProcessor
@@ -38,6 +40,13 @@ class CacheMock:
         
         return None, None
     
+    async def get_vault(self, vault: Vault):
+        if vault.type == VAULT_TYPE.USER:
+            return await self.get_vault_by_user_id(vault.user_id)
+        
+        if vault.type == VAULT_TYPE.SERVER_LIMITED:
+            return await self.get_vault_by_server_ref(vault.server_ref)
+    
     async def set_vault(self, vault: Vault) -> str | None:
         if vault.user_id is not None:
             self.vaults_by_user_id[vault.user_id] = vault.to_dict()
@@ -57,15 +66,23 @@ class CacheMock:
 
         return user_vaults + server_vaults
     
-    async def lock_vault(self, vault: Vault) -> str | None:
-        vault.locked = True
+    async def lock_vault(self, vault: Vault) -> Vault:
+        (_, updated_vault) = await self.get_vault(vault)
 
-        return await self.set_vault(vault)
+        updated_vault.locked = True
+
+        await self.set_vault(updated_vault)
+
+        return updated_vault
     
-    async def unlock_vault(self, vault: Vault) -> str | None:
-        vault.locked = False
+    async def unlock_vault(self, vault: Vault) -> Vault:
+        (_, updated_vault) = await self.get_vault(vault)
 
-        return await self.set_vault(vault)
+        updated_vault.locked = False
+
+        await self.set_vault(updated_vault)
+
+        return updated_vault
 
 class RepositoryMock:
     def __init__(self):
@@ -282,13 +299,15 @@ class Test_TXMock:
             await asyncio.sleep(1)
 
             paygate_ref = paygate.pending_payments.pop()
-
+            
             (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
-            print('tx', tx.to_tx_snapshot())
-            print('instr_index', instr_index)
+            assert tx is not None
+            assert instr_index is not None
 
-            return None
+            commit_result = await tx_proc.commit_tx(tx, instr_index, PAYGATE_TX_STATUS.CONFIRMED)
+
+            assert commit_result.without_error()
 
         for (signer, tx) in txs:
             sign_result = await tx_proc.sign(signer, tx)

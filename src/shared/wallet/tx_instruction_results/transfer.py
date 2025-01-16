@@ -37,7 +37,7 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
             result['promise'] = self.promise.to_dict()
 
         return result
-
+    
     def with_error(self) -> bool:
         return self.error != ''
     

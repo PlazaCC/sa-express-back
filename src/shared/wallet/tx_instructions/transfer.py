@@ -21,7 +21,7 @@ class TXTransferInstruction(TXBaseInstruction):
         return TXTransferInstruction(
             from_vault=Vault.from_tx_instr_snapshot(data['from_vault']),
             to_vault=Vault.from_tx_instr_snapshot(data['to_vault']),
-            amount=data['amount']
+            amount=Decimal(data['amount'])
         )
     
     def __init__(self, from_vault: Vault, to_vault: Vault, amount: Decimal):
@@ -100,7 +100,21 @@ class TXTransferInstruction(TXBaseInstruction):
     def get_vaults(self) -> list[Vault]:
         return [ self.from_vault, self.to_vault ]
     
-    async def execute(self, instruction_id: int, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
+    def update_vaults(self, vaults: list[Vault]) -> None:
+        self.update_vault('from_vault', vaults)
+        self.update_vault('to_vault', vaults)
+
+    def update_vault(self, field_key: str, vaults: list[Vault]) -> None:
+        vault_field = getattr(self, field_key)
+
+        vault_key = vault_field.to_identity_key()
+
+        next_vault = next((v for v in vaults if v.to_identity_key() == vault_key), None)
+
+        if next_vault is not None:
+            vault_field = next_vault
+
+    async def execute(self, instr_index: int, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
         to_vault = self.to_vault
 
@@ -121,8 +135,13 @@ class TXTransferInstruction(TXBaseInstruction):
         if to_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
             to_vault_state = state['vaults'][to_vault_key]
 
-            if from_sign and is_withdrawal:
-                to_vault_state['balanceLocked'] += self.amount
+            if is_withdrawal:
+                if from_sign:
+                    to_vault_state['balanceLocked'] += self.amount
+                else:
+                    to_vault_state['balance'] += self.amount
+                    to_vault_state['balanceLocked'] -= self.amount
+                    pass
             else:
                 to_vault_state['balance'] += self.amount
 
@@ -135,10 +154,9 @@ class TXTransferInstruction(TXBaseInstruction):
             return state, TXTransferInstructionResult.successful(
                 TXPIXDepositPromise(
                     tx_id=state['tx_id'],
-                    instruction_id=instruction_id,
+                    instr_index=instr_index,
                     pix_key=to_vault.pix_key, 
-                    amount=self.amount,
-                    resolved=False
+                    amount=self.amount
                 )
             )
         
@@ -151,10 +169,9 @@ class TXTransferInstruction(TXBaseInstruction):
             return state, TXTransferInstructionResult.successful([ 
                 TXPIXWithdrawalPromise(
                     tx_id=state['tx_id'],
-                    instruction_id=instruction_id,
+                    instr_index=instr_index,
                     pix_key=from_vault.pix_key, 
-                    amount=self.amount,
-                    resolved=False
+                    amount=self.amount
                 )
             ])
 

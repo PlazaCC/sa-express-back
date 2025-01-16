@@ -1,4 +1,3 @@
-import uuid
 import asyncio
 from urllib import parse
 
@@ -8,9 +7,12 @@ from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 
 from src.shared.wallet.utils import now_timestamp, error_with_instruction_sufix
+from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.vault_processor import VaultProcessor
+from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
 from src.shared.wallet.tx_results.sign import TXSignResult
+from src.shared.wallet.tx_results.commit import TXCommitResult
 
 class TXProcessor:
     MAX_VAULTS=2
@@ -37,7 +39,7 @@ class TXProcessor:
         if signer_access_error is not None:
             return TXSignResult.failed(signer_access_error)
 
-        await self.vault_proc.lock(tx.vaults)
+        tx.vaults = await self.vault_proc.lock(tx.vaults)
 
         sim_state, sim_results = await self.exec_tx_instructions(tx, from_sign=True)
 
@@ -168,7 +170,7 @@ class TXProcessor:
 
         return None
     
-    async def exec_tx_instructions(self, tx: TX, from_sign: bool) -> tuple[dict, list[TXBaseInstructionResult | None]]:
+    def get_tx_state(self, tx: TX) -> dict:
         state = {
             'tx_id': tx.tx_id,
             'error': None,
@@ -182,12 +184,21 @@ class TXProcessor:
             if vault_key not in state['vaults']:
                 state['vaults'][vault_key] = vault_state
 
+        return state
+
+    async def exec_tx_instructions(self, tx: TX, from_sign: bool) -> tuple[dict, list[TXBaseInstructionResult | None]]:
+        state = self.get_tx_state(tx)
+
         num_instructions = len(tx.instructions)
 
         results = [ None for _ in range(0, num_instructions) ]
 
         for i in range(0, num_instructions):
-            next_state, instr_result = await tx.instructions[i].execute(i, state, from_sign)
+            instruction = tx.instructions[i]
+
+            instruction.update_vaults(tx.vaults)
+
+            next_state, instr_result = await instruction.execute(i, state, from_sign)
 
             results[i] = instr_result
 
@@ -210,7 +221,6 @@ class TXProcessor:
             vault_key = vault.to_identity_key()
             vault_state = exec_state['vaults'][vault_key]
 
-            vault.locked = False
             vault.update_state(vault_state)
 
             # TODO: handle cache/rep errors
@@ -225,12 +235,17 @@ class TXProcessor:
 
         # TODO: handle repository errors
         await self.repository.set_transaction(tx)
+        
+        await self.vault_proc.unlock(tx.vaults)
 
         return TXSignResult.successful()
     
     async def get_tx_by_paygate_ref(self, paygate_ref: str) -> tuple[TX, int] | tuple[None, None]:
-        qs = dict(parse.parse_qsl(paygate_ref))
-
+        try:
+            qs = dict(parse.parse_qsl(paygate_ref))
+        except:
+            return (None, None)
+        
         if 'TX' not in qs or TX.invalid_tx_id(qs['TX']):
             return (None, None)
         
@@ -251,4 +266,68 @@ class TXProcessor:
         if instr_index >= len(rep_tx.instructions):
             return (None, None)
 
-        return (rep_tx, qs['INSTR'])
+        return (rep_tx, instr_index)
+    
+    async def commit_tx(self, tx: TX, instr_index: int, paygate_tx_status: PAYGATE_TX_STATUS) -> TXCommitResult:
+        if paygate_tx_status == PAYGATE_TX_STATUS.FAILED:
+            return await self.commit_tx_failed(tx, instr_index)
+
+        if paygate_tx_status == PAYGATE_TX_STATUS.CONFIRMED:
+            return await self.commit_tx_confirmed(tx, instr_index)
+
+    async def commit_tx_failed(self, tx: TX, instr_index: int) -> TXCommitResult:
+        return TXCommitResult.successful()
+
+    async def commit_tx_confirmed(self, tx: TX, instr_index: int) -> TXCommitResult:
+        log_key = TXLogs.get_instruction_log_key(instr_index)
+
+        if log_key not in tx.logs:
+            return TXCommitResult.failed(f'Transaction log not found: "{log_key}"')
+
+        commit_log = tx.logs[log_key]
+
+        if commit_log.resolved:
+            return TXCommitResult.failed(f'Transaction log already resolved: "{commit_log}"')
+
+        instruction = tx.instructions[instr_index]
+
+        tx.vaults = await self.vault_proc.lock(tx.vaults)
+
+        state = self.get_tx_state(tx)
+
+        instruction.update_vaults(tx.vaults)
+
+        next_state, instr_result = await instruction.execute(instr_index, state, from_sign=False)
+
+        if instr_result.with_error():
+            error = error_with_instruction_sufix(instr_result.error, instr_index)
+
+            return TXCommitResult.failed(error)
+
+        for vault in instruction.get_vaults():
+            if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
+                continue
+
+            vault_key = vault.to_identity_key()
+            vault_state = next_state['vaults'][vault_key]
+
+            vault.update_state(vault_state)
+
+            # TODO: handle cache/rep errors
+            await self.vault_proc.persist_vault(vault)
+
+        commit_log.resolved = True
+
+        all_resolved = True
+
+        for _, log in tx.logs.items():
+            if not log.resolved:
+                all_resolved = False
+                break
+        
+        tx.status = TX_STATUS.COMMITTED if all_resolved else TX_STATUS.PARTIALLY_COMMITTED
+        
+        await self.vault_proc.unlock(tx.vaults)
+
+        return TXCommitResult.successful()
+
