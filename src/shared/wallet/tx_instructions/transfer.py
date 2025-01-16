@@ -181,22 +181,13 @@ class TXTransferInstruction(TXBaseInstruction):
     
     async def revert(self, instr_index: int, state: dict) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
-        to_vault = self.to_vault
 
         from_vault_key = from_vault.to_identity_key()
-        to_vault_key = to_vault.to_identity_key()
 
         if from_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
             from_vault_state = state['vaults'][from_vault_key]
 
             if self.is_withdrawal():
                 from_vault_state['balance_locked'] -= self.amount
-            else:
-                from_vault_state['balance'] += self.amount
-
-        if to_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
-            to_vault_state = state['vaults'][to_vault_key]
-
-            to_vault_state['balance'] -= self.amount
 
         return state, TXTransferInstructionResult.successful()
