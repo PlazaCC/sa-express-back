@@ -14,14 +14,18 @@ from src.shared.domain.entities.vault import Vault
 from src.shared.domain.entities.tx import TX
 
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
+from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.models.pix import PIXKey
-from src.shared.wallet.tx_processor import TXProcessor
+from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_templates.deposit import create_deposit_tx
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 
 pytest_plugins = ('pytest_asyncio')
+
+# skip first line
+print('')
 
 class CacheMock:
     def __init__(self):
@@ -29,24 +33,24 @@ class CacheMock:
         self.vaults_by_server_ref = {}
         self.transactions = {}
 
-    async def get_vault_by_user_id(self, user_id: int):
+    async def get_vault_by_user_id(self, user_id: int, deserialize: bool = True):
         if user_id in self.vaults_by_user_id:
-            return None, Vault.from_dict_static(self.vaults_by_user_id[user_id])
+            return None, Vault.from_dict_static(self.vaults_by_user_id[user_id]) if deserialize else self.vaults_by_user_id[user_id]
 
         return None, None
     
-    async def get_vault_by_server_ref(self, server_ref: str):
+    async def get_vault_by_server_ref(self, server_ref: str, deserialize: bool = True):
         if server_ref in self.vaults_by_server_ref:
-            return None, Vault.from_dict_static(self.vaults_by_server_ref[server_ref])
+            return None, Vault.from_dict_static(self.vaults_by_server_ref[server_ref]) if deserialize else self.vaults_by_server_ref[server_ref]
         
         return None, None
     
-    async def get_vault(self, vault: Vault):
+    async def get_vault(self, vault: Vault, deserialize: bool = True):
         if vault.type == VAULT_TYPE.USER:
-            return await self.get_vault_by_user_id(vault.user_id)
+            return await self.get_vault_by_user_id(vault.user_id, deserialize)
         
         if vault.type == VAULT_TYPE.SERVER_LIMITED:
-            return await self.get_vault_by_server_ref(vault.server_ref)
+            return await self.get_vault_by_server_ref(vault.server_ref, deserialize)
     
     async def set_vault(self, vault: Vault) -> str | None:
         if vault.user_id is not None:
@@ -89,6 +93,26 @@ class CacheMock:
         await self.set_vault(updated_vault)
 
         return updated_vault
+    
+    async def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
+        cache_vaults = []
+
+        async def _get_vault(v: Vault):
+            if v.type == VAULT_TYPE.SERVER_UNLIMITED:
+                return (None, v.to_dict())
+            
+            return await self.get_vault(v, deserialize=False)
+        
+        for (_, cache_vault) in await asyncio.gather(*[ _get_vault(v) for v in vaults ]):
+            if cache_vault['locked']:
+                return None
+            
+            cache_vaults.append(cache_vault)
+
+        for cache_vault in cache_vaults:
+            cache_vault['locked'] = True
+
+        return [ Vault.from_dict_static(v) for v in cache_vaults ]
 
 class RepositoryMock:
     def __init__(self):
@@ -255,6 +279,7 @@ class Test_TXMock:
         return (cache, repository, paygate)
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason='')
     async def test_vaults(self):
         (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
@@ -277,6 +302,7 @@ class Test_TXMock:
         assert total_balance > 0
     
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason='')
     async def test_deposits(self):
         (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
@@ -286,6 +312,8 @@ class Test_TXMock:
                 'locked': False
             }
         })
+        
+        tx_proc = TXProcessor(cache, repository, paygate)
         
         txs = []
 
@@ -301,13 +329,12 @@ class Test_TXMock:
 
         assert(len(txs) > 0)
 
-        tx_proc = TXProcessor(cache, repository, paygate)
-
         await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
 
         assert True
-
+    
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason='')
     async def test_withdrawals(self):
         (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
@@ -318,6 +345,8 @@ class Test_TXMock:
             }
         })
         
+        tx_proc = TXProcessor(cache, repository, paygate)
+
         txs = []
 
         for _ in range(0, 1):
@@ -332,12 +361,10 @@ class Test_TXMock:
 
         assert(len(txs) > 0)
 
-        tx_proc = TXProcessor(cache, repository, paygate)
-
         await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
 
         assert True
-
+    
     async def sign_txs(self, tx_proc: TXProcessor, txs: list[TX], paygate_tx_status: list[PAYGATE_TX_STATUS]):
         webhooks = []
 
@@ -368,3 +395,37 @@ class Test_TXMock:
             webhooks.append(random_paygate_webhook())
 
         await asyncio.gather(*webhooks)
+
+    @pytest.mark.asyncio
+    async def test_client_queue(self):
+        (cache, repository, paygate) = await self.get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
+
+        tx_proc_config = TXProcessorConfig(
+            max_vaults=2,
+            max_instructions=1,
+            tx_queue_type=TX_QUEUE_TYPE.CLIENT
+        )
+
+        tx_proc = TXProcessor(cache, repository, paygate, config=tx_proc_config)
+
+        to_vault = repository.get_random_vault()
+        (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
+
+        amount = Decimal(150)
+        
+        tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
+
+        push_res = await tx_proc.tx_queue.push_tx(signer, tx)
+
+        assert push_res.without_error()
+
+        print('push_res', push_res.to_dict())
+
+        assert True

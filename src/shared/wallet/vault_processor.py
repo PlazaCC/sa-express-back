@@ -64,3 +64,6 @@ class VaultProcessor:
         await asyncio.gather(self.cache.set_vault(vault), self.repository.set_vault(vault))
 
         return None
+    
+    async def get_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
+        return await self.cache.get_vaults_and_lock(vaults)
