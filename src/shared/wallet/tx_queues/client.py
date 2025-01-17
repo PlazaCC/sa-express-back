@@ -19,12 +19,12 @@ class TXClientQueue(TXBaseQueue):
         return self.tx_proc.vault_proc
 
     async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
-        vault_res = await self.vault_proc().get_and_lock(tx.vaults)
+        locked_vaults = await self.vault_proc().get_and_lock(tx.vaults)
 
-        if vault_res is None:
+        if locked_vaults is None:
             return TXPushResult.locked()
 
-        tx.vaults = vault_res
+        tx.vaults = locked_vaults
 
         sign_result = await self.tx_proc.sign(signer, tx)
 
@@ -34,12 +34,12 @@ class TXClientQueue(TXBaseQueue):
         return TXPushResult.successful(sign_result)
     
     async def _pop_tx(self, tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
-        vault_res = await self.vault_proc().get_and_lock(tx.vaults)
+        locked_vaults = await self.vault_proc().get_and_lock(tx.vaults)
 
-        if vault_res is None:
+        if locked_vaults is None:
             return TXPopResult.failed('Locked')
         
-        tx.vaults = vault_res
+        tx.vaults = locked_vaults
 
         if error is None:
             commit_result = await self.tx_proc.commit_tx_confirmed(tx, instr_index)
