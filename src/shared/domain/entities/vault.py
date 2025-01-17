@@ -153,3 +153,9 @@ class Vault(BaseModel):
     def update_state(self, next_state: dict) -> None:
         self.balance = next_state['balance']
         self.balance_locked = next_state['balance_locked']
+
+    def __eq__(self, other: 'Vault') -> bool:
+        return self.to_identity_key() == other.to_identity_key()
+    
+    def __hash__(self) -> int:
+        return hash(self.to_identity_key())

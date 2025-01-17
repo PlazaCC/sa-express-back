@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from src.shared.domain.enums.role_enum import ROLE
+from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 
 from src.shared.domain.entities.user import User
@@ -85,6 +86,9 @@ class RepositoryMock:
 
     def get_all_users(self):
         return ([ User.from_dict_static(u) for u in self.users ])
+    
+    def get_all_user_vaults(self):
+        return ([ Vault.from_dict_static(v) for v in self.vaults if v['type'] == VAULT_TYPE.USER.value ])
 
     def get_random_user(self):
         return User.from_dict_static(random.choice(self.users))

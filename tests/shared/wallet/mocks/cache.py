@@ -54,6 +54,9 @@ class CacheMock:
 
         return user_vaults + server_vaults
     
+    def get_all_user_vaults(self) -> list[Vault]:
+        return [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
+    
     async def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
         cache_vaults = []
 
