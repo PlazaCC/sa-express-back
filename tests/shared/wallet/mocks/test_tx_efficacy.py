@@ -7,6 +7,7 @@ from random import randrange
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 
 from src.shared.domain.entities.tx import TX
+from src.shared.domain.entities.user import User
 
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
@@ -17,30 +18,19 @@ from src.shared.wallet.tx_templates.deposit import create_deposit_tx
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 
 from tests.shared.wallet.mocks.common import get_back_context
+from tests.shared.wallet.mocks.cache import CacheMock
+from tests.shared.wallet.mocks.repository import RepositoryMock
 
 pytest_plugins = ('pytest_asyncio')
 
 class Test_TXEfficacy:
     ### UTILITY METHODS ###
-    async def get_random_tx_batch(self, cache, repository, num_txs=1):
-        initial_balance_inrep = Decimal(0)
-        initial_balance_incache = Decimal(0)
-        
-        rep_vaults = repository.get_all_user_vaults()
-
-        for vault in rep_vaults:
-            initial_balance_inrep += vault.total_balance()
-        
-        cache_vaults = cache.get_all_user_vaults()
-
-        for vault in cache_vaults:
-            initial_balance_incache += vault.total_balance()
-
+    async def get_random_tx_batch(self, cache: CacheMock, repository: RepositoryMock, num_txs=1) -> tuple[list[tuple[User, TX]], dict]:
         txs = []
-        desired_vault_balances = {}
+        targets = {}
 
-        for vault in cache_vaults:
-            desired_vault_balances[vault] = vault.total_balance()
+        for vault in cache.get_all_user_vaults():
+            targets[vault] = Decimal(str(vault.total_balance()))
 
         async def create_random_deposit():
             to_vault = repository.get_random_vault()
@@ -50,7 +40,7 @@ class Test_TXEfficacy:
             
             tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
 
-            desired_vault_balances[to_vault] += amount
+            targets[to_vault] += amount
 
             txs.append((signer, tx))
         
@@ -62,8 +52,9 @@ class Test_TXEfficacy:
             
             tx = create_withdrawal_tx({ 'from_vault': from_vault, 'amount': amount })
 
-            desired_vault_balances[from_vault] = max(0, desired_vault_balances[from_vault] - amount)
-
+            if targets[from_vault] - amount >= 0:
+                targets[from_vault] -= amount
+            
             txs.append((signer, tx))
         
         for _ in range(0, num_txs):
@@ -74,12 +65,45 @@ class Test_TXEfficacy:
             elif selected_template == 'WITHDRAW':
                 await create_random_withdraw()
 
-        return {
-            'initial_balance_incache': initial_balance_incache,
-            'initial_balance_inrep': initial_balance_inrep,
-            'desired_vault_balances': desired_vault_balances,
-            'txs': txs,
-        }
+        return (txs, targets)
+    
+    async def tx_flow(self, tx_proc: TXProcessor, signer: User, tx: TX) -> None:
+        paygate = tx_proc.paygate
+
+        async def random_paygate_webhook():
+            await asyncio.sleep(random.choice([ 1, 2 ]))
+
+            if len(paygate.pending_payments) == 0:
+                return
+
+            paygate_ref = paygate.pending_payments.pop()
+            
+            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+
+            assert tx is not None
+            assert instr_index is not None
+
+            async def callback(pop_result: TXPopResult):
+                print('pop_result', pop_result.to_dict())
+                pass
+
+            await tx_proc.pop_tx_with_callback(callback, tx, instr_index)
+
+        await tx_proc.push_tx(signer, tx)
+
+        await random_paygate_webhook()
+
+        await asyncio.sleep(3)
+
+    def verify_balance_targets(self, cache: CacheMock, repository: RepositoryMock, targets: dict):
+        cache_vaults = cache.get_all_user_vaults()
+        rep_vaults = repository.get_all_user_vaults()
+
+        for vault in cache_vaults:
+            assert targets[vault] == vault.total_balance()
+
+        for vault in rep_vaults:
+            assert targets[vault] == vault.total_balance()
     
     ### TEST METHODS ###
     @pytest.mark.asyncio
@@ -102,10 +126,17 @@ class Test_TXEfficacy:
             )
         )
 
-        tx_batch = await self.get_random_tx_batch(cache, repository, num_txs=10)
+        (txs, targets) = await self.get_random_tx_batch(cache, repository, num_txs=10)
 
-        
+        promises = []
 
-        print('tx_batch', tx_batch)
+        print('')
+
+        for (signer, tx) in txs:
+            promises.append(self.tx_flow(tx_proc, signer, tx))
+
+        await asyncio.gather(*promises)
+
+        self.verify_balance_targets(cache, repository, targets)
 
         assert True
