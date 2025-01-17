@@ -2,6 +2,7 @@ from typing import Any
 
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
+
 from src.shared.wallet.tx_results.push import TXPushResult
 from src.shared.wallet.tx_results.pop import TXPopResult
 

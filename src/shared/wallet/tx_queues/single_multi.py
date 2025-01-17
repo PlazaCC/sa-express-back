@@ -5,6 +5,7 @@ from src.shared.domain.entities.user import User
 
 from src.shared.wallet.tx_queues.base import TXBaseQueue
 from src.shared.wallet.tx_results.push import TXPushResult
+from src.shared.wallet.tx_results.pop import TXPopResult
 
 class TXServerMultiQueue(TXBaseQueue):
     tx_proc: Any
@@ -13,7 +14,10 @@ class TXServerMultiQueue(TXBaseQueue):
         self.tx_proc = tx_proc
 
     def vault_proc(self):
-        return self.tx_proc.vault_proc
+        pass
 
     async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
+        pass
+
+    async def pop_tx(self, tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
         pass
