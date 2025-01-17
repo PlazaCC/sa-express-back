@@ -14,6 +14,7 @@ from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
 from src.shared.wallet.tx_results.sign import TXSignResult
 from src.shared.wallet.tx_results.commit import TXCommitResult
+from src.shared.wallet.tx_results.push import TXPushResult
 
 from src.shared.wallet.tx_queues.base import TXBaseQueue
 from src.shared.wallet.tx_queues.client import TXClientQueue
@@ -450,4 +451,7 @@ class TXProcessor:
         await self.vault_proc.unlock(tx.vaults)
 
         return tx.commit_result
-
+    
+    ### PUSH METHODS ###
+    async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
+        return await self.tx_queue.push_tx(signer, tx)

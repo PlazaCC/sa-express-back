@@ -24,9 +24,6 @@ from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 
 pytest_plugins = ('pytest_asyncio')
 
-# skip first line
-print('')
-
 class CacheMock:
     def __init__(self):
         self.vaults_by_user_id = {}
@@ -422,10 +419,11 @@ class Test_TXMock:
         
         tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
 
-        push_res = await tx_proc.tx_queue.push_tx(signer, tx)
+        push_res = await tx_proc.push_tx(signer, tx)
 
         assert push_res.without_error()
 
+        print('')
         print('push_res', push_res.to_dict())
 
         assert True
