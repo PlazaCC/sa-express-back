@@ -12,9 +12,7 @@ class Controller:
         try:
             if request.data.get('requester_user') is None:
                 raise MissingParameters('requester_user')
-            
-            requester_user = request.data.get('requester_user')
-            
+                        
             response = Usecase().execute()
             return OK(body=response)
         except MissingParameters as error:
@@ -36,7 +34,7 @@ class Usecase:
         self.deal_repo = self.repository.deal_repo
 
     def execute(self) -> dict:
-        deals = self.deal_repo.get_all_deals()
+        deals = self.deal_repo.get_all_active_deals()
         return [deal.to_dict() for deal in deals]
 
 def function_handler(event, context):

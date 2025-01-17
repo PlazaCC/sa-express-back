@@ -1,18 +1,12 @@
-import datetime
-import json
-import time
 from typing import Tuple, List
-
 import boto3
 from botocore.exceptions import ClientError
-
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.repositories.auth_repository_interface import IAuthRepository
 from src.shared.environments import Environments
-from src.shared.helpers.errors.domain_errors import EntityError
-from src.shared.helpers.errors.usecase_errors import DuplicatedItem, ForbiddenAction, InvalidCredentials, InvalidTokenError, NoItemsFound
-from src.shared.infra.dtos.user_cognito_dto import UserCognitoDTO
+from src.shared.helpers.errors.errors import DuplicatedItem, EntityError, ForbiddenAction, InvalidTokenError
+from src.shared.infra.repositories.dtos.user_cognito_dto import UserCognitoDTO
 
 
 class AuthRepositoryCognito(IAuthRepository):
@@ -27,41 +21,40 @@ class AuthRepositoryCognito(IAuthRepository):
         self.client_id = Environments.get_envs().app_client_id
     
     
-    def get_all_users(self) -> List[User]:
-        # pagination
+    def get_all_users(self, page: int) -> List[User]:
         try:
             kwargs = {
-                'UserPoolId': self.user_pool_id
+                'UserPoolId': self.user_pool_id,
+                'Limit': 20
             }
 
             all_users = list()
             users_remain = True
             next_page = None
 
-            while users_remain:
+            while users_remain and len(all_users) < page * 20:
                 if next_page:
                     kwargs['PaginationToken'] = next_page
                 response = self.client.list_users(**kwargs)
 
-
                 all_users.extend(response["Users"])
                 next_page = response.get('PaginationToken', None)
                 users_remain = next_page is not None
-        
-            all_users = [UserCognitoDTO.from_cognito(user).to_entity() for user in all_users]
 
-            for user in all_users:
-                user.systems = self.get_groups_for_user(user.email)
-            
-            return all_users
+            paginated_users = all_users[(page - 1) * 20: page * 20]
+
+            all_users_entities = [UserCognitoDTO.from_cognito(user).to_entity() for user in paginated_users]
+
+            return all_users_entities
 
         except self.client.exceptions.ResourceNotFoundException as e:
             raise EntityError(e.response.get('Error').get('Message'))
 
         except self.client.exceptions.InvalidParameterException as e:
             raise EntityError(e.response.get('Error').get('Message'))
+
     
-    def create_user(self, email: str, name: str, role: ROLE) -> User:
+    def create_user(self, email: str, name: str, phone, role: ROLE) -> User:
 
         cognito_attributes = [
             {
@@ -71,6 +64,10 @@ class AuthRepositoryCognito(IAuthRepository):
             {
                 "Name": "name",
                 "Value": name
+            },
+            {
+                "Phone": "phone",
+                "Value": phone
             },
             {
                 "Name": "custom:general_role",
@@ -104,7 +101,6 @@ class AuthRepositoryCognito(IAuthRepository):
                 return None
 
             user = UserCognitoDTO.from_cognito(response).to_entity()
-            user.systems = self.get_groups_for_user(email)
                 
             return user
 
@@ -113,7 +109,7 @@ class AuthRepositoryCognito(IAuthRepository):
     
     def update_user(self, email: str, attributes_to_update: dict, enabled: bool = None) -> User:
         try:
-            response = self.client.admin_update_user_attributes(
+            self.client.admin_update_user_attributes(
                 UserPoolId=self.user_pool_id,
                 Username=email,
                 UserAttributes=[{'Name': UserCognitoDTO.TO_COGNITO_DICT[key], 'Value': value} for key, value in attributes_to_update.items()]
@@ -152,7 +148,7 @@ class AuthRepositoryCognito(IAuthRepository):
         except ClientError as e:
             errorCode = e.response.get('Error').get('Code')
             if errorCode == 'NotAuthorizedException':
-                raise InvalidTokenError(message="token")
+                raise InvalidTokenError(message=e.response.get('Error').get('Message'))
             else:
                 raise ForbiddenAction(message=e.response.get('Error').get('Message'))
     

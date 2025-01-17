@@ -1,5 +1,5 @@
 from typing import List
-from src.environments import Environments
+from src.shared.environments import Environments
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
 from src.shared.domain.repositories.deal_repository_interface import IDealRepository
@@ -22,11 +22,11 @@ class DealRepositoryDynamo(IDealRepository):
 
     def __init__(self):
         self.dynamo = DynamoDatasource(
-            dynamo_table_name=Environments.get_envs().dynamo_profile_table_name,
+            dynamo_table_name=Environments.get_envs().dynamo_table_name,
             region=Environments.get_envs().region,
-            partition_key=Environments.get_envs().dynamo_profile_partition_key,
-            sort_key=Environments.get_envs().dynamo_profile_sort_key,
-            gsi_partition_key=Environments.get_envs().dynamo_profile_gsi_partition_key,
+            partition_key=Environments.get_envs().dynamo_partition_key,
+            sort_key=Environments.get_envs().dynamo_sort_key,
+            gsi_partition_key=Environments.get_envs().dynamo_gsi_partition_key,
         )
     
     def create_deal(self, deal: Deal) -> Deal:
