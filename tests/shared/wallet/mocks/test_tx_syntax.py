@@ -20,7 +20,7 @@ from tests.shared.wallet.mocks.common import get_back_context
 
 pytest_plugins = ('pytest_asyncio')
 
-class Test_TXMock:
+class Test_TXSyntax:
     ### UTILITY METHODS ###
     async def sign_txs(self, tx_proc: TXProcessor, txs: list[TX], paygate_tx_status: list[PAYGATE_TX_STATUS]):
         webhooks = []

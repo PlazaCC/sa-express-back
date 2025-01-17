@@ -64,7 +64,7 @@ class TXProcessor:
             self.tx_queue = TXServerMultiQueue(self)
         
         self.vault_proc = VaultProcessor(cache, repository)
-
+    
     ### UTILITY METHODS ###
     async def persist_tx(self, tx: TX) -> None:
         await asyncio.gather(self.cache.set_transaction(tx), self.repository.set_transaction(tx))
