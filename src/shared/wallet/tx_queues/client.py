@@ -37,7 +37,7 @@ class TXClientQueue(TXBaseQueue):
         locked_vaults = await self.vault_proc().get_and_lock(tx.vaults)
 
         if locked_vaults is None:
-            return TXPopResult.failed('Locked')
+            return TXPopResult.locked()
         
         tx.vaults = locked_vaults
 

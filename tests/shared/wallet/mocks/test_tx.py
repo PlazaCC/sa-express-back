@@ -22,6 +22,7 @@ from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_templates.deposit import create_deposit_tx
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 from src.shared.wallet.tx_results.pop import TXPopResult
+from src.shared.wallet.tx_results.push import TXPushResult
 
 pytest_plugins = ('pytest_asyncio')
 
@@ -273,7 +274,7 @@ class Test_TXMock:
         return (cache, repository, paygate)
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_vaults(self):
         (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
@@ -296,7 +297,7 @@ class Test_TXMock:
         assert total_balance > 0
     
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_deposits(self):
         (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
@@ -328,7 +329,7 @@ class Test_TXMock:
         assert True
     
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_withdrawals(self):
         (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
@@ -391,8 +392,9 @@ class Test_TXMock:
             webhooks.append(random_paygate_webhook())
 
         await asyncio.gather(*webhooks)
-
+    
     @pytest.mark.asyncio
+    # @pytest.mark.skip(reason='')
     async def test_client_queue(self):
         (cache, repository, paygate) = await self.get_back_context({
             'num_users': 10,
@@ -431,12 +433,65 @@ class Test_TXMock:
             async def callback(pop_result: TXPopResult):
                 assert pop_result.without_error()
 
-            await tx_proc.pop_tx(callback, tx, instr_index)
+            await tx_proc.pop_tx_with_callback(callback, tx, instr_index)
 
         push_res = await tx_proc.push_tx(signer, tx)
 
         assert push_res.without_error()
 
         await random_paygate_webhook()
+
+        assert True
+
+    @pytest.mark.asyncio
+    # @pytest.mark.skip(reason='')
+    async def test_server_single_queue(self):
+        (cache, repository, paygate) = await self.get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
+
+        tx_proc_config = TXProcessorConfig(
+            max_vaults=2,
+            max_instructions=1,
+            tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
+        )
+
+        tx_proc = TXProcessor(cache, repository, paygate, config=tx_proc_config)
+
+        to_vault = repository.get_random_vault()
+        (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
+
+        amount = Decimal(150)
+        
+        tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
+
+        async def random_paygate_webhook():
+            await asyncio.sleep(randrange(1, 3))
+
+            paygate_ref = tx_proc.paygate.pending_payments.pop()
+            
+            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+
+            assert tx is not None
+            assert instr_index is not None
+
+            async def pop_callback(pop_result: TXPopResult):
+                assert pop_result.without_error()
+
+            await tx_proc.pop_tx_with_callback(pop_callback, tx, instr_index)
+
+        async def push_callback(push_result: TXPushResult):
+            assert push_result.without_error()
+
+            await random_paygate_webhook()
+
+        await tx_proc.push_tx_with_callback(push_callback, signer, tx)
+
+        await asyncio.sleep(1)
 
         assert True

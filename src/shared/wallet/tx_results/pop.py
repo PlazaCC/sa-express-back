@@ -19,6 +19,10 @@ class TXPopResult:
     def failed(error: str) -> 'TXPopResult':
         return TXPopResult(error=error, timestamp=now_timestamp())
     
+    @staticmethod
+    def locked() -> 'TXPopResult':
+        return TXPopResult.failed('Locked')
+    
     def __init__(self, error: str, timestamp: str, commit_result: TXCommitResult | None = None):
         self.error = error
         self.timestamp = timestamp

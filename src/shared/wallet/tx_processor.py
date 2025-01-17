@@ -1,5 +1,7 @@
 import asyncio
 from urllib import parse
+from typing import Any, Awaitable
+from collections.abc import Callable
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
@@ -413,7 +415,7 @@ class TXProcessor:
 
         # TODO: handle real cache/rep errors
         await self.persist_tx(tx)
-
+        
         return tx.commit_result
     
     async def commit_instruction_failed_epilogue(self, tx: TX, commit_log: TXLogs, instr_index: int, \
@@ -435,5 +437,8 @@ class TXProcessor:
     async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
         return await self.tx_queue.push_tx(signer, tx)
     
-    async def pop_tx(self, tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
-        return await self.tx_queue.pop_tx(tx, instr_index, error)
+    async def push_tx_with_callback(self, callback: Callable[[], Awaitable[TXPushResult]], signer: User, tx: TX) -> TXPushResult:
+        return await self.tx_queue.push_tx(callback, signer, tx)
+    
+    async def pop_tx_with_callback(self, callback: Callable[[], Awaitable[TXPopResult]], tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
+        return await self.tx_queue.pop_tx(callback, tx, instr_index, error)
