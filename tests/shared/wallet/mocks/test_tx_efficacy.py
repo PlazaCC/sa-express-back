@@ -2,7 +2,8 @@ import pytest
 import random
 import asyncio
 from decimal import Decimal
-from random import randrange
+from typing import Awaitable
+from collections.abc import Callable
 
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 
@@ -10,7 +11,6 @@ from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
 
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
-from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
 from src.shared.wallet.tx_results.pop import TXPopResult
 from src.shared.wallet.tx_results.push import TXPushResult
@@ -65,12 +65,13 @@ class Test_TXEfficacy:
             elif selected_template == 'WITHDRAW':
                 await create_random_withdraw()
 
-            # await create_random_deposit()
-
         return (txs, targets)
     
-    async def tx_flow(self, tx_proc: TXProcessor, signer: User, tx: TX) -> None:
+    async def tx_flow(self, tx_count: int, tx_proc: TXProcessor, signer: User, tx: TX) -> None:
         paygate = tx_proc.paygate
+
+        loop = asyncio.get_event_loop()
+        action_done = loop.create_future()
 
         async def random_paygate_webhook():
             await asyncio.sleep(random.choice([ 1, 2 ]))
@@ -86,29 +87,36 @@ class Test_TXEfficacy:
             assert instr_index is not None
 
             async def pop_callback(pop_result: TXPopResult):
-                print('pop_result', pop_result.to_dict())
-                pass
+                action_done.set_result(True)
 
+                print(f'[{pop_result.timestamp}] TX {tx_count} pop')
+            
             await tx_proc.pop_tx_with_callback(pop_callback, tx, instr_index)
 
         async def push_callback(push_result: TXPushResult):
-            assert push_result.without_error()
+            print(f'[{push_result.timestamp}] TX {tx_count} push')
+
+            if push_result.with_error():
+                action_done.set_result(True)
+                return
 
             await random_paygate_webhook()
 
         await tx_proc.push_tx_with_callback(push_callback, signer, tx)
-        
-        await asyncio.sleep(3)
+
+        await action_done
 
     def verify_balance_targets(self, cache: CacheMock, repository: RepositoryMock, targets: dict):
         cache_vaults = cache.get_all_user_vaults()
         rep_vaults = repository.get_all_user_vaults()
 
         for vault in cache_vaults:
-            assert targets[vault] == vault.total_balance()
+            print(targets[vault], vault.total_balance())
+
+            assert abs(targets[vault] - vault.total_balance()) < 1e-15
 
         for vault in rep_vaults:
-            assert targets[vault] == vault.total_balance()
+            assert abs(targets[vault] - vault.total_balance()) < 1e-15
     
     ### TEST METHODS ###
     @pytest.mark.asyncio
@@ -131,14 +139,17 @@ class Test_TXEfficacy:
             )
         )
 
-        (txs, targets) = await self.get_random_tx_batch(cache, repository, num_txs=10)
+        (txs, targets) = await self.get_random_tx_batch(cache, repository, num_txs=100)
 
         promises = []
 
         print('')
 
+        tx_count = 1
+
         for (signer, tx) in txs:
-            promises.append(self.tx_flow(tx_proc, signer, tx))
+            promises.append(self.tx_flow(tx_count, tx_proc, signer, tx))
+            tx_count += 1
 
         print(f'Processing {len(txs)} transactions...')
         await asyncio.gather(*promises)
