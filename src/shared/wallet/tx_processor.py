@@ -347,7 +347,7 @@ class TXProcessor:
         next_state, instr_result = await instruction.revert(instr_index, state)
 
         if instr_result.with_error():
-            return await self.commit_instruction_failed_epilogue(tx, commit_log, instr_index, instr_result)
+            return await self.commit_failed_epilogue(tx, commit_log, instr_index, instr_result)
         
         for vault in instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -392,7 +392,7 @@ class TXProcessor:
         next_state, instr_result = await instruction.execute(instr_index, state, from_sign=False)
 
         if instr_result.with_error():
-            return await self.commit_instruction_failed_epilogue(tx, commit_log, instr_index, instr_result)
+            return await self.commit_failed_epilogue(tx, commit_log, instr_index, instr_result)
 
         for vault in instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -417,7 +417,7 @@ class TXProcessor:
         
         return tx.commit_result
     
-    async def commit_instruction_failed_epilogue(self, tx: TX, commit_log: TXLogs, instr_index: int, \
+    async def commit_failed_epilogue(self, tx: TX, commit_log: TXLogs, instr_index: int, \
         instr_result: TXBaseInstructionResult) -> TXCommitResult:
         error = error_with_instruction_sufix(instr_result.error, instr_index)
 

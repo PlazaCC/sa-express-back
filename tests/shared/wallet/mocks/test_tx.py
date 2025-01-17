@@ -19,10 +19,10 @@ from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
 from src.shared.wallet.vault_processor import VaultProcessor
-from src.shared.wallet.tx_templates.deposit import create_deposit_tx
-from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 from src.shared.wallet.tx_results.pop import TXPopResult
 from src.shared.wallet.tx_results.push import TXPushResult
+from src.shared.wallet.tx_templates.deposit import create_deposit_tx
+from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 
 pytest_plugins = ('pytest_asyncio')
 
@@ -460,7 +460,7 @@ class Test_TXMock:
             max_instructions=1,
             tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
         )
-
+        
         tx_proc = TXProcessor(cache, repository, paygate, config=tx_proc_config)
 
         to_vault = repository.get_random_vault()
