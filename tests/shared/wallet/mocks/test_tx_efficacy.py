@@ -54,7 +54,7 @@ class Test_TXEfficacy:
 
             if targets[from_vault] - amount >= 0:
                 targets[from_vault] -= amount
-            
+
             txs.append((signer, tx))
         
         for _ in range(0, num_txs):
@@ -64,6 +64,8 @@ class Test_TXEfficacy:
                 await create_random_deposit()
             elif selected_template == 'WITHDRAW':
                 await create_random_withdraw()
+
+            # await create_random_deposit()
 
         return (txs, targets)
     
@@ -83,16 +85,19 @@ class Test_TXEfficacy:
             assert tx is not None
             assert instr_index is not None
 
-            async def callback(pop_result: TXPopResult):
+            async def pop_callback(pop_result: TXPopResult):
                 print('pop_result', pop_result.to_dict())
                 pass
 
-            await tx_proc.pop_tx_with_callback(callback, tx, instr_index)
+            await tx_proc.pop_tx_with_callback(pop_callback, tx, instr_index)
 
-        await tx_proc.push_tx(signer, tx)
+        async def push_callback(push_result: TXPushResult):
+            assert push_result.without_error()
 
-        await random_paygate_webhook()
+            await random_paygate_webhook()
 
+        await tx_proc.push_tx_with_callback(push_callback, signer, tx)
+        
         await asyncio.sleep(3)
 
     def verify_balance_targets(self, cache: CacheMock, repository: RepositoryMock, targets: dict):
@@ -122,7 +127,7 @@ class Test_TXEfficacy:
             config=TXProcessorConfig(
                 max_vaults=2,
                 max_instructions=1,
-                tx_queue_type=TX_QUEUE_TYPE.CLIENT
+                tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
             )
         )
 
@@ -135,7 +140,9 @@ class Test_TXEfficacy:
         for (signer, tx) in txs:
             promises.append(self.tx_flow(tx_proc, signer, tx))
 
+        print(f'Processing {len(txs)} transactions...')
         await asyncio.gather(*promises)
+        print('Done')
 
         self.verify_balance_targets(cache, repository, targets)
 
