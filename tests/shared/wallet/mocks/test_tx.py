@@ -21,6 +21,7 @@ from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_templates.deposit import create_deposit_tx
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
+from src.shared.wallet.tx_results.pop import TXPopResult
 
 pytest_plugins = ('pytest_asyncio')
 
@@ -73,24 +74,6 @@ class CacheMock:
 
         return user_vaults + server_vaults
     
-    async def lock_vault(self, vault: Vault) -> Vault:
-        (_, updated_vault) = await self.get_vault(vault)
-
-        updated_vault.locked = True
-
-        await self.set_vault(updated_vault)
-
-        return updated_vault
-    
-    async def unlock_vault(self, vault: Vault) -> Vault:
-        (_, updated_vault) = await self.get_vault(vault)
-
-        updated_vault.locked = False
-
-        await self.set_vault(updated_vault)
-
-        return updated_vault
-    
     async def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
         cache_vaults = []
 
@@ -108,6 +91,20 @@ class CacheMock:
 
         for cache_vault in cache_vaults:
             cache_vault['locked'] = True
+
+        return [ Vault.from_dict_static(v) for v in cache_vaults ]
+    
+    async def unlock_vaults(self, vaults: list[Vault]) -> list[Vault]:
+        cache_vaults = []
+
+        async def _get_vault(v: Vault):
+            if v.type == VAULT_TYPE.SERVER_UNLIMITED:
+                return (None, v.to_dict())
+            
+            return await self.get_vault(v, deserialize=False)
+        
+        for (_, cache_vault) in await asyncio.gather(*[ _get_vault(v) for v in vaults ]):
+            cache_vault['locked'] = False
 
         return [ Vault.from_dict_static(v) for v in cache_vaults ]
 
@@ -377,11 +374,13 @@ class Test_TXMock:
 
             ptx_status = random.choice(paygate_tx_status)
 
-            commit_result = await tx_proc.commit_tx(tx, instr_index, ptx_status)
-
             if ptx_status == PAYGATE_TX_STATUS.CONFIRMED:
+                commit_result = await tx_proc.commit_tx_confirmed(tx, instr_index)
+
                 assert commit_result.without_error()
             elif ptx_status == PAYGATE_TX_STATUS.FAILED:
+                commit_result = await tx_proc.commit_tx_failed(tx, instr_index, f'Transaction failed on paygate with status "{ptx_status.value}"')
+
                 assert commit_result.with_error()
 
         for (signer, tx) in txs:
@@ -419,11 +418,25 @@ class Test_TXMock:
         
         tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
 
+        async def random_paygate_webhook():
+            await asyncio.sleep(randrange(1, 3))
+
+            paygate_ref = tx_proc.paygate.pending_payments.pop()
+            
+            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+
+            assert tx is not None
+            assert instr_index is not None
+
+            async def callback(pop_result: TXPopResult):
+                assert pop_result.without_error()
+
+            await tx_proc.pop_tx(callback, tx, instr_index)
+
         push_res = await tx_proc.push_tx(signer, tx)
 
         assert push_res.without_error()
 
-        print('')
-        print('push_res', push_res.to_dict())
+        await random_paygate_webhook()
 
         assert True

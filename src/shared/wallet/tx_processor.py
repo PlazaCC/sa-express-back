@@ -15,6 +15,7 @@ from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResul
 from src.shared.wallet.tx_results.sign import TXSignResult
 from src.shared.wallet.tx_results.commit import TXCommitResult
 from src.shared.wallet.tx_results.push import TXPushResult
+from src.shared.wallet.tx_results.pop import TXPopResult
 
 from src.shared.wallet.tx_queues.base import TXBaseQueue
 from src.shared.wallet.tx_queues.client import TXClientQueue
@@ -325,14 +326,7 @@ class TXProcessor:
         return tx.sign_result
     
     ### COMMIT METHODS ###
-    async def commit_tx(self, tx: TX, instr_index: int, paygate_tx_status: PAYGATE_TX_STATUS) -> TXCommitResult:
-        if paygate_tx_status == PAYGATE_TX_STATUS.FAILED:
-            return await self.commit_tx_failed(tx, instr_index)
-
-        if paygate_tx_status == PAYGATE_TX_STATUS.CONFIRMED:
-            return await self.commit_tx_confirmed(tx, instr_index)
-    
-    async def commit_tx_failed(self, tx: TX, instr_index: int) -> TXCommitResult:
+    async def commit_tx_failed(self, tx: TX, instr_index: int, error: str = 'Unknown reason') -> TXCommitResult:
         log_key = TXLogs.get_instruction_log_key(instr_index)
 
         if log_key not in tx.logs:
@@ -344,9 +338,6 @@ class TXProcessor:
             return TXCommitResult.failed(f'Transaction log already resolved: "{log_key}"')
         
         instruction = tx.instructions[instr_index]
-
-        # TODO: handle real cache errors
-        tx.vaults = await self.vault_proc.lock(tx.vaults)
 
         state = self.get_tx_state(tx)
 
@@ -373,13 +364,10 @@ class TXProcessor:
         commit_log.error = ''
         
         tx.status = self.get_tx_committed_status(tx)
-        tx.commit_result = TXCommitResult.failed('Transaction failed on payment gateway')
+        tx.commit_result = TXCommitResult.failed(error)
 
         # TODO: handle real cache/rep errors
         await self.persist_tx(tx)
-        
-        # TODO: handle real cache errors
-        await self.vault_proc.unlock(tx.vaults)
 
         return tx.commit_result
 
@@ -395,9 +383,6 @@ class TXProcessor:
             return TXCommitResult.failed(f'Transaction log already resolved: "{log_key}"')
 
         instruction = tx.instructions[instr_index]
-
-        # TODO: handle real cache errors
-        tx.vaults = await self.vault_proc.lock(tx.vaults)
 
         state = self.get_tx_state(tx)
 
@@ -428,9 +413,6 @@ class TXProcessor:
 
         # TODO: handle real cache/rep errors
         await self.persist_tx(tx)
-        
-        # TODO: handle real cache errors
-        await self.vault_proc.unlock(tx.vaults)
 
         return tx.commit_result
     
@@ -447,11 +429,11 @@ class TXProcessor:
         # TODO: handle real cache/rep errors
         await self.persist_tx(tx)
 
-        # TODO: handle real cache errors
-        await self.vault_proc.unlock(tx.vaults)
-
         return tx.commit_result
     
-    ### PUSH METHODS ###
+    ### QUEUE METHODS ###
     async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
         return await self.tx_queue.push_tx(signer, tx)
+    
+    async def pop_tx(self, tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
+        return await self.tx_queue.pop_tx(tx, instr_index, error)
