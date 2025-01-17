@@ -1,6 +1,6 @@
 import asyncio
 from urllib import parse
-from typing import Any, Awaitable
+from typing import Awaitable
 from collections.abc import Callable
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
@@ -10,7 +10,6 @@ from src.shared.domain.entities.user import User
 
 from src.shared.wallet.utils import error_with_instruction_sufix
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
-from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
@@ -235,7 +234,7 @@ class TXProcessor:
             return (None, None)
 
         return (rep_tx, instr_index)
-
+    
     ### SIGN METHODS ###
     async def sign(self, signer: User, tx: TX) -> TXSignResult:
         fields_error = self.validate_tx_fields_before_sign(tx)
