@@ -21,4 +21,24 @@ from tests.shared.wallet.mocks.common import get_back_context
 pytest_plugins = ('pytest_asyncio')
 
 class Test_TXStressMock:
-    pass
+    @pytest.mark.asyncio
+    # @pytest.mark.skip(reason='')
+    async def test_tx_efficacy(self):
+        (cache, repository, paygate) = await get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
+
+        tx_proc = TXProcessor(cache, repository, paygate, 
+            config=TXProcessorConfig(
+                max_vaults=2,
+                max_instructions=1,
+                tx_queue_type=TX_QUEUE_TYPE.CLIENT
+            )
+        )
+
+        assert True

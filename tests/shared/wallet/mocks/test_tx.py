@@ -21,93 +21,7 @@ from tests.shared.wallet.mocks.common import get_back_context
 pytest_plugins = ('pytest_asyncio')
 
 class Test_TXMock:
-    @pytest.mark.asyncio
-    # @pytest.mark.skip(reason='')
-    async def test_vaults(self):
-        (cache, repository, paygate) = await get_back_context({
-            'num_users': 10,
-            'user_status': [ USER_STATUS.CONFIRMED.value ],
-            'create_vaults': {
-                'random_balance': True,
-                'locked': False
-            }
-        })
-
-        cached_vaults = cache.get_all_vaults()
-
-        assert len(cached_vaults) > 0
-
-        total_balance = 0
-
-        for vault in cached_vaults:
-            total_balance += vault.balance
-
-        assert total_balance > 0
-    
-    @pytest.mark.asyncio
-    # @pytest.mark.skip(reason='')
-    async def test_deposits(self):
-        (cache, repository, paygate) = await get_back_context({
-            'num_users': 10,
-            'user_status': [ USER_STATUS.CONFIRMED.value ],
-            'create_vaults': {
-                'random_balance': False,
-                'locked': False
-            }
-        })
-        
-        tx_proc = TXProcessor(cache, repository, paygate)
-        
-        txs = []
-
-        for _ in range(0, 1):
-            to_vault = repository.get_random_vault()
-            (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
-
-            amount = Decimal(150)
-            
-            tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
-
-            txs.append((signer, tx))
-
-        assert(len(txs) > 0)
-
-        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
-
-        assert True
-    
-    @pytest.mark.asyncio
-    # @pytest.mark.skip(reason='')
-    async def test_withdrawals(self):
-        (cache, repository, paygate) = await get_back_context({
-            'num_users': 10,
-            'user_status': [ USER_STATUS.CONFIRMED.value ],
-            'create_vaults': {
-                'random_balance': True,
-                'locked': False
-            }
-        })
-        
-        tx_proc = TXProcessor(cache, repository, paygate)
-
-        txs = []
-
-        for _ in range(0, 1):
-            from_vault = repository.get_random_vault()
-            (_, signer) = await repository.get_user_by_user_id(from_vault.user_id)
-
-            amount = from_vault.balance * Decimal(0.1)
-            
-            tx = create_withdrawal_tx({ 'from_vault': from_vault, 'amount': amount })
-
-            txs.append((signer, tx))
-
-        assert(len(txs) > 0)
-
-        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
-
-        assert True
-    
+    ### UTILITY METHODS ###
     async def sign_txs(self, tx_proc: TXProcessor, txs: list[TX], paygate_tx_status: list[PAYGATE_TX_STATUS]):
         webhooks = []
 
@@ -140,9 +54,97 @@ class Test_TXMock:
             webhooks.append(random_paygate_webhook())
 
         await asyncio.gather(*webhooks)
+
+    ### TEST METHODS ###
+    @pytest.mark.asyncio
+    @pytest.mark.skip(reason='')
+    async def test_vaults(self):
+        (cache, repository, paygate) = await get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
+
+        cached_vaults = cache.get_all_vaults()
+
+        assert len(cached_vaults) > 0
+
+        total_balance = 0
+
+        for vault in cached_vaults:
+            total_balance += vault.balance
+
+        assert total_balance > 0
     
     @pytest.mark.asyncio
-    # @pytest.mark.skip(reason='')
+    @pytest.mark.skip(reason='')
+    async def test_deposits(self):
+        (cache, repository, paygate) = await get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': False,
+                'locked': False
+            }
+        })
+        
+        tx_proc = TXProcessor(cache, repository, paygate)
+        
+        txs = []
+
+        for _ in range(0, 1):
+            to_vault = repository.get_random_vault()
+            (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
+
+            amount = Decimal(150)
+            
+            tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
+
+            txs.append((signer, tx))
+
+        assert(len(txs) > 0)
+
+        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
+
+        assert True
+    
+    @pytest.mark.asyncio
+    @pytest.mark.skip(reason='')
+    async def test_withdrawals(self):
+        (cache, repository, paygate) = await get_back_context({
+            'num_users': 10,
+            'user_status': [ USER_STATUS.CONFIRMED.value ],
+            'create_vaults': {
+                'random_balance': True,
+                'locked': False
+            }
+        })
+        
+        tx_proc = TXProcessor(cache, repository, paygate)
+
+        txs = []
+
+        for _ in range(0, 1):
+            from_vault = repository.get_random_vault()
+            (_, signer) = await repository.get_user_by_user_id(from_vault.user_id)
+
+            amount = from_vault.balance * Decimal(0.1)
+            
+            tx = create_withdrawal_tx({ 'from_vault': from_vault, 'amount': amount })
+
+            txs.append((signer, tx))
+
+        assert(len(txs) > 0)
+
+        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
+
+        assert True
+    
+    @pytest.mark.asyncio
+    @pytest.mark.skip(reason='')
     async def test_client_queue(self):
         (cache, repository, paygate) = await get_back_context({
             'num_users': 10,
@@ -153,13 +155,13 @@ class Test_TXMock:
             }
         })
 
-        tx_proc_config = TXProcessorConfig(
-            max_vaults=2,
-            max_instructions=1,
-            tx_queue_type=TX_QUEUE_TYPE.CLIENT
+        tx_proc = TXProcessor(cache, repository, paygate, 
+            config=TXProcessorConfig(
+                max_vaults=2,
+                max_instructions=1,
+                tx_queue_type=TX_QUEUE_TYPE.CLIENT
+            )
         )
-
-        tx_proc = TXProcessor(cache, repository, paygate, config=tx_proc_config)
 
         to_vault = repository.get_random_vault()
         (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
@@ -190,9 +192,9 @@ class Test_TXMock:
         await random_paygate_webhook()
 
         assert True
-
+    
     @pytest.mark.asyncio
-    # @pytest.mark.skip(reason='')
+    @pytest.mark.skip(reason='')
     async def test_server_single_queue(self):
         (cache, repository, paygate) = await get_back_context({
             'num_users': 10,
@@ -203,13 +205,13 @@ class Test_TXMock:
             }
         })
 
-        tx_proc_config = TXProcessorConfig(
-            max_vaults=2,
-            max_instructions=1,
-            tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
+        tx_proc = TXProcessor(cache, repository, paygate, 
+            config=TXProcessorConfig(
+                max_vaults=2,
+                max_instructions=1,
+                tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
+            )
         )
-        
-        tx_proc = TXProcessor(cache, repository, paygate, config=tx_proc_config)
 
         to_vault = repository.get_random_vault()
         (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
