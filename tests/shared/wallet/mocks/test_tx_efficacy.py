@@ -108,10 +108,10 @@ class Test_TXEfficacy:
         rep_vaults = repository.get_all_user_vaults()
 
         for vault in cache_vaults:
-            assert abs(targets[vault] - vault.total_balance()) < 1e-6
+            assert targets[vault] == vault.total_balance()
 
         for vault in rep_vaults:
-            assert abs(targets[vault] - vault.total_balance()) < 1e-6
+            assert targets[vault] == vault.total_balance()
     
     ### TEST METHODS ###
     @pytest.mark.asyncio
