@@ -13,7 +13,7 @@ class UserApiGatewayDTO:
         self.name = name
         self.email = email
         self.role = role
-
+    
     @staticmethod
     def from_api_gateway(user_data: dict) -> 'UserApiGatewayDTO':
         return UserApiGatewayDTO(

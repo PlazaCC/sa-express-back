@@ -54,3 +54,11 @@ class User(BaseModel): # Cognito
       email_verified=data['email_verified'],
       enabled=data['enabled']
     )
+  
+  def to_api_dto(self):
+    return {
+      'sub': self.user_id,
+      'name': self.name,
+      'email': self.email,
+      'custom:role': self.role.value
+    }
