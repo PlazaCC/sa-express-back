@@ -1,9 +1,11 @@
 from src.shared.wallet.models.pix import PIXKey
+from src.shared.wallet.wrappers.paygate import PayGateWrapper
 
-class PayGateMock:
+class PayGateMock(PayGateWrapper):
     def __init__(self):
         self.pending_payments = []
 
+    ### OVERRIDE METHODS ###
     async def create_pix_url(self, pix_key: PIXKey, paygate_ref: str) -> dict:
         self.pending_payments.append(paygate_ref)
 

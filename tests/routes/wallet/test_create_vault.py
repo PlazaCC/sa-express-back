@@ -1,3 +1,5 @@
+import pytest
+
 from src.routes.wallet.create_vault import Controller, Usecase
 
 from src.shared.domain.enums.user_status_enum import USER_STATUS
@@ -6,8 +8,13 @@ from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRep
 
 from tests.shared.wallet.mocks.repository import RepositoryMock
 
+pytest_plugins = ('pytest_asyncio')
+
 class Test_CreateVault:
-    def test_controller(self):
+    ### TEST METHODS ###
+    @pytest.mark.asyncio
+    # @pytest.mark.skip(reason='')
+    async def test_controller(self):
         controller = Controller()
         repository = RepositoryMock()
 
@@ -24,6 +31,6 @@ class Test_CreateVault:
         
         request = HttpRequest(body=body, headers={}, query_params={})
 
-        response = controller.execute(request)
+        response = await controller.execute(request)
 
         assert response.status_code == 200

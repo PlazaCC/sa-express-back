@@ -6,11 +6,11 @@ from src.shared.helpers.external_interfaces.http_codes import OK, InternalServer
 
 class Controller:
     @staticmethod
-    def execute(request: IRequest) -> IResponse:
+    async def execute(request: IRequest) -> IResponse:
         try:
             requester_user = UserApiGatewayDTO.from_api_gateway(request.data.get('requester_user'))
 
-            response = Usecase().execute()
+            response = await Usecase().execute(requester_user)
 
             return OK(body=response)
         except Exception as error:
@@ -22,17 +22,20 @@ class Usecase:
     def __init__(self):
         pass
 
-    def execute(self) -> dict:
+    async def execute(self, requester_user: UserApiGatewayDTO) -> dict:
+        
+        
+
         return {}
 
-def function_handler(event, context):
+async def function_handler(event, context):
     http_request = LambdaHttpRequest(event)
 
     http_request.data['requester_user'] = event.get('requestContext', {}) \
         .get('authorizer', {}) \
         .get('claims', None)
     
-    response = Controller.execute(http_request)
+    response = await Controller.execute(http_request)
 
     return LambdaHttpResponse(
         status_code=response.status_code, 

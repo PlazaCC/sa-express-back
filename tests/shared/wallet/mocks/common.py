@@ -12,7 +12,7 @@ async def get_back_context(config: dict):
     cache = CacheMock()
     repository = RepositoryMock()
     paygate = PayGateMock()
-
+    
     if 'num_users' in config and config['num_users'] > 0:
         repository.generate_users(config)
 

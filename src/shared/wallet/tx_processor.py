@@ -17,11 +17,13 @@ from src.shared.wallet.tx_results.sign import TXSignResult
 from src.shared.wallet.tx_results.commit import TXCommitResult
 from src.shared.wallet.tx_results.push import TXPushResult
 from src.shared.wallet.tx_results.pop import TXPopResult
-
 from src.shared.wallet.tx_queues.base import TXBaseQueue
 from src.shared.wallet.tx_queues.client import TXClientQueue
 from src.shared.wallet.tx_queues.server_single import TXServerSingleQueue
 from src.shared.wallet.tx_queues.single_multi import TXServerMultiQueue
+from src.shared.wallet.wrappers.cache import CacheWrapper
+from src.shared.wallet.wrappers.repository import RepositoryWrapper
+from src.shared.wallet.wrappers.paygate import PayGateWrapper
 
 class TXProcessorConfig:
     max_vaults: int
@@ -46,11 +48,15 @@ class TXProcessorConfig:
         }
 
 class TXProcessor:
+    cache: CacheWrapper
+    repository: RepositoryWrapper
+    paygate: PayGateWrapper
     config: TXProcessorConfig
     tx_queue: TXBaseQueue
     vault_proc: VaultProcessor
 
-    def __init__(self, cache, repository, paygate, config: TXProcessorConfig = TXProcessorConfig.default()):
+    def __init__(self, cache: CacheWrapper, repository: RepositoryWrapper, paygate: PayGateWrapper, \
+        config: TXProcessorConfig = TXProcessorConfig.default()):
         self.cache = cache
         self.repository = repository
         self.paygate = paygate
