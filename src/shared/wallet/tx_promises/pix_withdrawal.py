@@ -1,6 +1,6 @@
 from typing import Any
-from decimal import Decimal
 
+from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_promises.base import TXBasePromise

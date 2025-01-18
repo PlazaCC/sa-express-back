@@ -1,10 +1,9 @@
-from decimal import Decimal
-
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 
+from src.shared.wallet.decimal import Decimal, quantize
 from src.shared.wallet.enums.tx_instruction_type import TX_INSTRUCTION_TYPE
 from src.shared.wallet.tx_instructions.base import TXBaseInstruction
 from src.shared.wallet.tx_instruction_results.transfer import TXTransferInstructionResult
@@ -27,7 +26,11 @@ class TXTransferInstruction(TXBaseInstruction):
     def __init__(self, from_vault: Vault, to_vault: Vault, amount: Decimal):
         self.from_vault = from_vault
         self.to_vault = to_vault
-        self.amount = amount
+        
+        self.set_amount(amount)
+
+    def set_amount(self, amount: Decimal):
+        self.amount = quantize(amount)
 
     def to_tx_snapshot(self) -> dict:
         return {
@@ -43,7 +46,7 @@ class TXTransferInstruction(TXBaseInstruction):
         if amount == 0:
             return "Can't transfer zero amount"
         
-        if amount < 0 :
+        if amount < 0:
             return "Can't transfer negative amount"
         
         from_vault = self.from_vault
@@ -119,7 +122,7 @@ class TXTransferInstruction(TXBaseInstruction):
     
     def is_withdrawal(self) -> bool:
         return self.from_vault.type == VAULT_TYPE.USER and self.to_vault.type == VAULT_TYPE.SERVER_UNLIMITED
-
+    
     async def execute(self, instr_index: int, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
         to_vault = self.to_vault

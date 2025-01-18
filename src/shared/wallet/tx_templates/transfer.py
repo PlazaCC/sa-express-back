@@ -1,8 +1,8 @@
-from decimal import Decimal
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 
 from src.shared.domain.entities.tx import TX
 
+from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.utils import now_timestamp
 from src.shared.wallet.tx_instructions.transfer import TXTransferInstruction
 from src.shared.wallet.tx_templates.common import parse_build_params_user, \

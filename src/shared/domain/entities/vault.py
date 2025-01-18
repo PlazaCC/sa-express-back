@@ -1,9 +1,9 @@
-from decimal import Decimal
 from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
 
+from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
 
 class Vault(BaseModel):

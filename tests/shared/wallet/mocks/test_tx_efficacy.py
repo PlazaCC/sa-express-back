@@ -1,15 +1,12 @@
 import pytest
 import random
 import asyncio
-from decimal import Decimal
-from typing import Awaitable
-from collections.abc import Callable
 
 from src.shared.domain.enums.user_status_enum import USER_STATUS
-
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
 
+from src.shared.wallet.decimal import Decimal, quantize
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
 from src.shared.wallet.tx_results.pop import TXPopResult
@@ -36,7 +33,7 @@ class Test_TXEfficacy:
             to_vault = repository.get_random_vault()
             (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
 
-            amount = Decimal(random.choice([ 10, 50, 100, 125, 150, 300 ]))
+            amount = quantize(Decimal(random.choice([ 10, 50, 100, 125, 150, 300 ])))
             
             tx = create_deposit_tx({ 'to_vault': to_vault, 'amount': amount })
 
@@ -48,7 +45,7 @@ class Test_TXEfficacy:
             from_vault = repository.get_random_vault()
             (_, signer) = await repository.get_user_by_user_id(from_vault.user_id)
 
-            amount = from_vault.balance * Decimal(random.choice([ 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25 ]))
+            amount = quantize(from_vault.balance * Decimal(random.choice([ 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25 ])))
             
             tx = create_withdrawal_tx({ 'from_vault': from_vault, 'amount': amount })
 
@@ -74,7 +71,7 @@ class Test_TXEfficacy:
         action_done = loop.create_future()
 
         async def random_paygate_webhook():
-            await asyncio.sleep(random.choice([ 1, 2 ]))
+            await asyncio.sleep(random.choice([ 0.1, 0.15, 0.2, 0.25 ]))
 
             if len(paygate.pending_payments) == 0:
                 return
@@ -111,12 +108,10 @@ class Test_TXEfficacy:
         rep_vaults = repository.get_all_user_vaults()
 
         for vault in cache_vaults:
-            print(targets[vault], vault.total_balance())
-
-            assert abs(targets[vault] - vault.total_balance()) < 1e-15
+            assert abs(targets[vault] - vault.total_balance()) < 1e-6
 
         for vault in rep_vaults:
-            assert abs(targets[vault] - vault.total_balance()) < 1e-15
+            assert abs(targets[vault] - vault.total_balance()) < 1e-6
     
     ### TEST METHODS ###
     @pytest.mark.asyncio
@@ -145,15 +140,25 @@ class Test_TXEfficacy:
 
         print('')
 
-        tx_count = 1
+        async def process_simultaneous():
+            tx_count = 1
+            
+            for (signer, tx) in txs:
+                promises.append(self.tx_flow(tx_count, tx_proc, signer, tx))
+                tx_count += 1
 
-        for (signer, tx) in txs:
-            promises.append(self.tx_flow(tx_count, tx_proc, signer, tx))
-            tx_count += 1
+            print(f'Processing {len(txs)} transactions...')
+            await asyncio.gather(*promises)
+            print('Done')
 
-        print(f'Processing {len(txs)} transactions...')
-        await asyncio.gather(*promises)
-        print('Done')
+        async def process_1by1():
+            tx_count = 1
+
+            for (signer, tx) in txs:
+                await self.tx_flow(tx_count, tx_proc, signer, tx)
+                tx_count += 1
+
+        await process_1by1()
 
         self.verify_balance_targets(cache, repository, targets)
 

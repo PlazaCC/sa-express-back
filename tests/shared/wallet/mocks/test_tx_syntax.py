@@ -1,13 +1,12 @@
 import pytest
 import random
 import asyncio
-from decimal import Decimal
 from random import randrange
 
 from src.shared.domain.enums.user_status_enum import USER_STATUS
-
 from src.shared.domain.entities.tx import TX
 
+from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
@@ -57,7 +56,7 @@ class Test_TXSyntax:
 
     ### TEST METHODS ###
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_vaults(self):
         (cache, repository, paygate) = await get_back_context({
             'num_users': 10,
@@ -80,7 +79,7 @@ class Test_TXSyntax:
         assert total_balance > 0
     
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_deposits(self):
         (cache, repository, paygate) = await get_back_context({
             'num_users': 10,
@@ -112,7 +111,7 @@ class Test_TXSyntax:
         assert True
     
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_withdrawals(self):
         (cache, repository, paygate) = await get_back_context({
             'num_users': 10,
@@ -144,7 +143,7 @@ class Test_TXSyntax:
         assert True
     
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_client_queue(self):
         (cache, repository, paygate) = await get_back_context({
             'num_users': 10,
@@ -194,7 +193,7 @@ class Test_TXSyntax:
         assert True
     
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     async def test_server_single_queue(self):
         (cache, repository, paygate) = await get_back_context({
             'num_users': 10,
