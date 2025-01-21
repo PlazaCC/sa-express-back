@@ -9,8 +9,8 @@ from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRep
 from src.shared.wallet.mocks.wallet_paygate_mock import WalletPayGateMock
 
 async def get_back_context(config: dict):
-    repository = WalletRepositoryMock()
-    cache = WalletCacheMock()
+    repository = WalletRepositoryMock(singleton=config['singleton'] if 'singleton' in config else True)
+    cache = WalletCacheMock(singleton=config['singleton'] if 'singleton' in config else True)
     paygate = WalletPayGateMock()
     
     if 'num_users' in config and config['num_users'] > 0:
@@ -24,7 +24,7 @@ async def get_back_context(config: dict):
         users = repository.get_all_users()
         
         for user in users:
-            vault_proc.create_if_not_exists(user, { 
+            user_vault = vault_proc.create_if_not_exists(user, { 
                 'balance': str(random.uniform(1000, 10000)) if create_vaults_config['random_balance'] else '0',
                 'balance_locked': '0',
                 'locked': create_vaults_config['locked']

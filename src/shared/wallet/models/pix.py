@@ -82,15 +82,12 @@ class PIXKey:
     def validate_phone(value: str) -> bool:
         value_length = len(value)
 
-        if value_length < 12 or value_length > 13:
+        if value_length < 10 or value_length > 12:
             return False
 
         digits = re.findall('\\d', value)
 
         if len(digits) != value_length:
-            return False
-        
-        if digits[0] != '5' or digits[1] != '5':
             return False
         
         sum = 0

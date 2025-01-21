@@ -72,7 +72,7 @@ class TXProcessor:
         self.vault_proc = VaultProcessor(cache, repository)
     
     ### UTILITY METHODS ###
-    async def persist_tx(self, tx: TX) -> None:
+    def persist_tx(self, tx: TX) -> None:
         self.cache.upsert_transaction(tx)
         self.repository.upsert_transaction(tx)
         
@@ -295,9 +295,8 @@ class TXProcessor:
             vault.balance_locked = vault_state['balance_locked']
 
             self.vault_proc.persist_vault(vault)
-
-        # TODO: handle real cache/rep errors
-        await self.persist_tx(tx)
+        
+        self.persist_tx(tx)
 
         sign_result = tx.sign_result.clone()
 
@@ -325,8 +324,7 @@ class TXProcessor:
         tx.sign_result = TXSignResult.successful()
         tx.commit_result = TXCommitResult.successful()
 
-        # TODO: handle real cache/rep errors
-        await self.persist_tx(tx)
+        self.persist_tx(tx)
 
         return tx.sign_result
     
@@ -373,8 +371,7 @@ class TXProcessor:
         tx.status = self.get_tx_committed_status(tx)
         tx.commit_result = TXCommitResult.failed(error)
 
-        # TODO: handle real cache/rep errors
-        await self.persist_tx(tx)
+        self.persist_tx(tx)
 
         return tx.commit_result
 
@@ -420,8 +417,7 @@ class TXProcessor:
         tx.status = self.get_tx_committed_status(tx)
         tx.commit_result = TXCommitResult.successful()
 
-        # TODO: handle real cache/rep errors
-        await self.persist_tx(tx)
+        self.persist_tx(tx)
         
         return tx.commit_result
     
@@ -435,8 +431,7 @@ class TXProcessor:
         tx.status = self.get_tx_committed_status(tx)
         tx.commit_result = TXCommitResult.failed(error)
         
-        # TODO: handle real cache/rep errors
-        await self.persist_tx(tx)
+        self.persist_tx(tx)
 
         return tx.commit_result
     

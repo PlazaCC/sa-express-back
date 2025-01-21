@@ -8,10 +8,15 @@ class WalletCacheMock(IWalletCache):
     vaults_by_server_ref: dict = {}
     transactions: dict = {}
 
-    def __init__(self):
+    def __init__(self, singleton=True):
         self.vaults_by_user_id = WalletCacheMock.vaults_by_user_id
         self.vaults_by_server_ref = WalletCacheMock.vaults_by_server_ref
         self.transactions = WalletCacheMock.transactions
+
+        if singleton:
+            self.vaults_by_user_id = {}
+            self.vaults_by_server_ref = {}
+            self.transactions = {}
     
     ### OVERRIDE METHODS ###
     def upsert_vault(self, vault: Vault) -> Vault:

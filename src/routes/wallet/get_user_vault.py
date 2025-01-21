@@ -38,10 +38,10 @@ class Usecase:
         )
 
     def execute(self, requester_user: UserApiGatewayDTO) -> dict:
-        vault = self.vault_proc.get_by_user(requester_user)
+        vault = self.vault_proc.create_if_not_exists(requester_user)
 
         return {
-            'vault': vault.to_user_public() if vault is not None else None
+            'vault': vault.to_user_public()
         }
 
 def function_handler(event, context) -> LambdaHttpResponse:
