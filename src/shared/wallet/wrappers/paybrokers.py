@@ -6,8 +6,8 @@ class Paybrokers(IWalletPayGate):
         pass
     
     ### PIX ###
-    async def create_pix_url(self, pix_key: PIXKey, paygate_ref: str) -> dict:
+    async def post_pix_deposit(self, pix_key: PIXKey, paygate_ref: str) -> dict:
         pass
     
-    async def pix_withdraw(self, pix_key: PIXKey, paygate_ref: str) -> dict:
+    async def post_pix_withdrawal(self, pix_key: PIXKey, paygate_ref: str) -> dict:
         pass
