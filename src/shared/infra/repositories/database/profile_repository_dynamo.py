@@ -32,3 +32,31 @@ class ProfileRepositoryDynamo(IProfileRepository):
             return None
         
         return Profile.from_dict(profile['Item'])
+    
+    @abstractmethod
+    def create_profile(self, profile: Profile) -> Profile:
+        try:
+            self.dynamo.put_item(
+                item=profile.to_dict(),
+                partition_key=self.profile_partition_key_format(profile.user_id),
+                sort_key=self.profile_sort_key_format()
+            )
+            return profile
+        except Exception as e:
+            raise e
+    
+    @abstractmethod
+    def deactivate_profile(self, user_id):
+        try:
+            profile = self.get_profile_by_id(user_id)
+            profile.status = "INACTIVE"
+            self.dynamo.update_item(
+                partition_key=self.profile_partition_key_format(user_id),
+                update_dict=profile.to_dict(),
+                sort_key=self.profile_sort_key_format()
+            )
+            
+            return profile
+        
+        except Exception as e:
+            raise e
