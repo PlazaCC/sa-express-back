@@ -43,3 +43,12 @@ class Profile:
       raise EntityError("Wallet ID is required")
     return True
   
+  def to_dict(self):
+        return {
+            "user_id": self.user_id,
+            "bet_data_id": self.bet_data_id,
+            "game_data_id": self.game_data_id,
+            "affiliations": [affiliation.to_dict() for affiliation in self.affiliations],
+            "wallet_id": self.wallet_id,
+        }
+  
