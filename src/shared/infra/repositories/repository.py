@@ -1,3 +1,4 @@
+from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
 from src.shared.environments import STAGE, Environments
 from src.shared.domain.repositories.deal_repository_interface import IDealRepository
 from src.shared.infra.repositories.auth.auth_repository_cognito import AuthRepositoryCognito
@@ -9,6 +10,8 @@ from src.shared.infra.repositories.mocks.profile_repository_mock import ProfileR
 
 class Repository:
     deal_repo: IDealRepository
+    auth_repo: AuthRepositoryCognito
+    profile_repo: IProfileRepository
 
     def __init__(
             self,
