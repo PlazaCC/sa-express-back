@@ -2,6 +2,8 @@ import re
 
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 
+EMAIL_REGEX = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
 class PIXKey:
     type : PIX_KEY_TYPE
     value: str
@@ -59,7 +61,7 @@ class PIXKey:
         sum = 0
         count = 10
 
-        for i in range(0, value_length - 1):
+        for i in range(1, value_length - 1):
             sum += int(digits[i]) * count
             count -= 1
 
@@ -103,7 +105,12 @@ class PIXKey:
     
     @staticmethod
     def validate_email(value: str) -> bool:
-        return False
+        value_length = len(value)
+
+        if value_length < 10 or value_length > 60:
+            return False
+        
+        return re.match(EMAIL_REGEX, value)
     
     @staticmethod
     def validate_rng(value: str) -> bool:

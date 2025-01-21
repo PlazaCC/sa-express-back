@@ -7,17 +7,27 @@ class Test_PIX:
     ### TEST METHODS ###
     # @pytest.mark.skip(reason='')
     def test_validate_cpf(self):
-        cpf1 = '85223578970'
+        valid_cpfs = [
+            '85223578970',
+            '51271235846',
+            '18446127407'
+        ]
 
-        valid = PIXKey.validate(PIX_KEY_TYPE.CPF, cpf1)
+        for cpf in valid_cpfs:
+            valid = PIXKey.validate(PIX_KEY_TYPE.CPF, cpf)
+            
+            assert valid
+
+        invalid_cpfs = [
+            '',
+            '00000000000',
+            '85223578932'
+        ]
+
+        for cpf in invalid_cpfs:
+            valid = PIXKey.validate(PIX_KEY_TYPE.CPF, cpf)
         
-        assert valid
-
-        cpf2 = '00000000000'
-
-        valid = PIXKey.validate(PIX_KEY_TYPE.CPF, cpf2)
-        
-        assert not valid
+            assert not valid
 
     # @pytest.mark.skip(reason='')
     def test_validate_phone(self):
@@ -32,8 +42,7 @@ class Test_PIX:
             '551232545080',
             '5534996889259',
             '553548502400',
-            '5553966321651',
-            '5551983163311'
+            '5553966321651'
         ]
 
         for phone in valid_phones:
@@ -42,6 +51,7 @@ class Test_PIX:
             assert valid
 
         invalid_phones = [
+            '',
             '559321099140000',
             '556547780706000',
             '551126984275000',
@@ -53,11 +63,37 @@ class Test_PIX:
             '55349968892592',
             '5035485024003',
             '55539663216511',
-            '55519831633112',
             '550000000000',
+            'asaoppo1212121031'
         ]
 
         for phone in invalid_phones:
             valid = PIXKey.validate(PIX_KEY_TYPE.PHONE, phone)
+
+            assert not valid
+
+    # @pytest.mark.skip(reason='')
+    def test_validate_email(self):
+        valid_emails = [
+            'my.ownsite@our-earth.org',
+            'bbirth@yahoo.com',
+            'rfisher@hotmail.com',
+            'ntegrity@aol.com',
+            'jdhildeb@comcast.net',
+            'library@yahoo.ca',
+        ]
+
+        for email in valid_emails:
+            valid = PIXKey.validate(PIX_KEY_TYPE.EMAIL, email)
+
+            assert valid
+
+        invalid_emails = [
+            '',
+            'invalidemail'
+        ]
+
+        for email in invalid_emails:
+            valid = PIXKey.validate(PIX_KEY_TYPE.EMAIL, email)
 
             assert not valid
