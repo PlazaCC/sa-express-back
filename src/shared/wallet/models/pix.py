@@ -25,12 +25,14 @@ class PIXKey:
 
     @staticmethod
     def validate_cpf(value: str) -> bool:
-        if len(value) != 11:
+        value_length = len(value)
+
+        if value_length != 11:
             return False
 
         digits = re.findall('\\d', value)
 
-        if len(digits) != 11:
+        if len(digits) != value_length:
             return False
         
         valid = 0
@@ -44,7 +46,7 @@ class PIXKey:
         sum = 0
         count = 10
 
-        for i in range(0, len(digits) - 2):
+        for i in range(0, value_length - 2):
             sum += int(digits[i]) * count
             count -= 1
         
@@ -57,7 +59,7 @@ class PIXKey:
         sum = 0
         count = 10
 
-        for i in range(0, len(digits) - 1):
+        for i in range(0, value_length - 1):
             sum += int(digits[i]) * count
             count -= 1
 
@@ -71,7 +73,33 @@ class PIXKey:
     
     @staticmethod
     def validate_phone(value: str) -> bool:
-        return False
+        value_length = len(value)
+
+        if value_length < 12 or value_length > 13:
+            return False
+
+        digits = re.findall('\\d', value)
+
+        if len(digits) != value_length:
+            return False
+        
+        if digits[0] != '5' or digits[1] != '5':
+            return False
+        
+        sum = 0
+
+        for i in range(2, value_length):
+            digit_int = int(digits[i])
+
+            if digit_int < 0:
+                return False
+            
+            sum += digit_int
+
+        if sum == 0:
+            return False
+
+        return True
     
     @staticmethod
     def validate_email(value: str) -> bool:
