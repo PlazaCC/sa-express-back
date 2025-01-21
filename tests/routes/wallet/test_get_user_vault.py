@@ -1,12 +1,12 @@
 import pytest
 
-from src.routes.wallet.create_vault import Controller
+from src.routes.wallet.get_user_vault import Controller
 
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRepositoryMock
 
-class Test_CreateVault:
+class Test_GetUserVault:
     ### TEST METHODS ###
     # @pytest.mark.skip(reason='')
     def test_controller(self):
@@ -18,7 +18,7 @@ class Test_CreateVault:
             'num_users': 1,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
         })
-
+        
         user = repository.get_random_user()
 
         body = {

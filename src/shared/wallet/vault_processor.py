@@ -30,6 +30,19 @@ class VaultProcessor:
 
         return vault
     
+    def get_by_user(self, user: User | UserApiGatewayDTO) -> Vault | None:
+        cache_vault = self.cache.get_vault_by_user_id(user.user_id)
+
+        if cache_vault is not None:
+            return cache_vault
+        
+        rep_vault = self.repository.get_vault_by_user_id(user.user_id)
+
+        if rep_vault is not None:
+            return rep_vault
+        
+        return None
+    
     def persist_vault(self, vault: Vault) -> None:
         self.cache.upsert_vault(vault)
         self.repository.upsert_vault(vault)

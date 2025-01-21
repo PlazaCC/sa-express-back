@@ -1,3 +1,5 @@
+import pytest
+
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 from src.shared.wallet.models.pix import PIXKey
 
