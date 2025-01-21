@@ -96,7 +96,7 @@ class Test_TXSyntax:
 
         for _ in range(0, 1):
             to_vault = repository.get_random_vault()
-            (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
+            signer = repository.get_user_by_user_id(to_vault.user_id)
 
             amount = Decimal(150)
             
@@ -128,7 +128,7 @@ class Test_TXSyntax:
 
         for _ in range(0, 1):
             from_vault = repository.get_random_vault()
-            (_, signer) = await repository.get_user_by_user_id(from_vault.user_id)
+            signer = repository.get_user_by_user_id(from_vault.user_id)
 
             amount = from_vault.balance * Decimal(0.1)
             
@@ -163,7 +163,7 @@ class Test_TXSyntax:
         )
 
         to_vault = repository.get_random_vault()
-        (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
+        signer = repository.get_user_by_user_id(to_vault.user_id)
 
         amount = Decimal(150)
         
@@ -213,7 +213,7 @@ class Test_TXSyntax:
         )
 
         to_vault = repository.get_random_vault()
-        (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
+        signer = repository.get_user_by_user_id(to_vault.user_id)
 
         amount = Decimal(150)
         

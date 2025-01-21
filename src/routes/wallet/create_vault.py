@@ -23,9 +23,6 @@ class Usecase:
         pass
 
     async def execute(self, requester_user: UserApiGatewayDTO) -> dict:
-        
-        
-
         return {}
 
 async def function_handler(event, context):

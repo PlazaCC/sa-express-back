@@ -18,26 +18,22 @@ async def get_back_context(config: dict):
 
     if 'create_vaults' in config:
         create_vaults_config = config['create_vaults']
-
+        
         vault_proc = VaultProcessor(cache, repository)
 
         users = repository.get_all_users()
 
         for user in users:
-            (vault_error, _) = await vault_proc.create_if_not_exists(user, { 
+            await vault_proc.create_if_not_exists(user, { 
                 'balance': str(random.uniform(1000, 10000)) if create_vaults_config['random_balance'] else '0',
                 'balance_locked': '0',
                 'locked': create_vaults_config['locked']
             })
 
-            assert vault_error is None
-
             pix_key = PIXKey(type=PIX_KEY_TYPE.CPF, value='00000000000')
 
-            await repository.set_vault_pix_by_user_id(user.user_id, pix_key)
-
-            (_, user_vault) = await repository.get_vault_by_user_id(user.user_id)
+            user_vault = repository.set_vault_pix_by_user_id(user.user_id, pix_key)
             
-            await cache.set_vault(user_vault)
+            await cache.upsert_vault(user_vault)
 
     return (cache, repository, paygate)

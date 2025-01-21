@@ -31,7 +31,7 @@ class Test_TXEfficacy:
 
         async def create_random_deposit():
             to_vault = repository.get_random_vault()
-            (_, signer) = await repository.get_user_by_user_id(to_vault.user_id)
+            signer = repository.get_user_by_user_id(to_vault.user_id)
 
             amount = quantize(Decimal(random.choice([ 10, 50, 100, 125, 150, 300 ])))
             
@@ -43,7 +43,7 @@ class Test_TXEfficacy:
         
         async def create_random_withdraw():
             from_vault = repository.get_random_vault()
-            (_, signer) = await repository.get_user_by_user_id(from_vault.user_id)
+            signer = repository.get_user_by_user_id(from_vault.user_id)
 
             amount = quantize(from_vault.balance * Decimal(random.choice([ 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25 ])))
             

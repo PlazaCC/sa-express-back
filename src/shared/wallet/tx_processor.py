@@ -73,8 +73,10 @@ class TXProcessor:
     
     ### UTILITY METHODS ###
     async def persist_tx(self, tx: TX) -> None:
-        await asyncio.gather(self.cache.set_transaction(tx), self.repository.set_transaction(tx))
+        self.repository.upsert_transaction(tx)
 
+        await self.cache.upsert_transaction(tx)
+        
         return None
     
     def get_tx_committed_status(self, tx: TX) -> TX_STATUS:
@@ -229,9 +231,8 @@ class TXProcessor:
 
         if instr_index is None or instr_index < 0:
             return (None, None)
-
-        # TODO: verify cache first
-        (_, rep_tx) = await self.repository.get_transaction(qs['TX'])
+        
+        rep_tx = self.repository.get_transaction(qs['TX'])
 
         if rep_tx is None:
             return (None, None)
@@ -334,6 +335,9 @@ class TXProcessor:
     
     ### COMMIT METHODS ###
     async def commit_tx_failed(self, tx: TX, instr_index: int, error: str = 'Unknown reason') -> TXCommitResult:
+        if tx.status != TX_STATUS.SIGNED:
+            return TXCommitResult.failed(f'Can\'t commit transaction with status "{tx.status.value}"')
+        
         log_key = TXLogs.get_instruction_log_key(instr_index)
 
         if log_key not in tx.logs:
@@ -379,6 +383,9 @@ class TXProcessor:
         return tx.commit_result
 
     async def commit_tx_confirmed(self, tx: TX, instr_index: int) -> TXCommitResult:
+        if tx.status != TX_STATUS.SIGNED:
+            return TXCommitResult.failed(f'Can\'t commit transaction with status "{tx.status.value}"')
+
         log_key = TXLogs.get_instruction_log_key(instr_index)
 
         if log_key not in tx.logs:

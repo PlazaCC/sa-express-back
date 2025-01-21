@@ -15,37 +15,28 @@ class VaultProcessor:
         self.repository = repository
     
     async def create_if_not_exists(self, user: User, config: dict) -> Vault:
-        (cache_error, cache_vault) = await self.cache.get_vault_by_user_id(user.user_id)
-
-        if cache_error is not None:
-            return cache_error, None
+        (_, cache_vault) = await self.cache.get_vault_by_user_id(user.user_id)
 
         if cache_vault is not None:
-            return None, cache_vault
+            return cache_vault
         
-        (rep_error, rep_vault) = await self.repository.get_vault_by_user_id(user.user_id)
+        rep_vault = self.repository.get_vault_by_user_id(user.user_id)
 
-        if rep_error is not None:
-            return rep_error, None
-        
         if rep_vault is not None:
-            await self.cache.set_vault(rep_vault)
-
-            return None, rep_vault
+            return rep_vault
         
         vault = Vault.from_user(user, config)
+        
+        self.repository.create_vault(vault)
 
-        set_rep_error = await self.repository.set_vault(vault)
+        await self.cache.upsert_vault(vault)
 
-        if set_rep_error is not None:
-            return set_rep_error, None
-
-        await self.cache.set_vault(vault)
-
-        return None, vault
+        return vault
     
     async def persist_vault(self, vault: Vault) -> None:
-        await asyncio.gather(self.cache.set_vault(vault), self.repository.set_vault(vault))
+        self.repository.upsert_vault(vault)
+
+        await self.cache.upsert_vault(vault)
 
         return None
 

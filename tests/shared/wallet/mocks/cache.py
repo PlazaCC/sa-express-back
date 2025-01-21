@@ -30,7 +30,7 @@ class CacheMock(CacheWrapper):
         return [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
 
     ### OVERRIDE METHODS ###
-    async def set_vault(self, vault: Vault) -> str | None:
+    async def upsert_vault(self, vault: Vault) -> str | None:
         if vault.user_id is not None:
             self.vaults_by_user_id[vault.user_id] = vault.to_dict()
 
@@ -55,7 +55,7 @@ class CacheMock(CacheWrapper):
         
         return None, None
     
-    async def set_transaction(self, tx: TX) -> str | None:
+    async def upsert_transaction(self, tx: TX) -> str | None:
         self.transactions[tx.tx_id] = tx.to_tx_snapshot()
 
         return None

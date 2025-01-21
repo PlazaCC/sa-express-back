@@ -5,7 +5,7 @@ class CacheWrapper:
     def __init__(self):
         pass
 
-    async def set_vault(self, vault: Vault) -> str | None:
+    async def upsert_vault(self, vault: Vault) -> str | None:
         pass
 
     async def get_vault_by_user_id(self, user_id: int) -> tuple[str | None, Vault | None]:
@@ -14,7 +14,7 @@ class CacheWrapper:
     async def get_vault_by_server_ref(self, server_ref: str) -> tuple[str | None, Vault | None]:
         pass
 
-    async def set_transaction(self, tx: TX) -> str | None:
+    async def upsert_transaction(self, tx: TX) -> str | None:
         pass
 
     async def get_transaction(self, tx_id: str) -> tuple[str | None, TX | None]:
