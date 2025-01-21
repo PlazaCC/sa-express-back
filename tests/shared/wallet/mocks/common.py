@@ -9,8 +9,8 @@ from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRep
 from src.shared.wallet.mocks.wallet_paygate_mock import WalletPayGateMock
 
 async def get_back_context(config: dict):
-    repository = WalletRepositoryMock(singleton=config['singleton'] if 'singleton' in config else True)
-    cache = WalletCacheMock(singleton=config['singleton'] if 'singleton' in config else True)
+    repository = WalletRepositoryMock(singleton=config['singleton'] if 'singleton' in config else False)
+    cache = WalletCacheMock(singleton=config['singleton'] if 'singleton' in config else False)
     paygate = WalletPayGateMock()
     
     if 'num_users' in config and config['num_users'] > 0:
@@ -24,16 +24,14 @@ async def get_back_context(config: dict):
         users = repository.get_all_users()
         
         for user in users:
-            user_vault = vault_proc.create_if_not_exists(user, { 
-                'balance': str(random.uniform(1000, 10000)) if create_vaults_config['random_balance'] else '0',
-                'balance_locked': '0',
-                'locked': create_vaults_config['locked']
-            })
+            user_vault = vault_proc.create_if_not_exists(user)
 
-            pix_key = PIXKey(type=PIX_KEY_TYPE.CPF, value='00000000000')
+            user_vault.pix_key = PIXKey(type=PIX_KEY_TYPE.CPF, value='00000000000')
+            user_vault.balance = str(random.uniform(1000, 10000)) if create_vaults_config['random_balance'] else '0'
+            user_vault.balance_locked = '0'
+            user_vault.locked = create_vaults_config['locked']
 
-            user_vault = repository.set_vault_pix_by_user_id(user.user_id, pix_key)
-            
             cache.upsert_vault(user_vault)
+            repository.upsert_vault(user_vault)
 
     return (cache, repository, paygate)

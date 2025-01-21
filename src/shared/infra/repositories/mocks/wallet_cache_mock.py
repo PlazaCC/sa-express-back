@@ -8,12 +8,12 @@ class WalletCacheMock(IWalletCache):
     vaults_by_server_ref: dict = {}
     transactions: dict = {}
 
-    def __init__(self, singleton=True):
+    def __init__(self, singleton=False):
         self.vaults_by_user_id = WalletCacheMock.vaults_by_user_id
         self.vaults_by_server_ref = WalletCacheMock.vaults_by_server_ref
         self.transactions = WalletCacheMock.transactions
 
-        if singleton:
+        if not singleton:
             self.vaults_by_user_id = {}
             self.vaults_by_server_ref = {}
             self.transactions = {}

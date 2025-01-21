@@ -37,4 +37,8 @@ class TXPIXWithdrawalPromise(TXBasePromise):
         if 'error' in api_res:
             return TXLogs.failed(log_key, api_res['error'])
         
-        return TXLogs.successful(log_key)
+        log = TXLogs.successful(log_key)
+        
+        log.populate_sign_data = lambda: [ ('pix_url', self.pix_key.to_url()) ]
+            
+        return log

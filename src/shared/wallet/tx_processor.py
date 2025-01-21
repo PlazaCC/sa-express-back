@@ -7,6 +7,7 @@ from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
+from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 
@@ -189,7 +190,7 @@ class TXProcessor:
 
         return None
     
-    def validate_signer_access(self, signer: User, tx: TX) -> str | None:
+    def validate_signer_access(self, signer: User | UserApiGatewayDTO, tx: TX) -> str | None:
         for i in range(0, len(tx.instructions)):
             signer_access_error = tx.instructions[i].validate_signer_access(signer)
 
@@ -242,7 +243,7 @@ class TXProcessor:
         return (rep_tx, instr_index)
     
     ### SIGN METHODS ###
-    async def sign(self, signer: User, tx: TX) -> TXSignResult:
+    async def sign(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXSignResult:
         fields_error = self.validate_tx_fields_before_sign(tx)
         
         if fields_error is not None:
@@ -436,10 +437,10 @@ class TXProcessor:
         return tx.commit_result
     
     ### QUEUE METHODS ###
-    async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
+    async def push_tx(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
         return await self.tx_queue.push_tx(signer, tx)
     
-    async def push_tx_with_callback(self, callback: Callable[[], Awaitable[TXPushResult]], signer: User, tx: TX) -> TXPushResult:
+    async def push_tx_with_callback(self, callback: Callable[[], Awaitable[TXPushResult]], signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
         return await self.tx_queue.push_tx(callback, signer, tx)
     
     async def pop_tx_with_callback(self, callback: Callable[[], Awaitable[TXPopResult]], tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:

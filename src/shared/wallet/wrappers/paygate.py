@@ -6,7 +6,7 @@ class IWalletPayGate(ABC):
 
     ### PIX ###
     @abstractmethod
-    async def post_pix_deposit(self, pix_key: PIXKey, paygate_ref: str) -> dict:
+    async def post_pix_deposit(self, paygate_ref: str) -> dict:
         pass
     
     @abstractmethod

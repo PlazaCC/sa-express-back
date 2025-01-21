@@ -9,7 +9,7 @@ from src.shared.wallet.models.pix import PIXKey
 
 class Vault(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-
+    
     type: VAULT_TYPE
     user_id: int | None
     server_ref: str | None

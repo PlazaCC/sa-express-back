@@ -2,6 +2,7 @@ from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
+from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
 
 from src.shared.wallet.decimal import Decimal, quantize
 from src.shared.wallet.enums.tx_instruction_type import TX_INSTRUCTION_TYPE
@@ -59,7 +60,7 @@ class TXTransferInstruction(TXBaseInstruction):
         
         return None
     
-    def validate_signer_access(self, signer: User) -> str | None:
+    def validate_signer_access(self, signer: User | UserApiGatewayDTO) -> str | None:
         from_vault = self.from_vault
 
         if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -73,7 +74,7 @@ class TXTransferInstruction(TXBaseInstruction):
 
         return 'Validate logic not implemented for this vault type'
     
-    def validate_signer_access_from_server_unlimited(self, signer: User) -> str | None:
+    def validate_signer_access_from_server_unlimited(self, signer: User | UserApiGatewayDTO) -> str | None:
         to_vault = self.to_vault
 
         if to_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -87,13 +88,13 @@ class TXTransferInstruction(TXBaseInstruction):
         
         return None
 
-    def validate_signer_access_from_server_limited(self, signer: User) -> str | None:
+    def validate_signer_access_from_server_limited(self, signer: User | UserApiGatewayDTO) -> str | None:
         if signer.role != ROLE.ADMIN:
             return 'Only a admin can transfer from server limited vaults'
         
         return None
 
-    def validate_signer_access_from_user(self, signer: User) -> str | None:
+    def validate_signer_access_from_user(self, signer: User | UserApiGatewayDTO) -> str | None:
         if signer.role != ROLE.ADMIN:
             if signer.user_id != self.from_vault.user_id:
                 return "Can't transfer from other users vaults"
@@ -151,16 +152,10 @@ class TXTransferInstruction(TXBaseInstruction):
             to_vault_state['balance'] += self.amount
 
         if from_sign and self.is_deposit():
-            deposit_pix_key = to_vault.pix_key
-
-            if deposit_pix_key is None:
-                return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{to_vault_key}\"")
-
             return state, TXTransferInstructionResult.successful(
                 TXPIXDepositPromise(
                     tx_id=state['tx_id'],
                     instr_index=instr_index,
-                    pix_key=to_vault.pix_key, 
                     amount=self.amount
                 )
             )

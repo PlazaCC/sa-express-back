@@ -40,10 +40,10 @@ class Repository:
             self.deal_repo = DealRepositoryMock()
 
         if wallet_repo:
-            self.wallet_repo = WalletRepositoryMock()
+            self.wallet_repo = WalletRepositoryMock(singleton=True)
 
         if wallet_cache:
-            self.wallet_cache = WalletCacheMock()
+            self.wallet_cache = WalletCacheMock(singleton=True)
         
     def _initialize_database_repositories(self, deal_repo: bool, wallet_repo: bool, wallet_cache: bool) -> None:
         if deal_repo:

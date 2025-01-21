@@ -17,12 +17,12 @@ class WalletRepositoryMock(IWalletRepository):
     vaults: list[dict] = []
     transactions: list[dict] = []
 
-    def __init__(self, singleton=True):
+    def __init__(self, singleton=False):
         self.users = WalletRepositoryMock.users
         self.vaults = WalletRepositoryMock.vaults
         self.transactions = WalletRepositoryMock.transactions
 
-        if singleton:
+        if not singleton:
             self.users = []
             self.vaults = []
             self.transactions = []

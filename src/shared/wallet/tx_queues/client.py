@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
+from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
 
 from src.shared.wallet.tx_queues.base import TXBaseQueue
 from src.shared.wallet.tx_results.push import TXPushResult
@@ -18,7 +19,7 @@ class TXClientQueue(TXBaseQueue):
     def vault_proc(self):
         return self.tx_proc.vault_proc
 
-    async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
+    async def push_tx(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
         locked_vaults = self.vault_proc().get_and_lock(tx.vaults)
 
         if locked_vaults is None:

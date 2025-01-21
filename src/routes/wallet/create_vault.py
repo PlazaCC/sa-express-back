@@ -14,7 +14,7 @@ class Controller:
     def execute(request: IRequest) -> IResponse:
         try:
             requester_user = UserApiGatewayDTO.from_api_gateway(request.data.get('requester_user'))
-
+            
             pix_key = None
 
             if 'pix_key' in request.data:

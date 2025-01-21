@@ -135,3 +135,6 @@ class PIXKey:
     
     def valid(self) -> bool:
         return PIXKey.validate(self.type, self.value)
+    
+    def to_url(self) -> dict:
+        return self.to_dict()

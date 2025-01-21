@@ -157,7 +157,7 @@ class Test_TXEfficacy:
             for (signer, tx) in txs:
                 await self.tx_flow(tx_count, tx_proc, signer, tx)
                 tx_count += 1
-
+        
         await process_1by1()
 
         self.verify_balance_targets(cache, repository, targets)
