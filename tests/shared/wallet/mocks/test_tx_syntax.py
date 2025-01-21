@@ -29,7 +29,7 @@ class Test_TXSyntax:
 
             paygate_ref = tx_proc.paygate.pending_payments.pop()
             
-            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
             assert instr_index is not None
@@ -174,7 +174,7 @@ class Test_TXSyntax:
 
             paygate_ref = tx_proc.paygate.pending_payments.pop()
             
-            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
             assert instr_index is not None
@@ -224,7 +224,7 @@ class Test_TXSyntax:
 
             paygate_ref = tx_proc.paygate.pending_payments.pop()
             
-            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
             assert instr_index is not None

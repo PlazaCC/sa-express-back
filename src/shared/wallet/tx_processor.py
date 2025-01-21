@@ -7,6 +7,7 @@ from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
+from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 
 from src.shared.wallet.utils import error_with_instruction_sufix
@@ -22,8 +23,7 @@ from src.shared.wallet.tx_queues.base import TXBaseQueue
 from src.shared.wallet.tx_queues.client import TXClientQueue
 from src.shared.wallet.tx_queues.server_single import TXServerSingleQueue
 from src.shared.wallet.tx_queues.single_multi import TXServerMultiQueue
-from src.shared.wallet.wrappers.cache import CacheWrapper
-from src.shared.wallet.wrappers.paygate import PayGateWrapper
+from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class TXProcessorConfig:
     max_vaults: int
@@ -48,14 +48,14 @@ class TXProcessorConfig:
         }
 
 class TXProcessor:
-    cache: CacheWrapper
+    cache: IWalletCache
     repository: IWalletRepository
-    paygate: PayGateWrapper
+    paygate: IWalletPayGate
     config: TXProcessorConfig
     tx_queue: TXBaseQueue
     vault_proc: VaultProcessor
 
-    def __init__(self, cache: CacheWrapper, repository: IWalletRepository, paygate: PayGateWrapper, \
+    def __init__(self, cache: IWalletCache, repository: IWalletRepository, paygate: IWalletPayGate, \
         config: TXProcessorConfig = TXProcessorConfig.default()):
         self.cache = cache
         self.repository = repository
@@ -73,9 +73,8 @@ class TXProcessor:
     
     ### UTILITY METHODS ###
     async def persist_tx(self, tx: TX) -> None:
+        self.cache.upsert_transaction(tx)
         self.repository.upsert_transaction(tx)
-
-        await self.cache.upsert_transaction(tx)
         
         return None
     
@@ -215,7 +214,7 @@ class TXProcessor:
 
         return state
 
-    async def get_tx_by_paygate_ref(self, paygate_ref: str) -> tuple[TX, int] | tuple[None, None]:
+    def get_tx_by_paygate_ref(self, paygate_ref: str) -> tuple[TX, int] | tuple[None, None]:
         try:
             qs = dict(parse.parse_qsl(paygate_ref))
         except:
@@ -295,8 +294,7 @@ class TXProcessor:
 
             vault.balance_locked = vault_state['balance_locked']
 
-            # TODO: handle real cache/rep errors
-            await self.vault_proc.persist_vault(vault)
+            self.vault_proc.persist_vault(vault)
 
         # TODO: handle real cache/rep errors
         await self.persist_tx(tx)
@@ -320,8 +318,7 @@ class TXProcessor:
 
             vault.update_state(vault_state)
 
-            # TODO: handle real cache/rep errors
-            await self.vault_proc.persist_vault(vault)
+            self.vault_proc.persist_vault(vault)
 
         tx.status = TX_STATUS.COMMITED
         
@@ -368,8 +365,7 @@ class TXProcessor:
 
             vault.update_state(vault_state)
 
-            # TODO: handle real cache/rep errors
-            await self.vault_proc.persist_vault(vault)
+            self.vault_proc.persist_vault(vault)
         
         commit_log.resolved = True
         commit_log.error = ''
@@ -416,8 +412,7 @@ class TXProcessor:
 
             vault.update_state(vault_state)
 
-            # TODO: handle real cache/rep errors
-            await self.vault_proc.persist_vault(vault)
+            self.vault_proc.persist_vault(vault)
         
         commit_log.resolved = True
         commit_log.error = ''

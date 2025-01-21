@@ -2,11 +2,8 @@ from src.environments import Environments
 
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.vault import Vault
-
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
-
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
-from boto3.dynamodb.conditions import Key
 
 class WalletRepositoryDynamo(IWalletRepository):
     dynamo: DynamoDatasource

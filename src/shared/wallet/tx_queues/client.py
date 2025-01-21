@@ -19,7 +19,7 @@ class TXClientQueue(TXBaseQueue):
         return self.tx_proc.vault_proc
 
     async def push_tx(self, signer: User, tx: TX) -> TXPushResult:
-        locked_vaults = await self.vault_proc().get_and_lock(tx.vaults)
+        locked_vaults = self.vault_proc().get_and_lock(tx.vaults)
 
         if locked_vaults is None:
             return TXPushResult.locked()
@@ -28,13 +28,12 @@ class TXClientQueue(TXBaseQueue):
 
         sign_result = await self.tx_proc.sign(signer, tx)
 
-        # TODO: handle real cache errors
-        await self.vault_proc().unlock(tx.vaults)
+        self.vault_proc().unlock(tx.vaults)
 
         return TXPushResult.successful(sign_result)
     
     async def _pop_tx(self, tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
-        locked_vaults = await self.vault_proc().get_and_lock(tx.vaults)
+        locked_vaults = self.vault_proc().get_and_lock(tx.vaults)
 
         if locked_vaults is None:
             return TXPopResult.locked()
@@ -46,8 +45,7 @@ class TXClientQueue(TXBaseQueue):
         else:
             commit_result = await self.tx_proc.commit_tx_failed(tx, instr_index, error)
 
-        # TODO: handle real cache errors
-        await self.vault_proc().unlock(tx.vaults)
+        self.vault_proc().unlock(tx.vaults)
 
         return TXPopResult.successful(commit_result)
 

@@ -5,6 +5,7 @@ import asyncio
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
+from src.shared.infra.repositories.mocks.wallet_cache_mock import WalletCacheMock
 from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRepositoryMock
 
 from src.shared.wallet.decimal import Decimal, quantize
@@ -16,13 +17,12 @@ from src.shared.wallet.tx_templates.deposit import create_deposit_tx
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 
 from tests.shared.wallet.mocks.common import get_back_context
-from tests.shared.wallet.mocks.cache import CacheMock
 
 pytest_plugins = ('pytest_asyncio')
 
 class Test_TXEfficacy:
     ### UTILITY METHODS ###
-    async def get_random_tx_batch(self, cache: CacheMock, repository: WalletRepositoryMock, num_txs=1) -> tuple[list[tuple[User, TX]], dict]:
+    async def get_random_tx_batch(self, cache: WalletCacheMock, repository: WalletRepositoryMock, num_txs=1) -> tuple[list[tuple[User, TX]], dict]:
         txs = []
         targets = {}
 
@@ -78,7 +78,7 @@ class Test_TXEfficacy:
 
             paygate_ref = paygate.pending_payments.pop()
             
-            (tx, instr_index) = await tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
             assert instr_index is not None
@@ -103,7 +103,7 @@ class Test_TXEfficacy:
 
         await action_done
 
-    def verify_balance_targets(self, cache: CacheMock, repository: WalletRepositoryMock, targets: dict):
+    def verify_balance_targets(self, cache: WalletCacheMock, repository: WalletRepositoryMock, targets: dict):
         cache_vaults = cache.get_all_user_vaults()
         rep_vaults = repository.get_all_user_vaults()
 
