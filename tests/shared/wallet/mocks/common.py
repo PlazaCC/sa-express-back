@@ -24,7 +24,7 @@ async def get_back_context(config: dict):
         users = repository.get_all_users()
         
         for user in users:
-            await vault_proc.create_if_not_exists(user, { 
+            vault_proc.create_if_not_exists(user, { 
                 'balance': str(random.uniform(1000, 10000)) if create_vaults_config['random_balance'] else '0',
                 'balance_locked': '0',
                 'locked': create_vaults_config['locked']

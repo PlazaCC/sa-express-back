@@ -4,10 +4,14 @@ from src.shared.domain.entities.tx import TX
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 
 class WalletCacheMock(IWalletCache):
+    vaults_by_user_id: dict = {}
+    vaults_by_server_ref: dict = {}
+    transactions: dict = {}
+
     def __init__(self):
-        self.vaults_by_user_id = {}
-        self.vaults_by_server_ref = {}
-        self.transactions = {}
+        self.vaults_by_user_id = WalletCacheMock.vaults_by_user_id
+        self.vaults_by_server_ref = WalletCacheMock.vaults_by_server_ref
+        self.transactions = WalletCacheMock.transactions
     
     ### OVERRIDE METHODS ###
     def upsert_vault(self, vault: Vault) -> Vault:
@@ -19,7 +23,7 @@ class WalletCacheMock(IWalletCache):
 
         return vault
     
-    def get_vault_by_user_id(self, user_id: int, deserialize: bool = True) -> Vault | None:
+    def get_vault_by_user_id(self, user_id: int | str, deserialize: bool = True) -> Vault | None:
         if user_id in self.vaults_by_user_id:
             return Vault.from_dict_static(self.vaults_by_user_id[user_id]) if deserialize else self.vaults_by_user_id[user_id]
 

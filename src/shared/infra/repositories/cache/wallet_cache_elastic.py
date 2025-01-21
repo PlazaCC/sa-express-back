@@ -9,7 +9,7 @@ class WalletCacheElastic(IWalletCache):
         self.elastic = {}
 
     ### VAULTS ###
-    def get_vault_by_user_id(self, user_id: int) -> Vault | None:
+    def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:
         pass
     
     def get_vault_by_server_ref(self, server_ref: str) -> Vault | None:

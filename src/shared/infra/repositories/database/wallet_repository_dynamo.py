@@ -46,7 +46,7 @@ class WalletRepositoryDynamo(IWalletRepository):
 
         return vault
 
-    def get_vault_by_user_id(self, user_id: int) -> Vault | None:
+    def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:
         vault_id_key = Vault.user_id_to_identity_key(user_id)
 
         vault = self.dynamo.get_item(

@@ -6,7 +6,7 @@ from src.shared.domain.entities.tx import TX
 class IWalletCache(ABC):
     ### VAULTS ###
     @abstractmethod
-    def get_vault_by_user_id(self, user_id: int) -> Vault | None:
+    def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:
         pass
 
     @abstractmethod

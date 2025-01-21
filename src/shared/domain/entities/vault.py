@@ -2,6 +2,7 @@ from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
+from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
 
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
@@ -21,7 +22,7 @@ class Vault(BaseModel):
     def from_dict_static(data: dict) -> 'Vault':
         return Vault(
             type=VAULT_TYPE[data['type']],
-            user_id=data['user_id'] if 'user_id' in data else None,
+            user_id=int(data['user_id']) if 'user_id' in data else None,
             server_ref=data['server_ref'] if 'server_ref' in data else None,
             balance=Decimal(data['balance']),
             balance_locked=Decimal(data['balance_locked']),
@@ -33,7 +34,7 @@ class Vault(BaseModel):
     def from_tx_snapshot(data: dict) -> 'Vault':
         return Vault(
             type=VAULT_TYPE[data['type']],
-            user_id=data['user_id'] if 'user_id' in data else None,
+            user_id=int(data['user_id']) if 'user_id' in data else None,
             server_ref=data['server_ref'] if 'server_ref' in data else None,
             balance=Decimal(0),
             balance_locked=Decimal(0),
@@ -62,10 +63,10 @@ class Vault(BaseModel):
         return { 'balance': '0', 'balance_locked': '0', 'locked': False }
 
     @staticmethod
-    def from_user(user: User, config: dict = default_config()) -> 'Vault':
+    def from_user(user: User | UserApiGatewayDTO, config: dict = default_config()) -> 'Vault':
         return Vault(
             type=VAULT_TYPE.USER,
-            user_id=user.user_id,
+            user_id=int(user.user_id),
             server_ref=None,
             balance=Decimal(config['balance']),
             balance_locked=Decimal(config['balance_locked']),
@@ -74,10 +75,10 @@ class Vault(BaseModel):
         )
     
     @staticmethod
-    def from_user_id(user_id: int, config: dict = default_config()) -> 'Vault':
+    def from_user_id(user_id: int | str, config: dict = default_config()) -> 'Vault':
         return Vault(
             type=VAULT_TYPE.USER,
-            user_id=user_id,
+            user_id=int(user_id),
             server_ref=None,
             balance=Decimal(config['balance']),
             balance_locked=Decimal(config['balance_locked']),

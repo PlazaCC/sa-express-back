@@ -13,10 +13,14 @@ from src.shared.domain.entities.tx import TX
 from src.shared.wallet.models.pix import PIXKey
 
 class WalletRepositoryMock(IWalletRepository):
+    users: list[dict] = []
+    vaults: list[dict] = []
+    transactions: list[dict] = []
+
     def __init__(self):
-        self.users = []
-        self.vaults = []
-        self.transactions = []
+        self.users = WalletRepositoryMock.users
+        self.vaults = WalletRepositoryMock.vaults
+        self.transactions = WalletRepositoryMock.transactions
     
     ### OVERRIDE METHODS ###
 
@@ -28,7 +32,7 @@ class WalletRepositoryMock(IWalletRepository):
 
         return Vault.from_dict_static(item)
     
-    def get_vault_by_user_id(self, user_id: int) -> Vault | None:
+    def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:
         rep_vault = next((v for v in self.vaults if 'user_id' in v and v['user_id'] == user_id), None)
         
         return Vault.from_dict_static(rep_vault) if rep_vault is not None else None
@@ -130,7 +134,7 @@ class WalletRepositoryMock(IWalletRepository):
 
         return Vault.from_dict_static(rep_vault) if rep_vault is not None else None
     
-    def set_vault_pix_by_user_id(self, user_id: int, pix_key: PIXKey) -> Vault:
+    def set_vault_pix_by_user_id(self, user_id: int | str, pix_key: PIXKey) -> Vault:
         rep_vault = self.get_vault_by_user_id(user_id)
 
         if rep_vault is None:

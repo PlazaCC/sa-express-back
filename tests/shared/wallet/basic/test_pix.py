@@ -1,5 +1,3 @@
-import pytest
-
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 from src.shared.wallet.models.pix import PIXKey
 
@@ -23,7 +21,7 @@ class Test_PIX:
             '00000000000',
             '85223578932'
         ]
-
+        
         for cpf in invalid_cpfs:
             valid = PIXKey.validate(PIX_KEY_TYPE.CPF, cpf)
         

@@ -2,6 +2,7 @@ from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
+from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
 
 class VaultProcessor:
     cache: IWalletCache
@@ -11,7 +12,7 @@ class VaultProcessor:
         self.cache = cache
         self.repository = repository
     
-    async def create_if_not_exists(self, user: User, config: dict) -> Vault:
+    def create_if_not_exists(self, user: User | UserApiGatewayDTO, config: dict) -> Vault:
         cache_vault = self.cache.get_vault_by_user_id(user.user_id)
 
         if cache_vault is not None:
