@@ -3,6 +3,7 @@ import re
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 
 EMAIL_REGEX = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+RNG_REGEX = r'[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}'
 
 class PIXKey:
     type : PIX_KEY_TYPE
@@ -114,7 +115,12 @@ class PIXKey:
     
     @staticmethod
     def validate_rng(value: str) -> bool:
-        return False
+        value_length = len(value)
+
+        if value_length != 36:
+            return False
+        
+        return re.match(RNG_REGEX, value)
     
     def __init__(self, type: PIX_KEY_TYPE, value: str):
         self.type = type

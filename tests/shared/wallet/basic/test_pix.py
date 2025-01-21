@@ -97,3 +97,14 @@ class Test_PIX:
             valid = PIXKey.validate(PIX_KEY_TYPE.EMAIL, email)
 
             assert not valid
+
+    # @pytest.mark.skip(reason='')
+    def test_validate_rng(self):
+        valid_rngs = [
+            'dcta478j-196l-03fm-t6gh-4298er7845m2'
+        ]
+
+        for rng in valid_rngs:
+            valid = PIXKey.validate(PIX_KEY_TYPE.RNG, rng)
+
+            assert valid
