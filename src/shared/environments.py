@@ -10,7 +10,8 @@ class STAGE(Enum):
 
 class Environments:
     load_dotenv()
-    stage: STAGE = STAGE(os.environ.get('STAGE', STAGE.TEST.value))
+    print(os.environ.get('STAGE'))
+    stage: STAGE = STAGE(os.environ.get('STAGE', '').upper())
     region: str = os.environ.get("AWS_REGION", "sa-east-1")
     user_pool_id: str = os.environ.get("USER_POOL_ID", "")
     user_pool_arn: str = os.environ.get("USER_POOL_ARN", "")
