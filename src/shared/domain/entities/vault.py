@@ -170,3 +170,14 @@ class Vault(BaseModel):
     
     def __hash__(self) -> int:
         return hash(self.to_identity_key())
+    
+    def to_user_public(self) -> dict:
+        result = {}
+
+        if self.pix_key is not None:
+            result['pix_key'] = self.pix_key.to_dict()
+
+        result['total_balance'] = str(self.total_balance())
+        result['balance_locked'] = str(self.balance_locked)
+        
+        return result

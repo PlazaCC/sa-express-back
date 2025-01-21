@@ -17,10 +17,11 @@ class Test_CreateVault:
         repository = WalletRepositoryMock()
 
         repository.generate_users({
+            'append': True,
             'num_users': 1,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
         })
-
+        
         user = repository.get_random_user()
 
         body = {
@@ -29,6 +30,8 @@ class Test_CreateVault:
         
         request = HttpRequest(body=body, headers={}, query_params={})
 
-        response = await controller.execute(request)
+        response = controller.execute(request)
 
         assert response.status_code == 200
+
+        print(response)

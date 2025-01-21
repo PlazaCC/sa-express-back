@@ -12,7 +12,7 @@ class VaultProcessor:
         self.cache = cache
         self.repository = repository
     
-    def create_if_not_exists(self, user: User | UserApiGatewayDTO, config: dict) -> Vault:
+    def create_if_not_exists(self, user: User | UserApiGatewayDTO, config: dict = Vault.default_config()) -> Vault:
         cache_vault = self.cache.get_vault_by_user_id(user.user_id)
 
         if cache_vault is not None:

@@ -41,7 +41,7 @@ class Usecase:
         vault = self.vault_proc.create_if_not_exists(requester_user)
 
         return {
-            'vault': vault.to_dict()
+            'vault': vault.to_user_public()
         }
 
 def function_handler(event, context) -> LambdaHttpResponse:
