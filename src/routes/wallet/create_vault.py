@@ -4,9 +4,10 @@ from src.shared.domain.repositories.wallet_repository_interface import IWalletRe
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError
+from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
 
 from src.shared.wallet.vault_processor import VaultProcessor
+from src.shared.wallet.models.pix import PIXKey
 
 class Controller:
     @staticmethod
@@ -14,7 +15,15 @@ class Controller:
         try:
             requester_user = UserApiGatewayDTO.from_api_gateway(request.data.get('requester_user'))
 
-            response = Usecase().execute(requester_user)
+            pix_key = None
+
+            if 'pix_key' in request.data:
+                pix_key = PIXKey.from_api_gateway(request.data.get('pix_key'))
+
+                if not pix_key.valid():
+                    return BadRequest('Chave de PIX inválida')
+
+            response = Usecase().execute(requester_user, pix_key)
 
             return OK(body=response)
         except Exception as error:
@@ -36,9 +45,14 @@ class Usecase:
             cache=self.wallet_cache, 
             repository=self.wallet_repo
         )
-
-    def execute(self, requester_user: UserApiGatewayDTO) -> dict:
+    
+    def execute(self, requester_user: UserApiGatewayDTO, pix_key: PIXKey | None) -> dict:
         vault = self.vault_proc.create_if_not_exists(requester_user)
+
+        if pix_key is not None:
+            vault.pix_key = pix_key
+
+            self.vault_proc.persist_vault(vault)
 
         return {
             'vault': vault.to_user_public()

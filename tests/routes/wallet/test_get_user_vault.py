@@ -30,5 +30,3 @@ class Test_GetUserVault:
         response = controller.execute(request)
 
         assert response.status_code == 200
-
-        print(response)

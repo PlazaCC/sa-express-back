@@ -14,6 +14,10 @@ class PIXKey:
         return PIXKey(type=PIX_KEY_TYPE[data['type']], value=data['value'])
     
     @staticmethod
+    def from_api_gateway(data: dict) -> 'PIXKey':
+        return PIXKey.from_dict_static(data)
+    
+    @staticmethod
     def validate(type: PIX_KEY_TYPE, value: str) -> bool:
         if type == PIX_KEY_TYPE.CPF:
             return PIXKey.validate_cpf(value)
@@ -131,3 +135,6 @@ class PIXKey:
             'type': self.type.value,
             'value': self.value
         }
+    
+    def valid(self) -> bool:
+        return PIXKey.validate(self.type, self.value)
