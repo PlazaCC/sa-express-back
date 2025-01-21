@@ -10,7 +10,7 @@ from boto3.dynamodb.conditions import Key
 
 class WalletRepositoryDynamo(IWalletRepository):
     dynamo: DynamoDatasource
-
+    
     @staticmethod
     def vault_partition_key_format(vault_id_key: str) -> str:
         return vault_id_key
@@ -59,7 +59,7 @@ class WalletRepositoryDynamo(IWalletRepository):
 
         return Vault.from_dict_static(vault['Item']) if 'Item' in vault else None
 
-    def get_vault_by_sever_ref(self, server_ref: str) -> Vault | None:
+    def get_vault_by_server_ref(self, server_ref: str) -> Vault | None:
         vault_id_key = Vault.server_ref_to_identity_key(server_ref)
 
         vault = self.dynamo.get_item(

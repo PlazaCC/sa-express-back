@@ -14,7 +14,7 @@ class IWalletRepository(ABC):
         pass
 
     @abstractmethod
-    def get_vault_by_sever_ref(self, server_ref: str) -> Vault | None:
+    def get_vault_by_server_ref(self, server_ref: str) -> Vault | None:
         pass
     
     @abstractmethod

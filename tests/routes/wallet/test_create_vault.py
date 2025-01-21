@@ -6,8 +6,6 @@ from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRepositoryMock
 
-from tests.shared.wallet.mocks.repository import RepositoryMock
-
 pytest_plugins = ('pytest_asyncio')
 
 class Test_CreateVault:
@@ -16,7 +14,7 @@ class Test_CreateVault:
     # @pytest.mark.skip(reason='')
     async def test_controller(self):
         controller = Controller()
-        repository = RepositoryMock()
+        repository = WalletRepositoryMock()
 
         repository.generate_users({
             'num_users': 1,

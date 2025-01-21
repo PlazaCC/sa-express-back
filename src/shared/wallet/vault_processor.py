@@ -2,15 +2,15 @@ import asyncio
 
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
+from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 
 from src.shared.wallet.wrappers.cache import CacheWrapper
-from src.shared.wallet.wrappers.repository import RepositoryWrapper
 
 class VaultProcessor:
     cache: CacheWrapper
-    repository: RepositoryWrapper
+    repository: IWalletRepository
 
-    def __init__(self, cache: CacheWrapper, repository: RepositoryWrapper):
+    def __init__(self, cache: CacheWrapper, repository: IWalletRepository):
         self.cache = cache
         self.repository = repository
     

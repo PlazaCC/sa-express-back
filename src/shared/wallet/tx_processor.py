@@ -7,6 +7,7 @@ from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
+from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 
 from src.shared.wallet.utils import error_with_instruction_sufix
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
@@ -22,7 +23,6 @@ from src.shared.wallet.tx_queues.client import TXClientQueue
 from src.shared.wallet.tx_queues.server_single import TXServerSingleQueue
 from src.shared.wallet.tx_queues.single_multi import TXServerMultiQueue
 from src.shared.wallet.wrappers.cache import CacheWrapper
-from src.shared.wallet.wrappers.repository import RepositoryWrapper
 from src.shared.wallet.wrappers.paygate import PayGateWrapper
 
 class TXProcessorConfig:
@@ -49,13 +49,13 @@ class TXProcessorConfig:
 
 class TXProcessor:
     cache: CacheWrapper
-    repository: RepositoryWrapper
+    repository: IWalletRepository
     paygate: PayGateWrapper
     config: TXProcessorConfig
     tx_queue: TXBaseQueue
     vault_proc: VaultProcessor
 
-    def __init__(self, cache: CacheWrapper, repository: RepositoryWrapper, paygate: PayGateWrapper, \
+    def __init__(self, cache: CacheWrapper, repository: IWalletRepository, paygate: PayGateWrapper, \
         config: TXProcessorConfig = TXProcessorConfig.default()):
         self.cache = cache
         self.repository = repository

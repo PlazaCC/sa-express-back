@@ -3,14 +3,14 @@ import random
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.vault_processor import VaultProcessor
+from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRepositoryMock
 
 from tests.shared.wallet.mocks.cache import CacheMock
-from tests.shared.wallet.mocks.repository import RepositoryMock
 from tests.shared.wallet.mocks.paygate import PayGateMock
 
 async def get_back_context(config: dict):
+    repository = WalletRepositoryMock()
     cache = CacheMock()
-    repository = RepositoryMock()
     paygate = PayGateMock()
     
     if 'num_users' in config and config['num_users'] > 0:
