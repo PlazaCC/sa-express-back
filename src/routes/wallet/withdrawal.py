@@ -33,7 +33,7 @@ class Controller:
             if user_vault.pix_key is None:
                 return BadRequest('Usuário não possui uma chave PIX')
 
-            if request.data.get('amount') is None:
+            if 'amount' not in request.data:
                 raise MissingParameters('amount')
 
             amount = Decimal(request.data.get('amount'))
@@ -41,8 +41,10 @@ class Controller:
             response = await usecase.execute(requester_user, user_vault, amount)
 
             return OK(body=response)
-        except Exception as error:
-            return InternalServerError(str(error))
+        except MissingParameters as error:
+            return BadRequest(error.message)
+        except Exception as _:
+            return InternalServerError('Erro interno de servidor')
         
 class Usecase:
     repository: Repository

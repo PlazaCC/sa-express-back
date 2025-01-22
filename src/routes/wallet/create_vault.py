@@ -26,8 +26,8 @@ class Controller:
             response = Usecase().execute(requester_user, pix_key)
 
             return OK(body=response)
-        except Exception as error:
-            return InternalServerError(str(error))
+        except Exception as _:
+            return InternalServerError('Erro interno de servidor')
         
 class Usecase:
     repository: Repository

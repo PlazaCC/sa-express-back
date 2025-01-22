@@ -76,11 +76,6 @@ class WalletRepositoryMock(IWalletRepository):
         return tx
     
     ### DEBUG-ONLY METHODS ###
-    def get_user_by_user_id(self, user_id: int) -> User | None:
-        rep_user = next((u for u in self.users if u['user_id'] == user_id), None)
-
-        return User.from_dict_static(rep_user) if rep_user is not None else None
-    
     def _generate_users(self, config: dict) -> list[User]:
         num_users = config['num_users'] if 'num_users' in config else 1
 
@@ -93,6 +88,7 @@ class WalletRepositoryMock(IWalletRepository):
 
         for i in range(num_users):
             name = 'user-mock-' + str(i)
+            email = name + '@gmail.com'
 
             role = random.choice(role_list)
             user_status = random.choice(user_status_list)
@@ -100,7 +96,7 @@ class WalletRepositoryMock(IWalletRepository):
             user = User.from_dict_static({
                 "user_id": i,
                 "name": name,
-                "email": i,
+                "email": email,
                 "role": role,
                 "user_status": user_status,
                 "created_at": str(now.timestamp()),
@@ -128,6 +124,16 @@ class WalletRepositoryMock(IWalletRepository):
     
     def get_all_user_vaults(self) -> list[Vault]:
         return ([ Vault.from_dict_static(v) for v in self.vaults if v['type'] == VAULT_TYPE.USER.value ])
+
+    def get_user_by_user_id(self, user_id: int) -> User | None:
+        rep_user = next((u for u in self.users if u['user_id'] == user_id), None)
+
+        return User.from_dict_static(rep_user) if rep_user is not None else None
+    
+    def get_user_by_email(self, email: str) -> User | None:
+        rep_user = next((u for u in self.users if u['email'] == email), None)
+
+        return User.from_dict_static(rep_user) if rep_user is not None else None 
 
     def get_random_user(self) -> User:
         return User.from_dict_static(random.choice(self.users))

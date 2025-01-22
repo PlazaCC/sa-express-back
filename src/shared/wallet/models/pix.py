@@ -112,7 +112,7 @@ class PIXKey:
         if value_length < 10 or value_length > 60:
             return False
         
-        return re.match(EMAIL_REGEX, value)
+        return re.match(EMAIL_REGEX, value) is not None
     
     @staticmethod
     def validate_rng(value: str) -> bool:
@@ -121,7 +121,7 @@ class PIXKey:
         if value_length != 36:
             return False
         
-        return re.match(RNG_REGEX, value)
+        return re.match(RNG_REGEX, value) is not None
     
     def __init__(self, type: PIX_KEY_TYPE, value: str):
         self.type = type
