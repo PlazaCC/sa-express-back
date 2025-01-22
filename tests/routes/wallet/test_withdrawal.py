@@ -51,7 +51,7 @@ class Test_Deposit:
         async def post_withdrawal():
             body = {
                 "requester_user": user.to_api_dto(),
-                "amount": 200
+                "amount": '200'
             }
 
             request = HttpRequest(body=body, headers={}, query_params={})
