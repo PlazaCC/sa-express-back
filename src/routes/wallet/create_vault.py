@@ -21,7 +21,7 @@ class Controller:
                 pix_key = PIXKey.from_api_gateway(request.data.get('pix_key'))
 
                 if not pix_key.valid():
-                    return BadRequest('Chave de PIX inválida')
+                    return BadRequest('Chave PIX inválida')
 
             response = Usecase().execute(requester_user, pix_key)
 

@@ -47,7 +47,7 @@ class Test_Deposit:
             response = set_pix_key_controller.execute(request)
 
             assert response.status_code == 200
-
+        
         async def post_withdrawal():
             body = {
                 "requester_user": user.to_api_dto(),

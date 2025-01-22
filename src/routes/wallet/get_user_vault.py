@@ -15,7 +15,7 @@ class Controller:
             requester_user = UserApiGatewayDTO.from_api_gateway(request.data.get('requester_user'))
 
             response = Usecase().execute(requester_user)
-
+            
             return OK(body=response)
         except Exception as error:
             return InternalServerError(str(error))
