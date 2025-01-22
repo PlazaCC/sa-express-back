@@ -9,7 +9,7 @@ from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHt
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters
 
-from src.shared.wallet.decimal import Decimal
+from src.shared.wallet.decimal import not_decimal
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
 from src.shared.wallet.wrappers.paygate import IWalletPayGate
@@ -36,7 +36,10 @@ class Controller:
             if 'amount' not in request.data:
                 raise MissingParameters('amount')
 
-            amount = Decimal(request.data.get('amount'))
+            amount = request.data.get('amount')
+
+            if not_decimal(amount):
+                return BadRequest('Valor de saque inválido')
 
             response = await usecase.execute(requester_user, user_vault, amount)
 
@@ -78,7 +81,7 @@ class Usecase:
     def get_user_vault(self, requester_user: UserApiGatewayDTO) -> Vault | None:
         return self.tx_proc.vault_proc.get_by_user(requester_user)
     
-    async def execute(self, requester_user: UserApiGatewayDTO, user_vault: Vault, amount: Decimal) -> dict:
+    async def execute(self, requester_user: UserApiGatewayDTO, user_vault: Vault, amount: str) -> dict:
         withdrawal_tx = create_withdrawal_tx({ 'from_vault': user_vault, 'amount': amount })
 
         withdrawal_result = await self.tx_proc.push_tx(requester_user, withdrawal_tx)

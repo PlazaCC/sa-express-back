@@ -8,7 +8,7 @@ from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHt
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
 from src.shared.helpers.errors.errors import MissingParameters
 
-from src.shared.wallet.decimal import Decimal
+from src.shared.wallet.decimal import not_decimal
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
@@ -39,8 +39,11 @@ class Controller:
             if dst_error != '':
                 return BadRequest(dst_error)
             
-            amount = Decimal(request.data.get('amount'))
-
+            amount = request.data.get('amount')
+            
+            if not_decimal(amount):
+                return BadRequest('Valor de transferência inválido')
+            
             response = await usecase.execute(requester_user, src_user_vault, dst_user_vault, amount)
 
             return OK(body=response)
@@ -94,7 +97,7 @@ class Usecase:
         return ('', dst_user_vault)
     
     async def execute(self, requester_user: UserApiGatewayDTO, src_user_vault: Vault, dst_user_vault: Vault, \
-        amount: Decimal) -> dict:
+        amount: str) -> dict:
         transfer_tx = create_transfer_tx({ 
             'from_vault': src_user_vault, 
             'to_vault': dst_user_vault,
