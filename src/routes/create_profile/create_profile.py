@@ -2,7 +2,8 @@ from typing import List
 from src.shared.domain.entities.affiliation import Affiliation
 from src.shared.domain.entities.profile import Profile
 from src.shared.domain.enums.profile_status_enum import PROFILE_STATUS
-from src.shared.helpers.errors.errors import EntityError, MissingParameters, WrongTypeParametersError
+from src.shared.domain.enums.role_enum import ROLE
+from src.shared.helpers.errors.errors import DuplicatedItem, EntityError, MissingParameters, WrongTypeParametersError
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Created, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
@@ -14,7 +15,13 @@ class Controller:
   @staticmethod
   def execute(request: IRequest) -> IResponse:
     try:
-      user_id = request.data.get("user_id")
+      if request.data.get('requester_user') is None:
+        raise MissingParameters('requester_user')
+            
+      requester_user = request.data.get('requester_user')
+      
+      user_id = requester_user.user_id
+      role = requester_user.role
       bet_data_id = request.data.get("bet_data_id")
       game_data_id = request.data.get("game_data_id")
       affiliations = request.data.get("affiliations")
@@ -23,6 +30,8 @@ class Controller:
       
       if not user_id:
         raise MissingParameters("user_id")
+      if not role:
+        raise MissingParameters("role")
       if not bet_data_id:
         raise MissingParameters("bet_data_id")
       if not game_data_id:
@@ -34,6 +43,20 @@ class Controller:
       
       if status and not isinstance(status, str):
         raise WrongTypeParametersError("status", "str", type(status))
+      
+      """
+      AFILIADO = 'AFILIADO'
+      SUBAFILIADO = 'SUBAFILIADO'
+      INFLUENCER = 'INFLUENCER'
+      EMBAIXADOR = 'EMBAIXADOR'
+      OPERADOR = 'OPERADOR'
+      ADMIN = 'ADMIN'
+      """
+      
+      if role not in ["AFILIADO", "SUBAFILIADO", "INFLUENCER", "EMBAIXADOR", "OPERADOR", "ADMIN"]:
+        raise ValueError('Cargo inválido')
+      
+      
       
       if type(user_id) != str:
         raise WrongTypeParametersError("user_id", "str", type(user_id))
@@ -55,9 +78,9 @@ class Controller:
         raise WrongTypeParametersError("wallet_id", "str", type(wallet_id))
       
       if status and status not in ["ACTIVE", "INACTIVE"]:
-        raise ValueError("Status must be 'ACTIVE' or 'INACTIVE'")
+        raise ValueError("Status deve ser 'ACTIVE' ou 'INACTIVE'")
       
-      response = Usecase().execute(user_id, bet_data_id, game_data_id, affiliations, wallet_id, status)
+      response = Usecase().execute(user_id, bet_data_id, game_data_id, affiliations, wallet_id, status, role)
       
       return Created(body=response)
     
@@ -79,13 +102,17 @@ class Usecase:
     self.repository = Repository(profile_repo=True)
     self.profile_repo = self.repository.profile_repo
     
-  def execute(self, user_id: str, bet_data_id: str, game_data_id: str, affiliations: List[Affiliation], wallet_id: str, status: str) -> dict:
-    profile = Profile(user_id, bet_data_id, game_data_id, affiliations, wallet_id, PROFILE_STATUS[status], datetime.now().timestamp(), datetime.now().timestamp())
+  def execute(self, user_id: str, bet_data_id: str, game_data_id: str, affiliations: List[Affiliation], wallet_id: str, status: str, role: str) -> dict:
+    profile_exists = self.profile_repo.get_profile_by_user_id(user_id)
+    if profile_exists:
+      raise DuplicatedItem("perfil já existente")
+    profile = Profile(user_id, bet_data_id, game_data_id, affiliations, wallet_id, PROFILE_STATUS[status], ROLE[role], datetime.now().timestamp(), datetime.now().timestamp())
     self.profile_repo.create_profile(profile)
     return {"profile": profile.to_dict(), "message": "Perfil criado com sucesso"}
   
 def function_handler(event, context):
   http_request = LambdaHttpRequest(data=event)
+  http_request.data['requester_user'] = event.get('requestContext', {}).get('authorizer', {}).get('claims', None)
   response = Controller.execute(http_request)
   http_response = LambdaHttpResponse(status_code=response.status_code, body=response.body, headers=response.headers)
   
