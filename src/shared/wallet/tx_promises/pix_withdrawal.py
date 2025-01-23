@@ -43,7 +43,7 @@ class TXPIXWithdrawalPromise(TXBasePromise):
         
         log.populate_sign_data = lambda: ([
             ('paygate_ref', paygate_ref),
-            ('pix_url', self.pix_key.to_url()) 
+            ('pix_key', self.pix_key.to_dict())
         ])
             
         return log

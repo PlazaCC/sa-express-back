@@ -41,6 +41,7 @@ class Test_Deposit:
             sign_result = withdrawal_result['sign_result']
 
             assert 'data' in sign_result
-            assert 'pix_url' in sign_result['data']
+            assert 'paygate_ref' in sign_result['data']
+            assert 'pix_key' in sign_result['data']
 
         await post_withdrawal()

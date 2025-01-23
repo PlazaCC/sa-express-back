@@ -41,6 +41,7 @@ class Test_Deposit:
             sign_result = deposit_result['sign_result']
 
             assert 'data' in sign_result
+            assert 'paygate_ref' in sign_result['data']
             assert 'pix_url' in sign_result['data']
 
         await post_deposit()
