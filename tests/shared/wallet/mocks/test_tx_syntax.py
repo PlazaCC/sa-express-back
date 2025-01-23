@@ -58,7 +58,7 @@ class Test_TXSyntax:
     @pytest.mark.asyncio
     # @pytest.mark.skip(reason='')
     async def test_vaults(self):
-        (cache, repository, paygate) = await get_back_context({
+        (cache, repository, paygate) = get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
@@ -81,7 +81,7 @@ class Test_TXSyntax:
     @pytest.mark.asyncio
     # @pytest.mark.skip(reason='')
     async def test_deposits(self):
-        (cache, repository, paygate) = await get_back_context({
+        (cache, repository, paygate) = get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
@@ -113,7 +113,7 @@ class Test_TXSyntax:
     @pytest.mark.asyncio
     # @pytest.mark.skip(reason='')
     async def test_withdrawals(self):
-        (cache, repository, paygate) = await get_back_context({
+        (cache, repository, paygate) = get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
@@ -145,7 +145,7 @@ class Test_TXSyntax:
     @pytest.mark.asyncio
     # @pytest.mark.skip(reason='')
     async def test_client_queue(self):
-        (cache, repository, paygate) = await get_back_context({
+        (cache, repository, paygate) = get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
@@ -195,7 +195,7 @@ class Test_TXSyntax:
     @pytest.mark.asyncio
     # @pytest.mark.skip(reason='')
     async def test_server_single_queue(self):
-        (cache, repository, paygate) = await get_back_context({
+        (cache, repository, paygate) = get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {

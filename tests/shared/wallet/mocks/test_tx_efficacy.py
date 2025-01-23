@@ -117,7 +117,7 @@ class Test_TXEfficacy:
     @pytest.mark.asyncio
     # @pytest.mark.skip(reason='')
     async def test_random_tx_batch_sequence(self):
-        (cache, repository, paygate) = await get_back_context({
+        (cache, repository, paygate) = get_back_context({
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {

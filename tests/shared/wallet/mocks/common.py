@@ -1,14 +1,14 @@
 import random
 
-from src.shared.wallet.enums.pix import PIX_KEY_TYPE
-from src.shared.wallet.models.pix import PIXKey
-from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.infra.repositories.mocks.wallet_cache_mock import WalletCacheMock
 from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRepositoryMock
 
+from src.shared.wallet.enums.pix import PIX_KEY_TYPE
+from src.shared.wallet.models.pix import PIXKey
+from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.mocks.wallet_paygate_mock import WalletPayGateMock
 
-async def get_back_context(config: dict):
+def get_back_context(config: dict) -> tuple[WalletCacheMock, WalletRepositoryMock, WalletPayGateMock]:
     repository = WalletRepositoryMock(singleton=config['singleton'] if 'singleton' in config else False)
     cache = WalletCacheMock(singleton=config['singleton'] if 'singleton' in config else False)
     paygate = WalletPayGateMock()
