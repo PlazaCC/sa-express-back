@@ -65,4 +65,12 @@ class Usecase:
         return {}
         
 async def function_handler(event, context) -> LambdaHttpResponse:
-    pass
+    http_request = LambdaHttpRequest(event)
+    
+    response = await Controller.execute(http_request)
+
+    return LambdaHttpResponse(
+        status_code=response.status_code, 
+        body=response.body, 
+        headers=response.headers
+    ).toDict()

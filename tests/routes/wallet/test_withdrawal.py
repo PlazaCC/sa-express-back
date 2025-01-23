@@ -14,7 +14,7 @@ class Test_Deposit:
     # @pytest.mark.skip(reason='')
     async def test_controller(self):
         (cache, repository, paygate) = initialize_mocks()
-
+        
         user = repository.get_random_user()
 
         async def post_withdrawal():
