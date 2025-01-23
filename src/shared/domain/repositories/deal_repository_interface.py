@@ -10,7 +10,7 @@ class IDealRepository(ABC):
         pass
 
     @abstractmethod
-    def get_deal_by_id(self, bet_id: str, deal_id: str) -> Deal:
+    def get_deal_by_id(self, deal_id: str) -> Deal:
         pass
 
     @abstractmethod
@@ -26,5 +26,5 @@ class IDealRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_deal(self, bet_id: str, deal_id: str) -> Deal:
+    def delete_deal(self, entity_id: str, deal_id: str) -> Deal:
         pass

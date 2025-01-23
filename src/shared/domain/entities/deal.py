@@ -5,7 +5,7 @@ from typing import Any
 
 class Deal(BaseModel):
     deal_id: str = Field(..., description="String with 32 characters")
-    bet_id: str = Field(..., description="String with 32 characters")
+    entity_id: str = Field(..., description="String with 32 characters")
     baseline: float
     cpa: float
     rev_share: float
@@ -14,13 +14,13 @@ class Deal(BaseModel):
     created_at: int = Field(..., description="Timestamp in seconds")
     updated_at: int = Field(..., description="Timestamp in seconds")
 
-    @field_validator('deal_id', 'bet_id')
+    @field_validator('deal_id', 'entity_id')
     @staticmethod
     def validate_uuid(value: str) -> str:
         if not isinstance(value, str):
-            raise ValueError("deal_id and bet_id must be strings")
+            raise ValueError("deal_id and entity_id must be strings")
         if len(value) != 36:
-            raise ValueError("deal_id and bet_id must have exactly 36 characters")
+            raise ValueError("deal_id and entity_id must have exactly 36 characters")
         return value
 
     @field_validator('created_at', 'updated_at')
@@ -35,7 +35,7 @@ class Deal(BaseModel):
     def to_dict(self):
         return {
             "deal_id": self.deal_id,
-            "bet_id": self.bet_id,
+            "entity_id": self.entity_id,
             "baseline": self.baseline,
             "cpa": self.cpa,
             "rev_share": self.rev_share,
@@ -49,7 +49,7 @@ class Deal(BaseModel):
     def from_dict(cls, data: dict) -> 'Deal':
         return cls(
             deal_id=data.get("deal_id"),
-            bet_id=data.get("bet_id"),
+            entity_id=data.get("entity_id"),
             baseline=data.get("baseline"),
             cpa=data.get("cpa"),
             rev_share=data.get("rev_share"),
