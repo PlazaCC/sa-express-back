@@ -29,7 +29,7 @@ class PIXKey:
             return PIXKey.validate_email(value)
         
         return PIXKey.validate_rng(value)
-
+    
     @staticmethod
     def validate_cpf(value: str) -> bool:
         value_length = len(value)

@@ -39,11 +39,14 @@ class TXPIXWithdrawalPromise(TXBasePromise):
         if 'error' in api_res:
             return TXLogs.failed(log_key, api_res['error'])
         
-        log = TXLogs.successful(log_key)
+        data = {
+            'pix_key': self.pix_key.to_dict(),
+        }
+        
+        log = TXLogs.successful(log_key, data)
         
         log.populate_sign_data = lambda: ([
-            ('paygate_ref', paygate_ref),
-            ('pix_key', self.pix_key.to_dict())
+            ('paygate_ref', paygate_ref)
         ])
             
         return log
