@@ -6,14 +6,8 @@ from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 
 
 class AffiliationRepositoryDynamo(IAffiliationRepository):
-  def __init__(self):
-    self.dynamo = DynamoDatasource(
-      dynamo_table_name=Environments.get_envs().dynamo_table_name,
-      region=Environments.get_envs().region,
-      partition_key=Environments.get_envs().dynamo_partition_key,
-      sort_key=Environments.get_envs().dynamo_sort_key,
-      gsi_partition_key=Environments.get_envs().dynamo_gsi_partition_key,
-    )
+  def __init__(self, dynamo: DynamoDatasource):
+    self.dynamo = dynamo
   
   @staticmethod
   def affiliation_partition_key_format(user_id: str) -> str:
