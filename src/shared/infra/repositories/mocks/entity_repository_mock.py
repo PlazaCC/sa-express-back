@@ -19,6 +19,8 @@ class EntityRepositoryMock(IEntityRepository):
         registers=1,
         rev_share=1,
         shipping_volume=1,
+        created_at=1,
+        updated_at=1
       ),
       Entity(
         entity_id="00000000-0000-0000-0000-000000000001",
@@ -31,6 +33,8 @@ class EntityRepositoryMock(IEntityRepository):
         registers=2,
         rev_share=2,
         shipping_volume=2,
+        created_at=2,
+        updated_at=2
       ),
       Entity(
         entity_id="00000000-0000-0000-0000-000000000002",
@@ -43,6 +47,8 @@ class EntityRepositoryMock(IEntityRepository):
         registers=3,
         rev_share=3,
         shipping_volume=3,
+        created_at=3,
+        updated_at=3
       ),
     ]
     
