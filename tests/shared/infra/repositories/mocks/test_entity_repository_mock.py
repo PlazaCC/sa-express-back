@@ -18,6 +18,8 @@ class Test_EntityRepositoryMock:
         registers=4,
         rev_share=4,
         shipping_volume=4,
+        created_at=1,
+        updated_at=1
       )
     
     repo.create_entity(entity)
