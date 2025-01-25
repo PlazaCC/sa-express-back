@@ -21,7 +21,6 @@ def create_deposit_tx(build_params: dict) -> TX:
         tx_id=TX.random_id(),
         user_id=-1 if user_id is None else user_id,
         create_timestamp=now_timestamp(),
-        vaults=[ from_vault, to_vault ],
         instruction=transfer_instr,
         logs=None,
         status=TX_STATUS.NEW,

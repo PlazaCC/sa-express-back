@@ -155,7 +155,6 @@ class Test_TXSyntax:
 
         tx_proc = TXProcessor(cache, repository, paygate, 
             config=TXProcessorConfig(
-                max_vaults=2,
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )
         )
@@ -203,7 +202,6 @@ class Test_TXSyntax:
 
         tx_proc = TXProcessor(cache, repository, paygate, 
             config=TXProcessorConfig(
-                max_vaults=2,
                 tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
             )
         )

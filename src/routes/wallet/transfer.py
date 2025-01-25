@@ -69,7 +69,6 @@ class Usecase:
             repository=self.wallet_repo,
             paygate=WalletPayGateMock(),
             config=TXProcessorConfig(
-                max_vaults=2,
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )
         )

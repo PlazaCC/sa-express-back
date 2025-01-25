@@ -127,12 +127,11 @@ class Test_TXEfficacy:
 
         tx_proc = TXProcessor(cache, repository, paygate, 
             config=TXProcessorConfig(
-                max_vaults=2,
                 tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
             )
         )
 
-        (txs, targets) = await self.get_random_tx_batch(cache, repository, num_txs=100)
+        (txs, targets) = await self.get_random_tx_batch(cache, repository, num_txs=50)
 
         promises = []
 

@@ -15,7 +15,6 @@ class TX(BaseModel):
     tx_id: str
     user_id: int
     create_timestamp: str
-    vaults: list[Vault]
     instruction: TXBaseInstruction
     logs: TXLogs | None
     status: TX_STATUS
@@ -28,7 +27,6 @@ class TX(BaseModel):
             tx_id=data['tx_id'],
             user_id=data['user_id'],
             create_timestamp=data['create_timestamp'],
-            vaults=[ Vault.from_tx_snapshot(v) for v in data['vaults'] ],
             instruction=TXMutateInstruction.from_tx_snapshot(data['instruction']),
             logs=TXLogs.from_tx_snapshot(data['logs']) if 'logs' in data else None,
             status=TX_STATUS[data['status']],
@@ -58,7 +56,6 @@ class TX(BaseModel):
             'tx_id': self.tx_id,
             'user_id': self.user_id,
             'create_timestamp': self.create_timestamp,
-            'vaults': [ v.to_tx_snapshot() for v in self.vaults ],
             'instruction': self.instruction.to_tx_snapshot(),
             'status': self.status.value,
         }

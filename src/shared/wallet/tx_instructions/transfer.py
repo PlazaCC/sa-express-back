@@ -51,6 +51,10 @@ class TXTransferInstruction(TXBaseInstruction):
             return "Can't transfer negative amount"
         
         from_vault = self.from_vault
+        to_vault = self.to_vault
+
+        if from_vault.to_identity_key() == to_vault.to_identity_key():
+            return 'Useless transfer'
 
         if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
             return None
@@ -107,7 +111,7 @@ class TXTransferInstruction(TXBaseInstruction):
         next_vault = next((v for v in vaults if v.to_identity_key() == vault_key), None)
 
         if next_vault is not None:
-            vault_field = next_vault
+            setattr(self, field_key, next_vault)
 
     def is_deposit(self) -> bool:
         return self.from_vault.type == VAULT_TYPE.SERVER_UNLIMITED and self.to_vault.type == VAULT_TYPE.USER

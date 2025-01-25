@@ -69,7 +69,6 @@ class Usecase:
             repository=self.wallet_repo,
             paygate=self.wallet_paygate,
             config=TXProcessorConfig(
-                max_vaults=2,
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )
         )

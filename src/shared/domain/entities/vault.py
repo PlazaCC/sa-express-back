@@ -33,8 +33,8 @@ class Vault(BaseModel):
         return Vault(
             type=VAULT_TYPE[data['type']],
             user_id=int(data['user_id']) if 'user_id' in data else None,
-            balance=Decimal(0),
-            balance_locked=Decimal(0),
+            balance=Decimal(data['balance']),
+            balance_locked=Decimal(data['balance_locked']),
             locked=False,
             pix_key=None
         )
@@ -112,6 +112,8 @@ class Vault(BaseModel):
     def to_tx_snapshot(self) -> dict:
         result = {
             'type': self.type.value,
+            'balance': str(self.balance),
+            'balance_locked': str(self.balance_locked)
         }
         
         if self.user_id is not None:

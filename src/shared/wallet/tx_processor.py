@@ -26,20 +26,17 @@ from src.shared.wallet.tx_queues.single_multi import TXServerMultiQueue
 from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class TXProcessorConfig:
-    max_vaults: int
     tx_queue_type: TX_QUEUE_TYPE
 
     @staticmethod
     def default() -> 'TXProcessorConfig':
         return TXProcessorConfig()
     
-    def __init__(self, max_vaults: int = 2, tx_queue_type: TX_QUEUE_TYPE = TX_QUEUE_TYPE.CLIENT):
-        self.max_vaults = max_vaults
+    def __init__(self, tx_queue_type: TX_QUEUE_TYPE = TX_QUEUE_TYPE.CLIENT):
         self.tx_queue_type = tx_queue_type
 
     def to_dict(self):
         return {
-            'max_vaults': self.max_vaults,
             'tx_queue_type': self.tx_queue_type.value
         }
 
@@ -79,8 +76,6 @@ class TXProcessor:
 
         instruction = tx.instruction
 
-        tx.instruction.update_vaults(tx.vaults)
-
         next_state, instr_result = await instruction.execute(state, from_sign)
 
         if instr_result.with_error():
@@ -101,61 +96,11 @@ class TXProcessor:
 
         if tx.sign_result is not None or tx.commit_result is not None:
             return 'Transaction already signed'
-        
-        num_vaults = len(tx.vaults)
-
-        if num_vaults == 0:
-            return 'Transaction without vaults'
-        
-        if num_vaults > self.config.max_vaults:
-            return f'Transaction with too many vaults (MAX {self.config.max_vaults})'
 
         instr_fields_error = tx.instruction.validate_fields_before_sign()
 
         if instr_fields_error is not None:
             return instr_fields_error
-
-        vault_match_error = self.bidirectional_vault_matching(tx)
-
-        if vault_match_error is not None:
-            return vault_match_error
-
-        return None
-    
-    def bidirectional_vault_matching(self, tx: TX) -> str | None:
-        forward_vaults = {}
-
-        for vault in tx.vaults:
-            vault_key = vault.to_identity_key()
-
-            if vault_key not in forward_vaults:
-                forward_vaults[vault_key] = True
-                continue
-
-            return f'Duplicated vault "{vault_key}"'
-
-        backward_vaults = {}
-
-        for vault in tx.instruction.get_vaults():
-            vault_key = vault.to_identity_key()
-
-            if vault_key in forward_vaults:
-                del forward_vaults[vault_key]
-
-            if vault_key not in backward_vaults:
-                backward_vaults[vault_key] = True
-
-        if len(forward_vaults) != 0:
-            return 'Transaction vault forward matching failed'
-
-        for vault in tx.vaults:
-            vault_key = vault.to_identity_key()
-
-            if vault_key in backward_vaults:
-                del backward_vaults[vault_key]
-
-        if len(backward_vaults) != 0:
-            return 'Transaction vault backward matching failed'
 
         return None
     
@@ -175,7 +120,7 @@ class TXProcessor:
             'with_promise': False 
         }
         
-        for vault in tx.vaults:
+        for vault in tx.instruction.get_vaults():
             vault_key, vault_state = vault.to_tx_execution_state()
 
             if vault_key not in state['vaults']:
@@ -237,7 +182,7 @@ class TXProcessor:
         tx.status = TX_STATUS.SIGNED
         tx.sign_result = TXSignResult.successful()
 
-        for vault in tx.vaults:
+        for vault in tx.instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
                 continue
 
@@ -259,7 +204,7 @@ class TXProcessor:
         return sign_result
 
     async def commit_from_sign(self, tx: TX, exec_state: dict) -> TXSignResult:
-        for vault in tx.vaults:
+        for vault in tx.instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
                 continue
 
@@ -291,8 +236,6 @@ class TXProcessor:
             return TXCommitResult.failed(f'Transaction logs already resolved')
 
         state = self.get_tx_state(tx)
-
-        tx.instruction.update_vaults(tx.vaults)
 
         next_state, instr_result = await tx.instruction.revert(state)
 
@@ -331,8 +274,6 @@ class TXProcessor:
             return TXCommitResult.failed(f'Transaction log already resolved')
 
         state = self.get_tx_state(tx)
-
-        tx.instruction.update_vaults(tx.vaults)
 
         next_state, instr_result = await tx.instruction.execute(state, from_sign=False)
 

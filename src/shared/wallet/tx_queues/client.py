@@ -20,33 +20,33 @@ class TXClientQueue(TXBaseQueue):
         return self.tx_proc.vault_proc
 
     async def push_tx(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
-        locked_vaults = self.vault_proc().get_and_lock(tx.vaults)
+        locked_vaults = self.vault_proc().get_and_lock(tx.instruction.get_vaults())
 
         if locked_vaults is None:
             return TXPushResult.locked()
 
-        tx.vaults = locked_vaults
+        tx.instruction.update_vaults(locked_vaults)
 
         sign_result = await self.tx_proc.sign(signer, tx)
 
-        self.vault_proc().unlock(tx.vaults)
+        self.vault_proc().unlock(tx.instruction.get_vaults())
 
         return TXPushResult.successful(sign_result)
     
     async def _pop_tx(self, tx: TX, error: str | None = None) -> TXPopResult:
-        locked_vaults = self.vault_proc().get_and_lock(tx.vaults)
+        locked_vaults = self.vault_proc().get_and_lock(tx.instruction.get_vaults())
 
         if locked_vaults is None:
             return TXPopResult.locked()
         
-        tx.vaults = locked_vaults
+        tx.instruction.update_vaults(locked_vaults)
 
         if error is None:
             commit_result = await self.tx_proc.commit_tx_confirmed(tx)
         else:
             commit_result = await self.tx_proc.commit_tx_failed(tx, error)
 
-        self.vault_proc().unlock(tx.vaults)
+        self.vault_proc().unlock(tx.instruction.get_vaults())
 
         return TXPopResult.successful(commit_result)
 
