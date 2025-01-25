@@ -1,6 +1,8 @@
 from typing import List
 from src.shared.domain.entities.profile import Profile
 from src.shared.domain.entities.affiliation import Affiliation
+from src.shared.domain.enums.profile_status_enum import PROFILE_STATUS
+from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
 
 
@@ -11,52 +13,43 @@ class ProfileRepositoryMock(IProfileRepository):
         self.profiles = [
             Profile(
                 user_id="00000000-0000-0000-0000-000000000000",
-                bet_data_id="bet-0000",
-                game_data_id="game-0000",
+                entity_id="00000000-0000-0000-0000-000000000000",
+                game_data_id="00000000-0000-0000-0000-000000000000",
                 affiliations=[
-                    Affiliation(
-                        affiliation_id="aff-0000",
-                        invoiced_amount=1000.0,
-                        amount_to_pay=500.0,
-                        commission=10.0,
-                        baseline=1.0,
-                        cost_per_acquisition=2,
-                        rev_share=0.1,
-                        registers=10,
-                        ftd=5,
-                        shipping_volume=20.0,
-                        base_quality=90.0,
-                        operators_satisfaction=95.0
-                    )
+                    "00000000-0000-0000-0000-000000000000",
                 ],
-                wallet_id="wallet-0000"
+                wallet_id="00000000-0000-0000-0000-000000000000",
+                role=ROLE.ADMIN,
+                created_at=1610000000,
+                updated_at=1610000000,
             ),
             Profile(
                 user_id="00000000-0000-0000-0000-000000000001",
-                bet_data_id="bet-0001",
-                game_data_id="game-0001",
+                entity_id="00000000-0000-0000-0000-000000000001",
+                game_data_id="00000000-0000-0000-0000-000000000001",
                 affiliations=[
-                    Affiliation(
-                        affiliation_id="aff-0001",
-                        invoiced_amount=2000.0,
-                        amount_to_pay=1000.0,
-                        commission=15.0,
-                        baseline=2.0,
-                        cost_per_acquisition=3,
-                        rev_share=0.15,
-                        registers=20,
-                        ftd=10,
-                        shipping_volume=30.0,
-                        base_quality=85.0,
-                        operators_satisfaction=90.0
-                    )
+                    "00000000-0000-0000-0000-000000000001",
                 ],
-                wallet_id="wallet-0001"
+                wallet_id="00000000-0000-0000-0000-000000000001",
+                role=ROLE.ADMIN,
+                created_at=1620000000,
+                updated_at=1620000000,
             ),
         ]
 
     def get_profile_by_id(self, user_id: str) -> Profile:
         for profile in self.profiles:
             if profile.user_id == user_id:
+                return profile
+        return None
+    
+    def create_profile(self, profile):
+        self.profiles.append(profile)
+        return profile
+    
+    def deactivate_profile(self, user_id):
+        for profile in self.profiles:
+            if profile.user_id == user_id:
+                profile.active = PROFILE_STATUS.INACTIVE
                 return profile
         return None
