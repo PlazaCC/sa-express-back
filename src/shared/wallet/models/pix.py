@@ -136,8 +136,14 @@ class PIXKey:
     def valid(self) -> bool:
         return PIXKey.validate(self.type, self.value)
     
-    def to_url(self) -> str:
-        return ''
-    
-    def to_qrcode(self) -> str:
-        return ''
+    def to_paygate_type(self) -> str:
+        if self.type == PIX_KEY_TYPE.CPF:
+            return 'cpf'
+        
+        if self.type == PIX_KEY_TYPE.PHONE:
+            return 'phone'
+        
+        if self.type == PIX_KEY_TYPE.EMAIL:
+            return 'e-mail'
+        
+        return 'evp'

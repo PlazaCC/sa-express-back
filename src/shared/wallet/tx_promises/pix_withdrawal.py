@@ -29,19 +29,23 @@ class TXPIXWithdrawalPromise(TXBasePromise):
     async def call(self, tx_proc: Any) -> TXLogs:
         paygate_ref = self.to_paygate_ref()
 
-        api_res = await tx_proc.paygate.post_pix_withdrawal(self.pix_key, paygate_ref)
+        api_res = await tx_proc.paygate.post_pix_withdrawal(paygate_ref, self.amount, self.pix_key)
 
         if 'error' in api_res:
-            return TXLogs.failed(api_res['error'])
+            return TXLogs.failed(api_res['error']['message'])
         
+        api_data = api_res['data']
+
         data = {
+            'paygate_tx_id': api_data['transaction']['id'],
             'pix_key': self.pix_key.to_dict(),
         }
         
         log = TXLogs.successful(data)
         
         log.populate_sign_data = lambda: ([
-            ('paygate_ref', paygate_ref)
+            ('paygate_ref', paygate_ref),
+            ('paygate_tx_id', data['paygate_tx_id']),
         ])
             
         return log

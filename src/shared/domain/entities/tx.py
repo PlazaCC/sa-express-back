@@ -20,6 +20,7 @@ class TX(BaseModel):
     status: TX_STATUS
     sign_result: TXSignResult | None
     commit_result: TXCommitResult | None
+    description: str = ''
 
     @staticmethod
     def from_dict_static(data: dict) -> 'TX':
@@ -31,7 +32,8 @@ class TX(BaseModel):
             logs=TXLogs.from_tx_snapshot(data['logs']) if 'logs' in data else None,
             status=TX_STATUS[data['status']],
             sign_result=TXSignResult.from_tx_snapshot(data['sign_result']) if 'sign_result' in data else None,
-            commit_result=TXCommitResult.from_tx_snapshot(data['commit_result']) if 'commit_result' in data else None
+            commit_result=TXCommitResult.from_tx_snapshot(data['commit_result']) if 'commit_result' in data else None,
+            description=data['description']
         )
     
     @staticmethod
@@ -58,6 +60,7 @@ class TX(BaseModel):
             'create_timestamp': self.create_timestamp,
             'instruction': self.instruction.to_tx_snapshot(),
             'status': self.status.value,
+            'description': self.description
         }
 
         if self.logs is not None:

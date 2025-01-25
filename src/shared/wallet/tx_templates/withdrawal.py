@@ -25,5 +25,6 @@ def create_withdrawal_tx(build_params: dict) -> TX:
         logs=None,
         status=TX_STATUS.NEW,
         sign_result=None,
-        commit_result=None
+        commit_result=None,
+        description=build_params['description'] if 'description' in build_params else ''
     )

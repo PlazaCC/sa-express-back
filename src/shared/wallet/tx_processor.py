@@ -266,7 +266,7 @@ class TXProcessor:
     async def commit_tx_confirmed(self, tx: TX) -> TXCommitResult:
         if tx.status != TX_STATUS.SIGNED:
             return TXCommitResult.failed(f'Can\'t commit transaction with status "{tx.status.value}"')
-
+        
         if tx.logs is None:
             return TXCommitResult.failed('Transaction logs is null')
 

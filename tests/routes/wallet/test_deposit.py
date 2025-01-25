@@ -42,6 +42,6 @@ class Test_Deposit:
 
             assert 'data' in sign_result
             assert 'paygate_ref' in sign_result['data']
-            assert 'pix_url' in sign_result['data']
+            assert 'pix_qrcode' in sign_result['data']
 
         await post_deposit()

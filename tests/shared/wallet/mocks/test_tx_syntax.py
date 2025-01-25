@@ -43,7 +43,7 @@ class Test_TXSyntax:
                 commit_result = await tx_proc.commit_tx_failed(tx, f'Transaction failed on paygate with status "{ptx_status.value}"')
 
                 assert commit_result.with_error()
-
+        
         for (signer, tx) in txs:
             sign_result = await tx_proc.sign(signer, tx)
     
@@ -181,6 +181,8 @@ class Test_TXSyntax:
             await tx_proc.pop_tx_with_callback(callback, tx)
 
         push_result = await tx_proc.push_tx(signer, tx)
+
+        print(push_result.to_dict())
 
         assert push_result.without_error()
 
