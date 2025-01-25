@@ -9,7 +9,9 @@ from src.shared.infra.repositories.database.affiliation_repository_dynamo import
 from src.shared.infra.repositories.database.deal_repository_dynamo import DealRepositoryDynamo
 from src.shared.infra.repositories.database.entity_repository_dynamo import EntityRepositoryDynamo
 from src.shared.infra.repositories.database.profile_repository_dynamo import ProfileRepositoryDynamo
+from src.shared.infra.repositories.mocks.affiliation_repository_mock import AffiliationRepositoryMock
 from src.shared.infra.repositories.mocks.deal_repository_mock import DealRepositoryMock
+from src.shared.infra.repositories.mocks.entity_repository_mock import EntityRepositoryMock
 from src.shared.infra.repositories.mocks.profile_repository_mock import ProfileRepositoryMock
 
 
@@ -30,8 +32,10 @@ class Repository:
     ):
         if Environments.stage == STAGE.TEST:
             self._initialize_mock_repositories(
-                 deal_repo,
-                 profile_repo
+                deal_repo,
+                profile_repo,
+                affiliation_repo,
+                entity_repo
             )
         else:
             self._initialize_database_repositories(
@@ -43,11 +47,15 @@ class Repository:
             )
             
 
-    def _initialize_mock_repositories(self, deal_repo, profile_repo):
+    def _initialize_mock_repositories(self, deal_repo, profile_repo, affiliation_repo, entity_repo):
         if deal_repo:
             self.deal_repo = DealRepositoryMock()
         if profile_repo:
             self.profile_repo = ProfileRepositoryMock()
+        if affiliation_repo:
+            self.affiliation_repo = AffiliationRepositoryMock()
+        if entity_repo:
+            self.entity_repo = EntityRepositoryMock()
             
     def _initialize_database_repositories(self, deal_repo, auth_repo, profile_repo, affiliation_repo, entity_repo):
         dynamo = DynamoDatasource(
