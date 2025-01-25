@@ -15,14 +15,8 @@ class ProfileRepositoryDynamo(IProfileRepository):
     def profile_sort_key_format() -> str:
         return f'METADATA'
     
-    def __init__(self):
-        self.dynamo = DynamoDatasource(
-            dynamo_table_name=Environments.get_envs().dynamo_table_name,
-            region=Environments.get_envs().region,
-            partition_key=Environments.get_envs().dynamo_partition_key,
-            sort_key=Environments.get_envs().dynamo_sort_key,
-            gsi_partition_key=Environments.get_envs().dynamo_gsi_partition_key,
-        )
+    def __init__(self, dynamo: DynamoDatasource):
+        self.dynamo = dynamo
 
     @abstractmethod
     def get_profile_by_id(self, user_id: str) -> Profile:
