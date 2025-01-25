@@ -39,7 +39,6 @@ async def deposit_mock(cache: WalletCacheMock, repository: WalletRepositoryMock,
     tx_proc = TXProcessor(cache, repository, paygate, 
         config=TXProcessorConfig(
             max_vaults=2,
-            max_instructions=1,
             tx_queue_type=TX_QUEUE_TYPE.CLIENT
         )
     )
@@ -58,7 +57,6 @@ async def withdrawal_mock(cache: WalletCacheMock, repository: WalletRepositoryMo
     tx_proc = TXProcessor(cache, repository, paygate,
         config=TXProcessorConfig(
             max_vaults=2,
-            max_instructions=1,
             tx_queue_type=TX_QUEUE_TYPE.CLIENT
         )
     )

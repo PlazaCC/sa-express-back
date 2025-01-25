@@ -46,21 +46,20 @@ class Usecase:
             paygate=WalletPayGateMock(),
             config=TXProcessorConfig(
                 max_vaults=2,
-                max_instructions=1,
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )
         )
     
     async def execute(self, paygate_ref: str) -> dict:
-        (tx, instr_index) = self.tx_proc.get_tx_by_paygate_ref(paygate_ref)
+        tx = self.tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
-        if tx is None or instr_index is None:
+        if tx is None:
             return {}
 
         async def pop_callback(pop_result: TXPopResult):
             pass
         
-        await self.tx_proc.pop_tx_with_callback(pop_callback, tx, instr_index)
+        await self.tx_proc.pop_tx_with_callback(pop_callback, tx)
 
         return {}
         

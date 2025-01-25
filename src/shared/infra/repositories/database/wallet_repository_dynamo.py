@@ -55,16 +55,6 @@ class WalletRepositoryDynamo(IWalletRepository):
         )
 
         return Vault.from_dict_static(vault['Item']) if 'Item' in vault else None
-
-    def get_vault_by_server_ref(self, server_ref: str) -> Vault | None:
-        vault_id_key = Vault.server_ref_to_identity_key(server_ref)
-
-        vault = self.dynamo.get_item(
-            partition_key=self.vault_partition_key_format(vault_id_key), 
-            sort_key=self.vault_sort_key_format(vault_id_key)
-        )
-
-        return Vault.from_dict_static(vault['Item']) if 'Item' in vault else None
     
     def upsert_vault(self, vault: Vault) -> Vault:
         return self.create_vault(vault)

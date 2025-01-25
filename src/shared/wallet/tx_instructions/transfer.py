@@ -65,9 +65,6 @@ class TXTransferInstruction(TXBaseInstruction):
 
         if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
             return self.validate_signer_access_from_server_unlimited(signer)
-        
-        if from_vault.type == VAULT_TYPE.SERVER_LIMITED:
-            return self.validate_signer_access_from_server_limited(signer)
             
         if from_vault.type == VAULT_TYPE.USER:
             return self.validate_signer_access_from_user(signer)
@@ -85,12 +82,6 @@ class TXTransferInstruction(TXBaseInstruction):
         
         if to_vault.type == VAULT_TYPE.USER and signer.user_id != to_vault.user_id:
             return "Can't transfer from server to other users"
-        
-        return None
-
-    def validate_signer_access_from_server_limited(self, signer: User | UserApiGatewayDTO) -> str | None:
-        if signer.role != ROLE.ADMIN:
-            return 'Only a admin can transfer from server limited vaults'
         
         return None
 
@@ -124,7 +115,7 @@ class TXTransferInstruction(TXBaseInstruction):
     def is_withdrawal(self) -> bool:
         return self.from_vault.type == VAULT_TYPE.USER and self.to_vault.type == VAULT_TYPE.SERVER_UNLIMITED
     
-    async def execute(self, instr_index: int, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
+    async def execute(self, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
         to_vault = self.to_vault
 
@@ -155,7 +146,6 @@ class TXTransferInstruction(TXBaseInstruction):
             return state, TXTransferInstructionResult.successful(
                 TXPIXDepositPromise(
                     tx_id=state['tx_id'],
-                    instr_index=instr_index,
                     amount=self.amount
                 )
             )
@@ -169,7 +159,6 @@ class TXTransferInstruction(TXBaseInstruction):
             return state, TXTransferInstructionResult.successful(
                 TXPIXWithdrawalPromise(
                     tx_id=state['tx_id'],
-                    instr_index=instr_index,
                     pix_key=from_vault.pix_key, 
                     amount=self.amount
                 )
@@ -177,7 +166,7 @@ class TXTransferInstruction(TXBaseInstruction):
 
         return state, TXTransferInstructionResult.successful()
     
-    async def revert(self, instr_index: int, state: dict) -> tuple[dict, TXTransferInstructionResult]:
+    async def revert(self, state: dict) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
 
         from_vault_key = from_vault.to_identity_key()

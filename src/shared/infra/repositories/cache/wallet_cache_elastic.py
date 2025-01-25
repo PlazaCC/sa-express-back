@@ -12,9 +12,6 @@ class WalletCacheElastic(IWalletCache):
     def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:
         pass
     
-    def get_vault_by_server_ref(self, server_ref: str) -> Vault | None:
-        pass
-    
     def upsert_vault(self, vault: Vault) -> Vault:
         pass
     

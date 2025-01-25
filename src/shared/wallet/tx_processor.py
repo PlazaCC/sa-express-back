@@ -11,7 +11,6 @@ from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatew
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 
-from src.shared.wallet.utils import error_with_instruction_sufix
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.tx_logs import TXLogs
@@ -28,23 +27,19 @@ from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class TXProcessorConfig:
     max_vaults: int
-    max_instructions: int
     tx_queue_type: TX_QUEUE_TYPE
 
     @staticmethod
     def default() -> 'TXProcessorConfig':
         return TXProcessorConfig()
     
-    def __init__(self, max_vaults: int = 2, max_instructions: int = 1, \
-        tx_queue_type: TX_QUEUE_TYPE = TX_QUEUE_TYPE.CLIENT):
+    def __init__(self, max_vaults: int = 2, tx_queue_type: TX_QUEUE_TYPE = TX_QUEUE_TYPE.CLIENT):
         self.max_vaults = max_vaults
-        self.max_instructions = max_instructions
         self.tx_queue_type = tx_queue_type
 
     def to_dict(self):
         return {
             'max_vaults': self.max_vaults,
-            'max_instructions': self.max_instructions,
             'tx_queue_type': self.tx_queue_type.value
         }
 
@@ -78,43 +73,27 @@ class TXProcessor:
         self.repository.upsert_transaction(tx)
         
         return None
-    
-    def get_tx_committed_status(self, tx: TX) -> TX_STATUS:
-        all_resolved = True
 
-        for _, log in tx.logs.items():
-            if not log.resolved:
-                all_resolved = False
-                break
-        
-        return TX_STATUS.COMMITTED if all_resolved else TX_STATUS.PARTIALLY_COMMITTED
-
-    async def exec_tx_instructions(self, tx: TX, from_sign: bool) -> tuple[dict, list[TXBaseInstructionResult | None]]:
+    async def exec_tx_instruction(self, tx: TX, from_sign: bool) -> tuple[dict, TXBaseInstructionResult | None]:
         state = self.get_tx_state(tx)
 
-        num_instructions = len(tx.instructions)
+        instruction = tx.instruction
 
-        results = [ None for _ in range(0, num_instructions) ]
+        tx.instruction.update_vaults(tx.vaults)
 
-        for i in range(0, num_instructions):
-            instruction = tx.instructions[i]
+        next_state, instr_result = await instruction.execute(state, from_sign)
 
-            instruction.update_vaults(tx.vaults)
-
-            next_state, instr_result = await instruction.execute(i, state, from_sign)
-
-            results[i] = instr_result
-
-            if instr_result.with_error():
-               state['error'] = error_with_instruction_sufix(instr_result.error, i)
-               break
+        if instr_result.with_error():
+            state['error'] = instr_result.error
             
-            if instr_result.promise is not None:
-                state['any_promise'] = True
-            
-            state = next_state
+            return state, None
+        
+        if instr_result.promise is not None:
+            state['with_promise'] = True
+        
+        state = next_state
 
-        return state, results
+        return state, instr_result
 
     def validate_tx_fields_before_sign(self, tx: TX) -> str | None:
         if tx.status != TX_STATUS.NEW:
@@ -131,19 +110,10 @@ class TXProcessor:
         if num_vaults > self.config.max_vaults:
             return f'Transaction with too many vaults (MAX {self.config.max_vaults})'
 
-        num_instructions = len(tx.instructions)
+        instr_fields_error = tx.instruction.validate_fields_before_sign()
 
-        if num_instructions == 0:
-            return 'Transaction without instructions'
-
-        if num_instructions > self.config.max_instructions:
-            return f'Transaction with too many instructions (MAX {self.config.max_instructions})'
-        
-        for i in range(0, num_instructions):
-            instr_fields_error = tx.instructions[i].validate_fields_before_sign()
-
-            if instr_fields_error is not None:
-                return instr_fields_error + f' at instruction {str(i)}'
+        if instr_fields_error is not None:
+            return instr_fields_error
 
         vault_match_error = self.bidirectional_vault_matching(tx)
 
@@ -166,15 +136,14 @@ class TXProcessor:
 
         backward_vaults = {}
 
-        for instruction in tx.instructions:
-            for vault in instruction.get_vaults():
-                vault_key = vault.to_identity_key()
+        for vault in tx.instruction.get_vaults():
+            vault_key = vault.to_identity_key()
 
-                if vault_key in forward_vaults:
-                    del forward_vaults[vault_key]
+            if vault_key in forward_vaults:
+                del forward_vaults[vault_key]
 
-                if vault_key not in backward_vaults:
-                    backward_vaults[vault_key] = True
+            if vault_key not in backward_vaults:
+                backward_vaults[vault_key] = True
 
         if len(forward_vaults) != 0:
             return 'Transaction vault forward matching failed'
@@ -191,11 +160,10 @@ class TXProcessor:
         return None
     
     def validate_signer_access(self, signer: User | UserApiGatewayDTO, tx: TX) -> str | None:
-        for i in range(0, len(tx.instructions)):
-            signer_access_error = tx.instructions[i].validate_signer_access(signer)
+        signer_access_error = tx.instruction.validate_signer_access(signer)
 
-            if signer_access_error is not None:
-                return error_with_instruction_sufix(signer_access_error, i)
+        if signer_access_error is not None:
+            return signer_access_error
 
         return None
     
@@ -204,7 +172,7 @@ class TXProcessor:
             'tx_id': tx.tx_id,
             'error': None,
             'vaults': {},
-            'any_promise': False 
+            'with_promise': False 
         }
         
         for vault in tx.vaults:
@@ -215,7 +183,7 @@ class TXProcessor:
 
         return state
 
-    def get_tx_by_paygate_ref(self, paygate_ref: str) -> tuple[TX, int] | tuple[None, None]:
+    def get_tx_by_paygate_ref(self, paygate_ref: str) -> TX | None:
         try:
             qs = dict(parse.parse_qsl(paygate_ref))
         except:
@@ -223,24 +191,13 @@ class TXProcessor:
         
         if 'TX' not in qs or TX.invalid_tx_id(qs['TX']):
             return (None, None)
-        
-        if 'INSTR' not in qs:
-            return (None, None)
-        
-        instr_index = int(qs['INSTR']) if qs['INSTR'].isdecimal() else None
-
-        if instr_index is None or instr_index < 0:
-            return (None, None)
-        
+    
         rep_tx = self.repository.get_transaction(qs['TX'])
 
         if rep_tx is None:
             return (None, None)
-        
-        if instr_index >= len(rep_tx.instructions):
-            return (None, None)
 
-        return (rep_tx, instr_index)
+        return rep_tx
     
     ### SIGN METHODS ###
     async def sign(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXSignResult:
@@ -261,28 +218,22 @@ class TXProcessor:
 
             return tx.sign_result
 
-        sim_state, sim_results = await self.exec_tx_instructions(tx, from_sign=True)
+        sim_state, sim_result = await self.exec_tx_instruction(tx, from_sign=True)
 
         if sim_state['error'] is not None:
             tx.sign_result = TXSignResult.failed(sim_state['error'])
 
             return tx.sign_result
 
-        if not sim_state['any_promise']:
+        if not sim_state['with_promise']:
             return await self.commit_from_sign(tx, sim_state)
         
-        # TODO: handle real request errors
-        logs = await asyncio.gather(*[ txr.call_promise(self) for txr in sim_results if txr.with_promise() ])
+        logs = await sim_result.call_promise(self)
 
-        tx_logs = {}
+        if logs.with_error():
+            return TXSignResult.failed(logs.error)
 
-        for log in logs:
-            if log.with_error():
-                return TXSignResult.failed(log.error)
-
-            tx_logs[log.key] = log
-
-        tx.logs = tx_logs
+        tx.logs = logs
         tx.status = TX_STATUS.SIGNED
         tx.sign_result = TXSignResult.successful()
 
@@ -301,10 +252,9 @@ class TXProcessor:
 
         sign_result = tx.sign_result.clone()
 
-        for log in logs:
-            if log.populate_sign_data is not None:
-                for (field_key, field_value) in log.populate_sign_data():
-                    sign_result.data[field_key] = field_value
+        if logs.populate_sign_data is not None:
+            for (field_key, field_value) in logs.populate_sign_data():
+                sign_result.data[field_key] = field_value
         
         return sign_result
 
@@ -330,32 +280,26 @@ class TXProcessor:
         return tx.sign_result
     
     ### COMMIT METHODS ###
-    async def commit_tx_failed(self, tx: TX, instr_index: int, error: str = 'Unknown reason') -> TXCommitResult:
+    async def commit_tx_failed(self, tx: TX, error: str = 'Unknown reason') -> TXCommitResult:
         if tx.status != TX_STATUS.SIGNED:
             return TXCommitResult.failed(f'Can\'t commit transaction with status "{tx.status.value}"')
-        
-        log_key = TXLogs.get_instruction_log_key(instr_index)
 
-        if log_key not in tx.logs:
-            return TXCommitResult.failed(f'Transaction log not found: "{log_key}"')
-        
-        commit_log = tx.logs[log_key]
+        if tx.logs is None:
+            return TXCommitResult.failed('Transaction logs is null')
 
-        if commit_log.resolved:
-            return TXCommitResult.failed(f'Transaction log already resolved: "{log_key}"')
-        
-        instruction = tx.instructions[instr_index]
+        if tx.logs.resolved:
+            return TXCommitResult.failed(f'Transaction logs already resolved')
 
         state = self.get_tx_state(tx)
 
-        instruction.update_vaults(tx.vaults)
+        tx.instruction.update_vaults(tx.vaults)
 
-        next_state, instr_result = await instruction.revert(instr_index, state)
+        next_state, instr_result = await tx.instruction.revert(state)
 
         if instr_result.with_error():
-            return await self.commit_failed_epilogue(tx, commit_log, instr_index, instr_result)
+            return await self.commit_failed_epilogue(tx, instr_result)
         
-        for vault in instruction.get_vaults():
+        for vault in tx.instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
                 continue
 
@@ -366,42 +310,36 @@ class TXProcessor:
 
             self.vault_proc.persist_vault(vault)
         
-        commit_log.resolved = True
-        commit_log.error = ''
+        tx.logs.resolved = True
+        tx.logs.error = ''
         
-        tx.status = self.get_tx_committed_status(tx)
+        tx.status = TX_STATUS.COMMITTED
         tx.commit_result = TXCommitResult.failed(error)
 
         self.persist_tx(tx)
 
         return tx.commit_result
 
-    async def commit_tx_confirmed(self, tx: TX, instr_index: int) -> TXCommitResult:
+    async def commit_tx_confirmed(self, tx: TX) -> TXCommitResult:
         if tx.status != TX_STATUS.SIGNED:
             return TXCommitResult.failed(f'Can\'t commit transaction with status "{tx.status.value}"')
 
-        log_key = TXLogs.get_instruction_log_key(instr_index)
+        if tx.logs is None:
+            return TXCommitResult.failed('Transaction logs is null')
 
-        if log_key not in tx.logs:
-            return TXCommitResult.failed(f'Transaction log not found: "{log_key}"')
-
-        commit_log = tx.logs[log_key]
-
-        if commit_log.resolved:
-            return TXCommitResult.failed(f'Transaction log already resolved: "{log_key}"')
-
-        instruction = tx.instructions[instr_index]
+        if tx.logs.resolved:
+            return TXCommitResult.failed(f'Transaction log already resolved')
 
         state = self.get_tx_state(tx)
 
-        instruction.update_vaults(tx.vaults)
+        tx.instruction.update_vaults(tx.vaults)
 
-        next_state, instr_result = await instruction.execute(instr_index, state, from_sign=False)
+        next_state, instr_result = await tx.instruction.execute(state, from_sign=False)
 
         if instr_result.with_error():
-            return await self.commit_failed_epilogue(tx, commit_log, instr_index, instr_result)
+            return await self.commit_failed_epilogue(tx, instr_result)
 
-        for vault in instruction.get_vaults():
+        for vault in tx.instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
                 continue
 
@@ -412,25 +350,22 @@ class TXProcessor:
 
             self.vault_proc.persist_vault(vault)
         
-        commit_log.resolved = True
-        commit_log.error = ''
+        tx.logs.resolved = True
+        tx.logs.error = ''
         
-        tx.status = self.get_tx_committed_status(tx)
+        tx.status = TX_STATUS.COMMITTED
         tx.commit_result = TXCommitResult.successful()
 
         self.persist_tx(tx)
         
         return tx.commit_result
     
-    async def commit_failed_epilogue(self, tx: TX, commit_log: TXLogs, instr_index: int, \
-        instr_result: TXBaseInstructionResult) -> TXCommitResult:
-        error = error_with_instruction_sufix(instr_result.error, instr_index)
+    async def commit_failed_epilogue(self, tx: TX, instr_result: TXBaseInstructionResult) -> TXCommitResult:
+        tx.logs.resolved = True
+        tx.logs.error = instr_result.error
 
-        commit_log.resolved = True
-        commit_log.error = instr_result.error
-
-        tx.status = self.get_tx_committed_status(tx)
-        tx.commit_result = TXCommitResult.failed(error)
+        tx.status = TX_STATUS.COMMITTED
+        tx.commit_result = TXCommitResult.failed(instr_result.error)
         
         self.persist_tx(tx)
 
@@ -443,5 +378,5 @@ class TXProcessor:
     async def push_tx_with_callback(self, callback: Callable[[], Awaitable[TXPushResult]], signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
         return await self.tx_queue.push_tx(callback, signer, tx)
     
-    async def pop_tx_with_callback(self, callback: Callable[[], Awaitable[TXPopResult]], tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
-        return await self.tx_queue.pop_tx(callback, tx, instr_index, error)
+    async def pop_tx_with_callback(self, callback: Callable[[], Awaitable[TXPopResult]], tx: TX, error: str | None = None) -> TXPopResult:
+        return await self.tx_queue.pop_tx(callback, tx, error)

@@ -46,7 +46,7 @@ class TXServerSingleQueue(TXBaseQueue):
 
         await callback(push_result)
     
-    async def _pop_tx(self, tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
+    async def _pop_tx(self, tx: TX, error: str | None = None) -> TXPopResult:
         locked_vaults = self.vault_proc().get_and_lock(tx.vaults)
 
         if locked_vaults is None:
@@ -55,22 +55,22 @@ class TXServerSingleQueue(TXBaseQueue):
         tx.vaults = locked_vaults
 
         if error is None:
-            commit_result = await self.tx_proc.commit_tx_confirmed(tx, instr_index)
+            commit_result = await self.tx_proc.commit_tx_confirmed(tx)
         else:
-            commit_result = await self.tx_proc.commit_tx_failed(tx, instr_index, error)
+            commit_result = await self.tx_proc.commit_tx_failed(tx, error)
 
         self.vault_proc().unlock(tx.vaults)
 
         return TXPopResult.successful(commit_result)
 
-    async def pop_tx(self, callback: Callable[[], Awaitable[TXPopResult]], \
-        tx: TX, instr_index: int, error: str | None = None) -> None:
-        pop_result = await self._pop_tx(tx, instr_index, error)
+    async def pop_tx(self, callback: Callable[[], Awaitable[TXPopResult]], tx: TX, \
+        error: str | None = None) -> None:
+        pop_result = await self._pop_tx(tx, error)
 
         if pop_result.error == 'Locked':
             async def next_pop():
                 await asyncio.sleep(0.01)
-                await self.pop_tx(callback, tx, instr_index, error)
+                await self.pop_tx(callback, tx, error)
 
             asyncio.ensure_future(next_pop())
             return

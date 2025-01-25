@@ -23,8 +23,8 @@ def create_transfer_tx(build_params: dict) -> TX:
         user_id=user_id,
         create_timestamp=now_timestamp(),
         vaults=[ from_vault, to_vault ],
-        instructions=[ transfer_instr ],
-        logs=[],
+        instruction=transfer_instr,
+        logs=None,
         status=TX_STATUS.NEW,
         sign_result=None,
         commit_result=None

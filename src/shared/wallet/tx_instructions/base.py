@@ -30,9 +30,9 @@ class TXBaseInstruction:
     def update_vault(self, field_key: str, vaults: list[Vault]) -> None:
         pass
 
-    async def execute(self, instr_index: int, state: dict) -> tuple[dict, TXBaseInstructionResult]:
+    async def execute(self, state: dict) -> tuple[dict, TXBaseInstructionResult]:
         pass
 
-    async def revert(self, instr_index: int, state: dict) -> tuple[dict, TXBaseInstructionResult]:
+    async def revert(self, state: dict) -> tuple[dict, TXBaseInstructionResult]:
         pass
 

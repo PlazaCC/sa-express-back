@@ -5,26 +5,20 @@ from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 
 class WalletCacheMock(IWalletCache):
     vaults_by_user_id: dict = {}
-    vaults_by_server_ref: dict = {}
     transactions: dict = {}
 
     def __init__(self, singleton=False):
         self.vaults_by_user_id = WalletCacheMock.vaults_by_user_id
-        self.vaults_by_server_ref = WalletCacheMock.vaults_by_server_ref
         self.transactions = WalletCacheMock.transactions
 
         if not singleton:
             self.vaults_by_user_id = {}
-            self.vaults_by_server_ref = {}
             self.transactions = {}
     
     ### OVERRIDE METHODS ###
     def upsert_vault(self, vault: Vault) -> Vault:
         if vault.user_id is not None:
             self.vaults_by_user_id[vault.user_id] = vault.to_dict()
-        
-        if vault.server_ref is not None:
-            self.vaults_by_server_ref[vault.server_ref] = vault.to_dict()
 
         return vault
     
@@ -34,14 +28,8 @@ class WalletCacheMock(IWalletCache):
 
         return None
     
-    def get_vault_by_server_ref(self, server_ref: str, deserialize: bool = True) -> Vault | None:
-        if server_ref in self.vaults_by_server_ref:
-            return Vault.from_dict_static(self.vaults_by_server_ref[server_ref]) if deserialize else self.vaults_by_server_ref[server_ref]
-        
-        return None
-    
     def upsert_transaction(self, tx: TX) -> TX:
-        self.transactions[tx.tx_id] = tx.to_tx_snapshot()
+        self.transactions[tx.tx_id] = tx.to_dict()
 
         return None
     
@@ -89,16 +77,12 @@ class WalletCacheMock(IWalletCache):
         if vault.type == VAULT_TYPE.USER:
             return self.get_vault_by_user_id(vault.user_id, deserialize)
         
-        if vault.type == VAULT_TYPE.SERVER_LIMITED:
-            return self.get_vault_by_server_ref(vault.server_ref, deserialize)
-        
         return None
     
     def get_all_vaults(self) -> list[Vault]:
         user_vaults = [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]
-        server_vaults = [ Vault.from_dict_static(self.vaults_by_server_ref[vk]) for vk in self.vaults_by_server_ref ]
 
-        return user_vaults + server_vaults
+        return user_vaults
     
     def get_all_user_vaults(self) -> list[Vault]:
         return [ Vault.from_dict_static(self.vaults_by_user_id[vk]) for vk in self.vaults_by_user_id ]

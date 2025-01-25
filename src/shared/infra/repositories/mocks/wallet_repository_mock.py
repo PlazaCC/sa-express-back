@@ -41,11 +41,6 @@ class WalletRepositoryMock(IWalletRepository):
         rep_vault = next((v for v in self.vaults if 'user_id' in v and v['user_id'] == user_id), None)
         
         return Vault.from_dict_static(rep_vault) if rep_vault is not None else None
-
-    def get_vault_by_server_ref(self, server_ref: str) -> Vault | None:
-        rep_vault = next((v for v in self.vaults if 'server_ref' in v and v['server_ref'] == server_ref), None)
-
-        return Vault.from_dict_static(rep_vault) if rep_vault is not None else None
     
     def upsert_vault(self, vault: Vault) -> Vault:
         rep_vault = self.get_vault_by_user_id(vault.user_id)

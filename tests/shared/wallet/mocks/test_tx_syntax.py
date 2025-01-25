@@ -29,19 +29,18 @@ class Test_TXSyntax:
 
             paygate_ref = tx_proc.paygate.pending_payments.pop()
             
-            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            tx = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
-            assert instr_index is not None
 
             ptx_status = random.choice(paygate_tx_status)
 
             if ptx_status == PAYGATE_TX_STATUS.CONFIRMED:
-                commit_result = await tx_proc.commit_tx_confirmed(tx, instr_index)
+                commit_result = await tx_proc.commit_tx_confirmed(tx)
 
                 assert commit_result.without_error()
             elif ptx_status == PAYGATE_TX_STATUS.FAILED:
-                commit_result = await tx_proc.commit_tx_failed(tx, instr_index, f'Transaction failed on paygate with status "{ptx_status.value}"')
+                commit_result = await tx_proc.commit_tx_failed(tx, f'Transaction failed on paygate with status "{ptx_status.value}"')
 
                 assert commit_result.with_error()
 
@@ -157,7 +156,6 @@ class Test_TXSyntax:
         tx_proc = TXProcessor(cache, repository, paygate, 
             config=TXProcessorConfig(
                 max_vaults=2,
-                max_instructions=1,
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )
         )
@@ -174,15 +172,14 @@ class Test_TXSyntax:
 
             paygate_ref = tx_proc.paygate.pending_payments.pop()
             
-            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            tx = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
-            assert instr_index is not None
 
             async def callback(pop_result: TXPopResult):
                 assert pop_result.without_error()
 
-            await tx_proc.pop_tx_with_callback(callback, tx, instr_index)
+            await tx_proc.pop_tx_with_callback(callback, tx)
 
         push_result = await tx_proc.push_tx(signer, tx)
 
@@ -207,7 +204,6 @@ class Test_TXSyntax:
         tx_proc = TXProcessor(cache, repository, paygate, 
             config=TXProcessorConfig(
                 max_vaults=2,
-                max_instructions=1,
                 tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
             )
         )
@@ -224,15 +220,14 @@ class Test_TXSyntax:
 
             paygate_ref = tx_proc.paygate.pending_payments.pop()
             
-            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            tx = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
-            assert instr_index is not None
 
             async def pop_callback(pop_result: TXPopResult):
                 assert pop_result.without_error()
 
-            await tx_proc.pop_tx_with_callback(pop_callback, tx, instr_index)
+            await tx_proc.pop_tx_with_callback(pop_callback, tx)
 
         async def push_callback(push_result: TXPushResult):
             assert push_result.without_error()

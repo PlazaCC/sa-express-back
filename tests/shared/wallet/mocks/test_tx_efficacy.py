@@ -78,17 +78,16 @@ class Test_TXEfficacy:
 
             paygate_ref = paygate.pending_payments.pop()
             
-            (tx, instr_index) = tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            tx = tx_proc.get_tx_by_paygate_ref(paygate_ref)
 
             assert tx is not None
-            assert instr_index is not None
 
             async def pop_callback(pop_result: TXPopResult):
                 action_done.set_result(True)
 
                 print(f'[{pop_result.timestamp}] TX {tx_count} pop')
             
-            await tx_proc.pop_tx_with_callback(pop_callback, tx, instr_index)
+            await tx_proc.pop_tx_with_callback(pop_callback, tx)
 
         async def push_callback(push_result: TXPushResult):
             print(f'[{push_result.timestamp}] TX {tx_count} push')
@@ -129,7 +128,6 @@ class Test_TXEfficacy:
         tx_proc = TXProcessor(cache, repository, paygate, 
             config=TXProcessorConfig(
                 max_vaults=2,
-                max_instructions=1,
                 tx_queue_type=TX_QUEUE_TYPE.SERVER_SINGLE
             )
         )

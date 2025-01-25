@@ -16,8 +16,8 @@ class TX(BaseModel):
     user_id: int
     create_timestamp: str
     vaults: list[Vault]
-    instructions: list[TXBaseInstruction]
-    logs: dict[str, TXLogs]
+    instruction: TXBaseInstruction
+    logs: TXLogs | None
     status: TX_STATUS
     sign_result: TXSignResult | None
     commit_result: TXCommitResult | None
@@ -29,8 +29,8 @@ class TX(BaseModel):
             user_id=data['user_id'],
             create_timestamp=data['create_timestamp'],
             vaults=[ Vault.from_tx_snapshot(v) for v in data['vaults'] ],
-            instructions=[ TXMutateInstruction.from_tx_snapshot(i) for i in data['instructions'] ],
-            logs={ k: TXLogs.from_tx_snapshot(l) for k, l in data['logs'].items() },
+            instruction=TXMutateInstruction.from_tx_snapshot(data['instruction']),
+            logs=TXLogs.from_tx_snapshot(data['logs']) if 'logs' in data else None,
             status=TX_STATUS[data['status']],
             sign_result=TXSignResult.from_tx_snapshot(data['sign_result']) if 'sign_result' in data else None,
             commit_result=TXCommitResult.from_tx_snapshot(data['commit_result']) if 'commit_result' in data else None
@@ -59,10 +59,12 @@ class TX(BaseModel):
             'user_id': self.user_id,
             'create_timestamp': self.create_timestamp,
             'vaults': [ v.to_tx_snapshot() for v in self.vaults ],
-            'instructions': [ i.to_tx_snapshot() for i in self.instructions ],
-            'logs': { k: l.to_tx_snapshot() for k, l in self.logs.items() },
+            'instruction': self.instruction.to_tx_snapshot(),
             'status': self.status.value,
         }
+
+        if self.logs is not None:
+            result['logs'] = self.logs.to_tx_snapshot()
         
         if self.sign_result is not None:
             result['sign_result'] = self.sign_result.to_tx_snapshot()

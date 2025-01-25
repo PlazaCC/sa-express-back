@@ -12,10 +12,6 @@ class IWalletRepository(ABC):
     @abstractmethod
     def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:
         pass
-
-    @abstractmethod
-    def get_vault_by_server_ref(self, server_ref: str) -> Vault | None:
-        pass
     
     @abstractmethod
     def upsert_vault(self, vault: Vault) -> Vault:

@@ -70,7 +70,6 @@ class Usecase:
             paygate=self.wallet_paygate,
             config=TXProcessorConfig(
                 max_vaults=2,
-                max_instructions=1,
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )
         )

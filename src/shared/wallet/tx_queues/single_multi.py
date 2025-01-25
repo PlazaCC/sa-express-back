@@ -20,5 +20,5 @@ class TXServerMultiQueue(TXBaseQueue):
     async def push_tx(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
         pass
 
-    async def pop_tx(self, tx: TX, instr_index: int, error: str | None = None) -> TXPopResult:
+    async def pop_tx(self, tx: TX, error: str | None = None) -> TXPopResult:
         pass

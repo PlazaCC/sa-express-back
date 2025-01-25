@@ -2,5 +2,4 @@ from enum import Enum
 
 class VAULT_TYPE(Enum):
     SERVER_UNLIMITED = 'SERVER_UNLIMITED'
-    SERVER_LIMITED = 'SERVER_LIMITED'
     USER = 'USER'
