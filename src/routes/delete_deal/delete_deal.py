@@ -23,14 +23,14 @@ class Controller:
             if requester_user.role != ROLE.ADMIN and requester_user.role != ROLE.OPERADOR:
                 raise ForbiddenAction('Usuário não autorizado')
 
-            if request.data.get('bet_id') is None:
-                raise MissingParameters('bet_id')
+            if request.data.get('entity_id') is None:
+                raise MissingParameters('entity_id')
             
             if request.data.get('deal_id') is None:
                 raise MissingParameters('deal_id')
 
             response = Usecase().execute(
-                bet_id=request.data.get('bet_id'),
+                entity_id=request.data.get('entity_id'),
                 deal_id=request.data.get('deal_id'),
             )
             
@@ -53,10 +53,10 @@ class Usecase:
         self.repository = Repository(deal_repo=True)
         self.deal_repo = self.repository.deal_repo
 
-    def execute(self, bet_id: str, deal_id: str) -> dict:
+    def execute(self, entity_id: str, deal_id: str) -> dict:
 
         deal = self.deal_repo.delete_deal(
-            bet_id=bet_id,
+            entity_id=entity_id,
             deal_id=deal_id
         )
 

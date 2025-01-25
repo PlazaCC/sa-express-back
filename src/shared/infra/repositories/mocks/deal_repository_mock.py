@@ -11,7 +11,7 @@ class DealRepositoryMock(IDealRepository):
         self.deals = [
             Deal(
                 deal_id="00000000-0000-0000-0000-000000000000",
-                bet_id="00000000-0000-0000-0000-000000000000",
+                entity_id="00000000-0000-0000-0000-000000000000",
                 baseline=1,
                 cpa=1,
                 rev_share=1,
@@ -22,7 +22,7 @@ class DealRepositoryMock(IDealRepository):
             ),
             Deal(
                 deal_id="00000000-0000-0000-0000-000000000001",
-                bet_id="00000000-0000-0000-0000-000000000001",
+                entity_id="00000000-0000-0000-0000-000000000001",
                 baseline=1,
                 cpa=1,
                 rev_share=1,
@@ -37,9 +37,9 @@ class DealRepositoryMock(IDealRepository):
         self.deals.append(deal)
         return deal
     
-    def get_deal_by_id(self, bet_id: str, deal_id: str) -> Deal:
+    def get_deal_by_id(self, entity_id: str, deal_id: str) -> Deal:
         for deal in self.deals:
-            if deal.bet_id == bet_id and deal.deal_id == deal_id:
+            if deal.entity_id == entity_id and deal.deal_id == deal_id:
                 return deal
         
         return None
@@ -59,7 +59,7 @@ class DealRepositoryMock(IDealRepository):
     def update_deal(self, deal_id: str, new_deal: Deal) -> Deal:
         for deal in self.deals:
             if deal.deal_id == deal_id:
-                deal.bet_id = new_deal.bet_id
+                deal.entity_id = new_deal.entity_id
                 deal.baseline = new_deal.baseline
                 deal.cpa = new_deal.cpa
                 deal.rev_share = new_deal.rev_share
@@ -71,9 +71,9 @@ class DealRepositoryMock(IDealRepository):
         
         return None
     
-    def delete_deal(self, bet_id: str, deal_id: str) -> Deal:
+    def delete_deal(self, entity_id: str, deal_id: str) -> Deal:
         for deal in self.deals:
-            if deal.bet_id == bet_id and deal.deal_id == deal_id:
+            if deal.entity_id == entity_id and deal.deal_id == deal_id:
                 self.deals.remove(deal)
                 return deal
         

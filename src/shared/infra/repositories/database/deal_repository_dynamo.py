@@ -9,35 +9,29 @@ from boto3.dynamodb.conditions import Key
 class DealRepositoryDynamo(IDealRepository):
 
     @staticmethod
-    def deal_partition_key_format(bet_id: str) -> str:
-        return f'{bet_id}'
+    def deal_partition_key_format(deal_id: str) -> str:
+        return f'DEAL#{deal_id}'
     
     @staticmethod
-    def deal_sort_key_format(deal_id: str) -> str:
-        return f'{deal_id}'
+    def deal_metadata_sort_key_format() -> str:
+        return 'METADATA'
     
     @staticmethod
-    def gsi_deal_partition_key_format(deal_status: DEAL_STATUS) -> str:
-        return f'{deal_status.value}'
+    def deal_proposal_sort_key_format(status: str, proposal_id: str) -> str:
+        return f'PROPOSAL#{status}#{proposal_id}'
 
-    def __init__(self):
-        self.dynamo = DynamoDatasource(
-            dynamo_table_name=Environments.get_envs().dynamo_table_name,
-            region=Environments.get_envs().region,
-            partition_key=Environments.get_envs().dynamo_partition_key,
-            sort_key=Environments.get_envs().dynamo_sort_key,
-            gsi_partition_key=Environments.get_envs().dynamo_gsi_partition_key,
-        )
+    def __init__(self, dynamo: DynamoDatasource):
+        self.dynamo = dynamo
     
     def create_deal(self, deal: Deal) -> Deal:
         item = deal.to_dict()
 
-        self.dynamo.put_item(item=item, partition_key=self.deal_partition_key_format(deal.bet_id), sort_key=self.deal_sort_key_format(deal.deal_id), is_decimal=True)
+        self.dynamo.put_item(item=item)
 
         return deal
     
-    def get_deal_by_id(self, bet_id: str, deal_id: str) -> Deal:
-        deal = self.dynamo.get_item(partition_key=self.deal_partition_key_format(bet_id), sort_key=self.deal_sort_key_format(deal_id))
+    def get_deal_by_id(self, deal_id: str) -> Deal:
+        deal = self.dynamo.get_item(partition_key=self.deal_partition_key_format(deal_id), sort_key=self.deal_metadata_sort_key_format())
 
         if "Item" not in deal:
             return None
@@ -45,8 +39,9 @@ class DealRepositoryDynamo(IDealRepository):
         return Deal.from_dict(deal['Item'])
     
     def get_all_active_deals(self) -> List[Deal]:
-        query_string = Key(self.dynamo.gsi_partition_key).eq(self.gsi_deal_partition_key_format(DEAL_STATUS.ACTIVE))
-        resp = self.dynamo.query(key_condition_expression=query_string, Select='ALL_ATTRIBUTES', IndexName="GSI")
+        resp = self.dynamo.query(
+            
+        )
 
         deals = []
         for item in resp['Items']:
@@ -68,8 +63,8 @@ class DealRepositoryDynamo(IDealRepository):
         # VALIDAR REGRA DE NEGOCIO DE UPDATE DEAL
         pass
 
-    def delete_deal(self, bet_id: str, deal_id: str) -> Deal:
-        resp = self.dynamo.delete_item(partition_key=self.deal_partition_key_format(bet_id), sort_key=self.deal_sort_key_format(deal_id))
+    def delete_deal(self, entity_id: str, deal_id: str) -> Deal:
+        resp = self.dynamo.delete_item(partition_key=self.deal_partition_key_format(entity_id), sort_key=self.deal_sort_key_format(deal_id))
 
         if "Attributes" not in resp:
             return None

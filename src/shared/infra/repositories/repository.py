@@ -3,6 +3,7 @@ from src.shared.domain.repositories.entity_repository_interface import IEntityRe
 from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
 from src.shared.environments import STAGE, Environments
 from src.shared.domain.repositories.deal_repository_interface import IDealRepository
+from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 from src.shared.infra.repositories.auth.auth_repository_cognito import AuthRepositoryCognito
 from src.shared.infra.repositories.database.affiliation_repository_dynamo import AffiliationRepositoryDynamo
 from src.shared.infra.repositories.database.deal_repository_dynamo import DealRepositoryDynamo
@@ -47,15 +48,19 @@ class Repository:
             self.deal_repo = DealRepositoryMock()
         if profile_repo:
             self.profile_repo = ProfileRepositoryMock()
-        
+            
     def _initialize_database_repositories(self, deal_repo, auth_repo, profile_repo, affiliation_repo, entity_repo):
+        dynamo = DynamoDatasource(
+            dynamo_table_name=Environments.get_envs().dynamo_table_name,
+            region=Environments.get_envs().region,
+        )
         if deal_repo:
-            self.deal_repo = DealRepositoryDynamo()
+            self.deal_repo = DealRepositoryDynamo(dynamo)
         if auth_repo:
             self.auth_repo = AuthRepositoryCognito()
         if profile_repo:
-            self.profile_repo = ProfileRepositoryDynamo()
+            self.profile_repo = ProfileRepositoryDynamo(dynamo)
         if affiliation_repo:
-            self.affiliation_repo = AffiliationRepositoryDynamo()
+            self.affiliation_repo = AffiliationRepositoryDynamo(dynamo)
         if entity_repo:
-            self.entity_repo = EntityRepositoryDynamo()
+            self.entity_repo = EntityRepositoryDynamo(dynamo)

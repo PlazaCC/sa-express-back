@@ -8,7 +8,7 @@ class Test_DealRepositoryMock:
     def test_create_deal(self):
         repo = DealRepositoryMock()
 
-        deal = Deal(deal_id="00000000-0000-0000-0000-000000000000", bet_id="00000000-0000-0000-0000-000000000000", baseline=1, cpa=1, rev_share=1, conditions="1", deal_status=DEAL_STATUS.ACTIVATED, created_at=1, updated_at=1)
+        deal = Deal(deal_id="00000000-0000-0000-0000-000000000000", entity_id="00000000-0000-0000-0000-000000000000", baseline=1, cpa=1, rev_share=1, conditions="1", deal_status=DEAL_STATUS.ACTIVATED, created_at=1, updated_at=1)
         repo.create_deal(deal)
 
         assert repo.deals[0].deal_id == "00000000-0000-0000-0000-000000000000"
@@ -20,7 +20,7 @@ class Test_DealRepositoryMock:
         response = repo.get_deal_by_id("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")
 
         assert response.deal_id == "00000000-0000-0000-0000-000000000000"
-        assert response.bet_id == "00000000-0000-0000-0000-000000000000"
+        assert response.entity_id == "00000000-0000-0000-0000-000000000000"
         assert response.baseline == 1
         assert response.cpa == 1
         assert response.rev_share == 1
@@ -48,7 +48,7 @@ class Test_DealRepositoryMock:
 
         update_deal = Deal(
             deal_id="00000000-0000-0000-0000-000000000000",
-            bet_id="00000000-0000-0000-0000-000000000000",
+            entity_id="00000000-0000-0000-0000-000000000000",
             baseline=2,
             cpa=2,
             rev_share=2,
@@ -61,7 +61,7 @@ class Test_DealRepositoryMock:
         response = repo.update_deal("00000000-0000-0000-0000-000000000000", update_deal)
 
         assert response.deal_id == "00000000-0000-0000-0000-000000000000"
-        assert response.bet_id == "00000000-0000-0000-0000-000000000000"
+        assert response.entity_id == "00000000-0000-0000-0000-000000000000"
         assert response.baseline == 2
         assert response.cpa == 2
         assert response.rev_share == 2
@@ -73,6 +73,6 @@ class Test_DealRepositoryMock:
     def test_delete_deal(self):
         repo = DealRepositoryMock()
 
-        repo.delete_deal(bet_id="00000000-0000-0000-0000-000000000000", deal_id="00000000-0000-0000-0000-000000000000")
+        repo.delete_deal(entity_id="00000000-0000-0000-0000-000000000000", deal_id="00000000-0000-0000-0000-000000000000")
 
         assert len(repo.deals) == 1
