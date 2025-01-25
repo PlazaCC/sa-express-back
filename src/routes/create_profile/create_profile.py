@@ -22,7 +22,7 @@ class Controller:
       
       user_id = requester_user.user_id
       role = requester_user.role
-      bet_data_id = request.data.get("bet_data_id")
+      entity_id = request.data.get("entity_id")
       game_data_id = request.data.get("game_data_id")
       affiliations = request.data.get("affiliations")
       wallet_id = request.data.get("wallet_id")
@@ -32,8 +32,8 @@ class Controller:
         raise MissingParameters("user_id")
       if not role:
         raise MissingParameters("role")
-      if not bet_data_id:
-        raise MissingParameters("bet_data_id")
+      if not entity_id:
+        raise MissingParameters("entity_id")
       if not game_data_id:
         raise MissingParameters("game_data_id")
       if not affiliations:
@@ -44,25 +44,14 @@ class Controller:
       if status and not isinstance(status, str):
         raise WrongTypeParametersError("status", "str", type(status))
       
-      """
-      AFILIADO = 'AFILIADO'
-      SUBAFILIADO = 'SUBAFILIADO'
-      INFLUENCER = 'INFLUENCER'
-      EMBAIXADOR = 'EMBAIXADOR'
-      OPERADOR = 'OPERADOR'
-      ADMIN = 'ADMIN'
-      """
-      
       if role not in ["AFILIADO", "SUBAFILIADO", "INFLUENCER", "EMBAIXADOR", "OPERADOR", "ADMIN"]:
         raise ValueError('Cargo inválido')
-      
-      
       
       if type(user_id) != str:
         raise WrongTypeParametersError("user_id", "str", type(user_id))
       
-      if type(bet_data_id) != str:
-        raise WrongTypeParametersError("bet_data_id", "str", type(bet_data_id))
+      if type(entity_id) != str:
+        raise WrongTypeParametersError("entity_id", "str", type(entity_id))
       
       if type(game_data_id) != str:
         raise WrongTypeParametersError("game_data_id", "str", type(game_data_id))
@@ -80,7 +69,7 @@ class Controller:
       if status and status not in ["ACTIVE", "INACTIVE"]:
         raise ValueError("Status deve ser 'ACTIVE' ou 'INACTIVE'")
       
-      response = Usecase().execute(user_id, bet_data_id, game_data_id, affiliations, wallet_id, status, role)
+      response = Usecase().execute(user_id, entity_id, game_data_id, affiliations, wallet_id, status, role)
       
       return Created(body=response)
     
@@ -102,13 +91,16 @@ class Usecase:
     self.repository = Repository(profile_repo=True)
     self.profile_repo = self.repository.profile_repo
     
-  def execute(self, user_id: str, bet_data_id: str, game_data_id: str, affiliations: List[Affiliation], wallet_id: str, status: str, role: str) -> dict:
+  def execute(self, user_id: str, entity_id: str, game_data_id: str, affiliations: List[Affiliation], wallet_id: str, status: str, role: str) -> dict:
     profile_exists = self.profile_repo.get_profile_by_user_id(user_id)
     if profile_exists:
       raise DuplicatedItem("perfil já existente")
-    profile = Profile(user_id, bet_data_id, game_data_id, affiliations, wallet_id, PROFILE_STATUS[status], ROLE[role], datetime.now().timestamp(), datetime.now().timestamp())
+    profile = Profile(user_id, entity_id, game_data_id, affiliations, wallet_id, PROFILE_STATUS[status], ROLE[role], datetime.now().timestamp(), datetime.now().timestamp())
     self.profile_repo.create_profile(profile)
-    return {"profile": profile.to_dict(), "message": "Perfil criado com sucesso"}
+    return {
+      "profile": profile.to_dict(), 
+      "message": "Perfil criado com sucesso"
+    }
   
 def function_handler(event, context):
   http_request = LambdaHttpRequest(data=event)
