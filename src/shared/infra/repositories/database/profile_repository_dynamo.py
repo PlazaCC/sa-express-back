@@ -9,11 +9,11 @@ class ProfileRepositoryDynamo(IProfileRepository):
     
     @staticmethod
     def profile_partition_key_format(user_id: str) -> str:
-        return f'{user_id}'
+        return f'PROFILE#{user_id}'
     
     @staticmethod
     def profile_sort_key_format() -> str:
-        return f'PROFILE'
+        return f'METADATA'
     
     def __init__(self):
         self.dynamo = DynamoDatasource(
@@ -26,12 +26,15 @@ class ProfileRepositoryDynamo(IProfileRepository):
 
     @abstractmethod
     def get_profile_by_id(self, user_id: str) -> Profile:
-        profile = self.dynamo.get_item(partition_key=self.profile_partition_key_format(user_id))
-        
-        if "Item" not in profile:
-            return None
-        
-        return Profile.from_dict(profile['Item'])
+        try:
+            profile = self.dynamo.get_item(partition_key=self.profile_partition_key_format(user_id))
+            
+            if "Item" not in profile:
+                return None
+            
+            return Profile.from_dict(profile['Item'])
+        except Exception as e:
+            raise e
     
     @abstractmethod
     def create_profile(self, profile: Profile) -> Profile:
