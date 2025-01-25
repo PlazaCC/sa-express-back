@@ -181,9 +181,7 @@ class Test_TXSyntax:
             await tx_proc.pop_tx_with_callback(callback, tx)
 
         push_result = await tx_proc.push_tx(signer, tx)
-
-        print(push_result.to_dict())
-
+        
         assert push_result.without_error()
 
         await random_paygate_webhook()
