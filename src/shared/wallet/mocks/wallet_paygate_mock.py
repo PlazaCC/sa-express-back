@@ -18,7 +18,8 @@ class WalletPayGateMock(IWalletPayGate):
     ### OVERRIDE METHODS ###
 
     ### PIX ###
-    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal) -> dict:
+    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal, \
+        ref_id: str) -> dict:
         webhook_ref_header = WalletPayGateMock.get_paygate_ref_header(tx_id, nonce)
 
         self.pending_payments.append(webhook_ref_header)
@@ -30,7 +31,7 @@ class WalletPayGateMock(IWalletPayGate):
                 }
             },
             'transaction': {
-                'orderId': tx_id,
+                'orderId': ref_id,
                 'orderDescription': 'SA-Deposit'
             },
             'webhook': {
@@ -45,7 +46,7 @@ class WalletPayGateMock(IWalletPayGate):
             'data': {
                 'transaction': {
                     'id': 'f6431a0f-970a-4be9-9c6d-f444f729adc3',
-                    'orderId': tx_id,
+                    'orderId': ref_id,
                     'date': '2023-10-27T01:58:14.573Z',
                     'state': 'Registered',
                     'amount': str(amount)
@@ -57,7 +58,8 @@ class WalletPayGateMock(IWalletPayGate):
             }
         }
     
-    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, pix_key: PIXKey) -> dict:
+    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, pix_key: PIXKey, \
+        ref_id: str) -> dict:
         webhook_ref_header = WalletPayGateMock.get_paygate_ref_header(tx_id, nonce)
 
         self.pending_payments.append(webhook_ref_header)
@@ -71,7 +73,7 @@ class WalletPayGateMock(IWalletPayGate):
                 'value': str(amount)
             },
             'transaction': {
-                'orderId': tx_id,
+                'orderId': ref_id,
                 'orderDescription': 'SA-Withdrawal'
             },
             'webhook': {

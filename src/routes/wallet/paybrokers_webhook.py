@@ -21,19 +21,21 @@ class Controller:
     @staticmethod
     async def execute(request: IRequest) -> IResponse:
         try:
-            if 'X-Webhook-Signature' not in request.headers:
+            headers = request.headers
+
+            if 'X-Webhook-Signature' not in headers:
                 raise MissingParameters('X-Webhook-Signature')
 
-            if 'X-Webhook-Reference' not in request.headers:
+            if 'X-Webhook-Reference' not in headers:
                 raise MissingParameters('X-Webhook-Reference')
+            
+            webhook_sig_header = headers['X-Webhook-Signature']
+            webhook_ref_header = headers.get('X-Webhook-Reference')
             
             webhook_body = request.body
             
             if 'transactionState' not in webhook_body:
                 raise MissingParameters('transactionState')
-            
-            webhook_sig_header = request.headers['X-Webhook-Signature']
-            webhook_ref_header = request.headers.get('X-Webhook-Reference')
             
             usecase = Usecase()
 
@@ -137,7 +139,7 @@ class Usecase:
         error = None if transactionState == 'Completed' else f'Transação da paybrokers falhou com estado "{transactionState}"'
         
         await self.tx_proc.pop_tx_with_callback(pop_callback, tx, error)
-        
+
         return {}
         
 async def function_handler(event, context) -> LambdaHttpResponse:

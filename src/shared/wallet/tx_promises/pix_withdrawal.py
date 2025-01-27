@@ -10,24 +10,28 @@ class TXPIXWithdrawalPromise(TXBasePromise):
     nonce: str
     pix_key: PIXKey
     amount: Decimal
+    ref_id: str
     
     def __init__(self, tx_id: str, nonce: str, pix_key: PIXKey, \
-        amount: Decimal):
+        amount: Decimal, ref_id: str):
         self.tx_id = tx_id
         self.nonce = nonce
         self.pix_key = pix_key
         self.amount = amount
+        self.ref_id = ref_id
 
     def to_dict(self) -> dict:
         return {
             'tx_id': self.tx_id,
             'nonce': self.nonce,
             'pix_key': self.pix_key.to_dict(),
-            'amount': str(self.amount)
+            'amount': str(self.amount),
+            'ref_id': self.ref_id
         }
     
     async def call(self, tx_proc: Any) -> TXLogs:
-        api_res = await tx_proc.paygate.post_pix_withdrawal(self.tx_id, self.nonce, self.amount, self.pix_key)
+        api_res = await tx_proc.paygate.post_pix_withdrawal(self.tx_id, self.nonce, self.amount, \
+            self.pix_key, self.ref_id)
 
         if 'error' in api_res:
             return TXLogs.failed(api_res['error']['message'])

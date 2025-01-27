@@ -13,13 +13,14 @@ class Paybrokers(IWalletPayGate):
         webhook_token = Environments.paygate_webhook_token
 
         return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
-
+    
     def __init__(self):
         self.base_url = 'https://api.sandbox.paybrokers.solutions/v1/partners-int/accounts'
         self.auth_token = Environments.paybrokers_auth_token
     
     ### PIX ###
-    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal) -> dict:
+    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal, \
+        ref_id: str) -> dict:
         payload =  {
             'payment': {
                 'value': {
@@ -27,7 +28,7 @@ class Paybrokers(IWalletPayGate):
                 }
             },
             'transaction': {
-                'orderId': tx_id,
+                'orderId': ref_id,
                 'orderDescription': 'SA-Deposit'
             },
             'webhook': {
@@ -52,7 +53,8 @@ class Paybrokers(IWalletPayGate):
         except:
             return { 'error': { 'message': 'Paybrokers request failed' } }
     
-    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, pix_key: PIXKey) -> dict:
+    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, \
+        pix_key: PIXKey, ref_id: str) -> dict:
         payload = {
             'payment': {
                 'key': {
@@ -62,7 +64,7 @@ class Paybrokers(IWalletPayGate):
                 'value': str(amount)
             },
             'transaction': {
-                'orderId': tx_id,
+                'orderId': ref_id,
                 'orderDescription': 'SA-Withdrawal'
             },
             'webhook': {

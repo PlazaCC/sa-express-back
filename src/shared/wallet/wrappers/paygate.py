@@ -8,9 +8,11 @@ class IWalletPayGate(ABC):
 
     ### PIX ###
     @abstractmethod
-    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal) -> dict:
+    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal, \
+        ref_id: str) -> dict:
         pass
     
     @abstractmethod
-    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, pix_key: PIXKey) -> dict:
+    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, \
+        pix_key: PIXKey, ref_id: str) -> dict:
         pass

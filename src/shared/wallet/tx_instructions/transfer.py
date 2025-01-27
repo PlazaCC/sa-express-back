@@ -119,6 +119,13 @@ class TXTransferInstruction(TXBaseInstruction):
     def is_withdrawal(self) -> bool:
         return self.from_vault.type == VAULT_TYPE.USER and self.to_vault.type == VAULT_TYPE.SERVER_UNLIMITED
     
+    def get_ref_id(self) -> str:
+        vault_ids = [ self.from_vault.to_identity_key(), self.to_vault.to_identity_key() ]
+
+        vault_ids.sort()
+
+        return vault_ids
+    
     async def execute(self, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
         to_vault = self.to_vault
@@ -151,7 +158,8 @@ class TXTransferInstruction(TXBaseInstruction):
                 TXPIXDepositPromise(
                     tx_id=state['tx_id'],
                     nonce=state['nonce'],
-                    amount=self.amount
+                    amount=self.amount,
+                    ref_id=self.get_ref_id()
                 )
             )
         
@@ -166,7 +174,8 @@ class TXTransferInstruction(TXBaseInstruction):
                     tx_id=state['tx_id'],
                     nonce=state['nonce'],
                     pix_key=from_vault.pix_key, 
-                    amount=self.amount
+                    amount=self.amount,
+                    ref_id=self.get_ref_id()
                 )
             )
 
