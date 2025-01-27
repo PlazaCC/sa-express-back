@@ -1,7 +1,7 @@
-import asyncio
 from urllib import parse
 from typing import Awaitable
 from collections.abc import Callable
+from src.environments import Environments
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
@@ -114,6 +114,7 @@ class TXProcessor:
     def get_tx_state(self, tx: TX) -> dict:
         state = {
             'tx_id': tx.tx_id,
+            'nonce': tx.nonce,
             'error': None,
             'vaults': {},
             'with_promise': False 
@@ -127,19 +128,28 @@ class TXProcessor:
 
         return state
 
-    def get_tx_by_paygate_ref(self, paygate_ref: str) -> TX | None:
+    def get_tx_from_webhook(self, webhook_auth_header: str) -> TX | None:
         try:
-            qs = dict(parse.parse_qsl(paygate_ref))
+            qs = dict(parse.parse_qsl(webhook_auth_header))
         except:
-            return (None, None)
+            return None
+        
+        if 'WTK' not in qs or qs['WTK'] != Environments.paygate_webhook_token:
+            return None
         
         if 'TX' not in qs or TX.invalid_tx_id(qs['TX']):
-            return (None, None)
+            return None
+        
+        if 'NC' not in qs:
+            return None
     
         rep_tx = self.repository.get_transaction(qs['TX'])
 
         if rep_tx is None:
-            return (None, None)
+            return None
+        
+        if qs['NC'] != rep_tx.nonce:
+            return None
 
         return rep_tx
     

@@ -15,12 +15,12 @@ class Controller:
     @staticmethod
     async def execute(request: IRequest) -> IResponse:
         try:
-            if 'paygate_ref' not in request.query_params:
-                raise MissingParameters('paygate_ref')
+            if 'PAYGATE_AUTH' not in request.headers:
+                raise MissingParameters('PAYGATE_AUTH')
             
-            paygate_ref = request.query_params.get('paygate_ref')
+            webhook_auth_header = request.headers.get('PAYGATE_AUTH')
 
-            response = await Usecase().execute(paygate_ref)
+            response = await Usecase().execute(webhook_auth_header)
 
             return OK(body=response)
         except MissingParameters as error:
@@ -49,8 +49,8 @@ class Usecase:
             )
         )
     
-    async def execute(self, paygate_ref: str) -> dict:
-        tx = self.tx_proc.get_tx_by_paygate_ref(paygate_ref)
+    async def execute(self, webhook_auth_header: str) -> dict:
+        tx = self.tx_proc.get_tx_from_webhook(webhook_auth_header)
 
         if tx is None:
             return {}

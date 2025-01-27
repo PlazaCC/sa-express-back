@@ -1,18 +1,25 @@
 import json
 import requests
 
+from src.environments import Environments
+
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class Paybrokers(IWalletPayGate):
+    @staticmethod
+    def get_paygate_auth_header(tx_id: str, nonce: str):
+        webhook_token = Environments.paygate_webhook_token
+
+        return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
+
     def __init__(self):
         self.base_url = 'https://api.sandbox.paybrokers.solutions/v1/partners-int/accounts'
-        self.auth_token = 'placeholder'
-        self.webhook_token = 'eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2YTZjYjY2NC03NzI4LTR'
+        self.auth_token = Environments.paybrokers_auth_token
     
     ### PIX ###
-    async def post_pix_deposit(self, paygate_ref: str, amount: Decimal) -> dict:
+    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal) -> dict:
         payload =  {
             'payment': {
                 'value': {
@@ -20,13 +27,13 @@ class Paybrokers(IWalletPayGate):
                 }
             },
             'transaction': {
-                'orderId': paygate_ref,
+                'orderId': tx_id,
                 'orderDescription': 'SA-Deposit'
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PaygateAuth',
-                'customHeaderValue': f'WTK={self.webhook_token}&{paygate_ref}'
+                'customHeaderName': 'PAYGATE_AUTH',
+                'customHeaderValue': Paybrokers.get_paygate_auth_header(tx_id, nonce)
             }
         }
 
@@ -45,7 +52,7 @@ class Paybrokers(IWalletPayGate):
         except:
             return { 'error': { 'message': 'Paybrokers request failed' } }
     
-    async def post_pix_withdrawal(self, paygate_ref: str, amount: Decimal, pix_key: PIXKey) -> dict:
+    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, pix_key: PIXKey) -> dict:
         payload = {
             'payment': {
                 'key': {
@@ -55,13 +62,13 @@ class Paybrokers(IWalletPayGate):
                 'value': str(amount)
             },
             'transaction': {
-                'orderId': paygate_ref,
+                'orderId': tx_id,
                 'orderDescription': 'SA-Withdrawal'
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PaygateAuth',
-                'customHeaderValue': f'WTK={self.webhook_token}&{paygate_ref}'
+                'customHeaderName': 'PAYGATE_AUTH',
+                'customHeaderValue': Paybrokers.get_paygate_auth_header(tx_id, nonce)
             }
         }
 

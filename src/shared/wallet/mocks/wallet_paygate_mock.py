@@ -1,17 +1,27 @@
+from src.environments import Environments
+
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class WalletPayGateMock(IWalletPayGate):
+    @staticmethod
+    def get_paygate_auth_header(tx_id: str, nonce: str):
+        webhook_token = Environments.paygate_webhook_token
+
+        return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
+
     def __init__(self):
         self.pending_payments = []
-        self.webhook_token = 'eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2YTZjYjY2NC03NzI4LTR'
+        self.auth_token = ''
 
     ### OVERRIDE METHODS ###
-    
+
     ### PIX ###
-    async def post_pix_deposit(self, paygate_ref: str, amount: Decimal) -> dict:
-        self.pending_payments.append(paygate_ref)
+    async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal) -> dict:
+        webhook_auth_header = WalletPayGateMock.get_paygate_auth_header(tx_id, nonce)
+
+        self.pending_payments.append(webhook_auth_header)
 
         req_payload =  {
             'payment': {
@@ -20,13 +30,13 @@ class WalletPayGateMock(IWalletPayGate):
                 }
             },
             'transaction': {
-                'orderId': paygate_ref,
+                'orderId': tx_id,
                 'orderDescription': 'SA-Deposit'
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PaygateAuth',
-                'customHeaderValue': f'WTK={self.webhook_token}&{paygate_ref}'
+                'customHeaderName': 'PAYGATE_AUTH',
+                'customHeaderValue': webhook_auth_header
             }
         }
     
@@ -35,7 +45,7 @@ class WalletPayGateMock(IWalletPayGate):
             'data': {
                 'transaction': {
                     'id': '9947b80a-8107-4264-938d-56a7f43593f5',
-                    'orderId': paygate_ref,
+                    'orderId': tx_id,
                     'date': '2023-10-27T01:58:14.573Z',
                     'state': 'Registered',
                     'amount': str(amount)
@@ -47,8 +57,10 @@ class WalletPayGateMock(IWalletPayGate):
             }
         }
     
-    async def post_pix_withdrawal(self, paygate_ref: str, amount: Decimal, pix_key: PIXKey) -> dict:
-        self.pending_payments.append(paygate_ref)
+    async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, pix_key: PIXKey) -> dict:
+        webhook_auth_header = WalletPayGateMock.get_paygate_auth_header(tx_id, nonce)
+
+        self.pending_payments.append(webhook_auth_header)
 
         req_payload = {
             'payment': {
@@ -59,22 +71,22 @@ class WalletPayGateMock(IWalletPayGate):
                 'value': str(amount)
             },
             'transaction': {
-                'orderId': paygate_ref,
+                'orderId': tx_id,
                 'orderDescription': 'SA-Withdrawal'
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PaygateAuth',
-                'customHeaderValue': f'WTK={self.webhook_token}&{paygate_ref}'
+                'customHeaderName': 'PAYGATE_AUTH',
+                'customHeaderValue': webhook_auth_header
             }
         }
-
+        
         return {
             'statusCode': 'Done',
             'data': {
                 'transaction': {
                     'id': '9947b80a-8107-4264-938d-56a7f43593f6',
-                    'orderId': paygate_ref,
+                    'orderId': tx_id,
                     'date': '2023-10-27T01:58:14.573Z',
                     'state': 'Created',
                     'amount': str(amount)

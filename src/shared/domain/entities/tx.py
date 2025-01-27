@@ -1,6 +1,6 @@
 import uuid
-import base64
-from random import randbytes
+import string
+import random
 from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
@@ -49,7 +49,7 @@ class TX(BaseModel):
     
     @staticmethod
     def random_nonce():
-        return base64.b64encode(randbytes(8)).decode('ascii')
+        return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(8))
 
     @staticmethod
     def invalid_tx_id(tx_id: str) -> bool:

@@ -20,3 +20,6 @@ class Environments:
     dynamo_partition_key: str = os.environ.get("DYNAMO_PARTITION_KEY", "")
     dynamo_sort_key: str = os.environ.get("DYNAMO_SORT_KEY", "")
     dynamo_gsi_partition_key: str = os.environ.get("DYNAMO_GSI_PARTITION_KEY", "")
+    paygate_webhook_token: str = os.environ.get("PAYGATE_WEBHOOK_TOKEN", "MOCK")
+    paybrokers_auth_token: str = os.environ.get("PAYBROKERS_AUTH_TOKEN", "MOCK")
+    paybrokers_webhook_key: str = os.environ.get("PAYBROKERS_WEBHOOK_KEY", "MOCK")

@@ -4,6 +4,8 @@ from src.routes.wallet.paybrokers_webhook import Controller as PaybrokersWebhook
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 
+from src.shared.wallet.wrappers.paybrokers import Paybrokers
+
 from tests.routes.wallet.common import initialize_mocks, deposit_mock, withdrawal_mock
 
 pytest_plugins = ('pytest_asyncio')
@@ -17,13 +19,20 @@ class Test_Deposit:
 
         (deposit_tx, push_result) = await deposit_mock(cache, repository, paygate)
 
-        paygate_ref = push_result.sign_result.data['paygate_ref']
+        headers = {
+            'PAYGATE_AUTH': Paybrokers.get_paygate_auth_header(deposit_tx.tx_id, deposit_tx.nonce)
+        }
 
-        query_params = {
-            'paygate_ref': paygate_ref
+        body = {
+            'id': '9947b80a-8107-4264-938d-56a7f43593f5',
+            'transactionState': 'Completed',
+            'transactionDate': '2023-05-19T19:51:21.320Z',
+            'transactionAmount': '150',
+            'transactionType': 'Credit',
+            'transactionPaymentType': 'PIX',
         }
         
-        request = HttpRequest(body={}, headers={}, query_params=query_params)
+        request = HttpRequest(body=body, headers=headers, query_params={})
 
         response = await PaybrokersWebhookController().execute(request)
 
@@ -36,13 +45,11 @@ class Test_Deposit:
 
         (withdrawal_tx, push_result) = await withdrawal_mock(cache, repository, paygate)
 
-        paygate_ref = push_result.sign_result.data['paygate_ref']
-
-        query_params = {
-            'paygate_ref': paygate_ref
+        headers = {
+            'PAYGATE_AUTH': Paybrokers.get_paygate_auth_header(withdrawal_tx.tx_id, withdrawal_tx.nonce)
         }
-        
-        request = HttpRequest(body={}, headers={}, query_params=query_params)
+
+        request = HttpRequest(body={}, headers=headers, query_params={})
 
         response = await PaybrokersWebhookController().execute(request)
 

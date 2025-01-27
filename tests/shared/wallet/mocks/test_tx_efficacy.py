@@ -76,9 +76,9 @@ class Test_TXEfficacy:
             if len(paygate.pending_payments) == 0:
                 return
 
-            paygate_ref = paygate.pending_payments.pop()
+            webhook_auth_header = paygate.pending_payments.pop()
             
-            tx = tx_proc.get_tx_by_paygate_ref(paygate_ref)
+            tx = tx_proc.get_tx_from_webhook(webhook_auth_header)
 
             assert tx is not None
 

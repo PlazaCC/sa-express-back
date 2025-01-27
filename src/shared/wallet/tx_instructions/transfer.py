@@ -150,6 +150,7 @@ class TXTransferInstruction(TXBaseInstruction):
             return state, TXTransferInstructionResult.successful(
                 TXPIXDepositPromise(
                     tx_id=state['tx_id'],
+                    nonce=state['nonce'],
                     amount=self.amount
                 )
             )
@@ -163,6 +164,7 @@ class TXTransferInstruction(TXBaseInstruction):
             return state, TXTransferInstructionResult.successful(
                 TXPIXWithdrawalPromise(
                     tx_id=state['tx_id'],
+                    nonce=state['nonce'],
                     pix_key=from_vault.pix_key, 
                     amount=self.amount
                 )
