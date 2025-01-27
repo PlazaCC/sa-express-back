@@ -31,9 +31,10 @@ class Test_Deposit:
 
             body = response.body
 
-            assert 'withdrawal_result' in body
+            assert 'tx_id' in body
+            assert 'result' in body
             
-            withdrawal_result = body['withdrawal_result']
+            withdrawal_result = body['result']
 
             assert withdrawal_result['error'] == ''
             assert 'sign_result' in withdrawal_result

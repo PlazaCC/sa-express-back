@@ -102,10 +102,11 @@ class Usecase:
             'amount': amount
         })
 
-        transfer_result = await self.tx_proc.push_tx(requester_user, transfer_tx)
+        result = await self.tx_proc.push_tx(requester_user, transfer_tx)
         
         return {
-            'transfer_result': transfer_result.to_dict()
+            'tx_id': transfer_tx.tx_id,
+            'result': result.to_dict()
         }
         
 async def function_handler(event, context) -> LambdaHttpResponse:

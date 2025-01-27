@@ -82,10 +82,11 @@ class Usecase:
     async def execute(self, requester_user: UserApiGatewayDTO, user_vault: Vault, amount: str) -> dict:
         withdrawal_tx = create_withdrawal_tx({ 'from_vault': user_vault, 'amount': amount })
 
-        withdrawal_result = await self.tx_proc.push_tx(requester_user, withdrawal_tx)
+        result = await self.tx_proc.push_tx(requester_user, withdrawal_tx)
         
         return {
-            'withdrawal_result': withdrawal_result.to_dict()
+            'tx_id': withdrawal_tx.tx_id,
+            'result': result.to_dict()
         }
         
 async def function_handler(event, context) -> LambdaHttpResponse:

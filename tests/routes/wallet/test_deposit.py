@@ -31,9 +31,10 @@ class Test_Deposit:
 
             body = response.body
 
-            assert 'deposit_result' in body
+            assert 'tx_id' in body
+            assert 'result' in body
             
-            deposit_result = body['deposit_result']
+            deposit_result = body['result']
 
             assert deposit_result['error'] == ''
             assert 'sign_result' in deposit_result
