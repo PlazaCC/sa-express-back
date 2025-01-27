@@ -6,7 +6,7 @@ from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class WalletPayGateMock(IWalletPayGate):
     @staticmethod
-    def get_paygate_auth_header(tx_id: str, nonce: str):
+    def get_paygate_ref_header(tx_id: str, nonce: str):
         webhook_token = Environments.paygate_webhook_token
 
         return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
@@ -19,9 +19,9 @@ class WalletPayGateMock(IWalletPayGate):
 
     ### PIX ###
     async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal) -> dict:
-        webhook_auth_header = WalletPayGateMock.get_paygate_auth_header(tx_id, nonce)
+        webhook_ref_header = WalletPayGateMock.get_paygate_ref_header(tx_id, nonce)
 
-        self.pending_payments.append(webhook_auth_header)
+        self.pending_payments.append(webhook_ref_header)
 
         req_payload =  {
             'payment': {
@@ -35,8 +35,8 @@ class WalletPayGateMock(IWalletPayGate):
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PAYGATE_AUTH',
-                'customHeaderValue': webhook_auth_header
+                'customHeaderName': 'X-Webhook-Reference',
+                'customHeaderValue': webhook_ref_header
             }
         }
     
@@ -44,7 +44,7 @@ class WalletPayGateMock(IWalletPayGate):
             'statusCode': 'Done',
             'data': {
                 'transaction': {
-                    'id': '9947b80a-8107-4264-938d-56a7f43593f5',
+                    'id': 'f6431a0f-970a-4be9-9c6d-f444f729adc3',
                     'orderId': tx_id,
                     'date': '2023-10-27T01:58:14.573Z',
                     'state': 'Registered',
@@ -52,15 +52,15 @@ class WalletPayGateMock(IWalletPayGate):
                 },
                 'payment': {
                     'qrCode': '76616684937466847221br.gov.bcb.pix2564qrcode.sandbox.paybrokers.solutions/QR/cob/504920436013785957047772193456164644706748877985089166204308PayBrokers Cobrança e Serviço em Tecnologia Ltda78445932284303602542***BA5BD701',
-                    'qrCodeLocation': 'https://api.sandbox.paybrokers.solutions/v1/system/qrcodeviewer/9947b80a-8107-4264-938d-56a7f43593f5'
+                    'qrCodeLocation': 'https://api.sandbox.paybrokers.solutions/v1/system/qrcodeviewer/f6431a0f-970a-4be9-9c6d-f444f729adc3'
                 }
             }
         }
     
     async def post_pix_withdrawal(self, tx_id: str, nonce: str, amount: Decimal, pix_key: PIXKey) -> dict:
-        webhook_auth_header = WalletPayGateMock.get_paygate_auth_header(tx_id, nonce)
+        webhook_ref_header = WalletPayGateMock.get_paygate_ref_header(tx_id, nonce)
 
-        self.pending_payments.append(webhook_auth_header)
+        self.pending_payments.append(webhook_ref_header)
 
         req_payload = {
             'payment': {
@@ -76,8 +76,8 @@ class WalletPayGateMock(IWalletPayGate):
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PAYGATE_AUTH',
-                'customHeaderValue': webhook_auth_header
+                'customHeaderName': 'X-Webhook-Reference',
+                'customHeaderValue': webhook_ref_header
             }
         }
         
@@ -85,7 +85,7 @@ class WalletPayGateMock(IWalletPayGate):
             'statusCode': 'Done',
             'data': {
                 'transaction': {
-                    'id': '9947b80a-8107-4264-938d-56a7f43593f6',
+                    'id': 'f6431a0f-970a-4be9-9c6d-f444f729adc3',
                     'orderId': tx_id,
                     'date': '2023-10-27T01:58:14.573Z',
                     'state': 'Created',

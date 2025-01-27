@@ -9,7 +9,7 @@ from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class Paybrokers(IWalletPayGate):
     @staticmethod
-    def get_paygate_auth_header(tx_id: str, nonce: str):
+    def get_paygate_ref_header(tx_id: str, nonce: str):
         webhook_token = Environments.paygate_webhook_token
 
         return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
@@ -32,8 +32,8 @@ class Paybrokers(IWalletPayGate):
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PAYGATE_AUTH',
-                'customHeaderValue': Paybrokers.get_paygate_auth_header(tx_id, nonce)
+                'customHeaderName': 'X-Webhook-Reference',
+                'customHeaderValue': Paybrokers.get_paygate_ref_header(tx_id, nonce)
             }
         }
 
@@ -67,8 +67,8 @@ class Paybrokers(IWalletPayGate):
             },
             'webhook': {
                 'url': 'https://postman-echo.com/post?test=1',
-                'customHeaderName': 'PAYGATE_AUTH',
-                'customHeaderValue': Paybrokers.get_paygate_auth_header(tx_id, nonce)
+                'customHeaderName': 'X-Webhook-Reference',
+                'customHeaderValue': Paybrokers.get_paygate_ref_header(tx_id, nonce)
             }
         }
 

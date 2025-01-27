@@ -27,9 +27,9 @@ class Test_TXSyntax:
         async def random_paygate_webhook():
             await asyncio.sleep(randrange(1, 3))
 
-            webhook_auth_header = tx_proc.paygate.pending_payments.pop()
+            webhook_ref_header = tx_proc.paygate.pending_payments.pop()
             
-            tx = tx_proc.get_tx_from_webhook(webhook_auth_header)
+            tx = tx_proc.get_tx_from_webhook(webhook_ref_header)
 
             assert tx is not None
 
@@ -169,9 +169,9 @@ class Test_TXSyntax:
         async def random_paygate_webhook():
             await asyncio.sleep(randrange(1, 3))
 
-            webhook_auth_header = tx_proc.paygate.pending_payments.pop()
+            webhook_ref_header = tx_proc.paygate.pending_payments.pop()
             
-            tx = tx_proc.get_tx_from_webhook(webhook_auth_header)
+            tx = tx_proc.get_tx_from_webhook(webhook_ref_header)
 
             assert tx is not None
 
@@ -216,9 +216,9 @@ class Test_TXSyntax:
         async def random_paygate_webhook():
             await asyncio.sleep(randrange(1, 3))
 
-            webhook_auth_header = tx_proc.paygate.pending_payments.pop()
+            webhook_ref_header = tx_proc.paygate.pending_payments.pop()
             
-            tx = tx_proc.get_tx_from_webhook(webhook_auth_header)
+            tx = tx_proc.get_tx_from_webhook(webhook_ref_header)
 
             assert tx is not None
 

@@ -20,16 +20,21 @@ class Test_Deposit:
         (deposit_tx, push_result) = await deposit_mock(cache, repository, paygate)
 
         headers = {
-            'PAYGATE_AUTH': Paybrokers.get_paygate_auth_header(deposit_tx.tx_id, deposit_tx.nonce)
+            'X-Webhook-Signature': 'HMAC-SHA256 Sign=5D90499D59FB0D9FAD44A15112936CFCABA73A6EE666AAA63B60A0FC03F40EA5,Nonce=b7891a74-ca9a-4770-bedd-8fd8341b122b,TS=1684633816',
+            'X-Webhook-Reference': Paybrokers.get_paygate_ref_header(deposit_tx.tx_id, deposit_tx.nonce)
         }
 
         body = {
-            'id': '9947b80a-8107-4264-938d-56a7f43593f5',
+            'id': 'f6431a0f-970a-4be9-9c6d-f444f729adc3',
             'transactionState': 'Completed',
             'transactionDate': '2023-05-19T19:51:21.320Z',
-            'transactionAmount': '150',
+            'transactionAmount': '0.010000',
             'transactionType': 'Credit',
             'transactionPaymentType': 'PIX',
+            'payer': { 
+                'name': 'Johnny Boy',
+                'taxNumber': '09977799400'
+            }
         }
         
         request = HttpRequest(body=body, headers=headers, query_params={})
@@ -46,10 +51,24 @@ class Test_Deposit:
         (withdrawal_tx, push_result) = await withdrawal_mock(cache, repository, paygate)
 
         headers = {
-            'PAYGATE_AUTH': Paybrokers.get_paygate_auth_header(withdrawal_tx.tx_id, withdrawal_tx.nonce)
+            'X-Webhook-Signature': 'HMAC-SHA256 Sign=5D90499D59FB0D9FAD44A15112936CFCABA73A6EE666AAA63B60A0FC03F40EA5,Nonce=b7891a74-ca9a-4770-bedd-8fd8341b122b,TS=1684633816',
+            'X-Webhook-Reference': Paybrokers.get_paygate_ref_header(withdrawal_tx.tx_id, withdrawal_tx.nonce)
         }
 
-        request = HttpRequest(body={}, headers=headers, query_params={})
+        body = {
+            'id': 'f6431a0f-970a-4be9-9c6d-f444f729adc3',
+            'transactionState': 'Completed',
+            'transactionDate': '2023-05-19T19:51:21.320Z',
+            'transactionAmount': '0.010000',
+            'transactionType': 'Credit',
+            'transactionPaymentType': 'PIX',
+            'payer': { 
+                'name': 'Johnny Boy',
+                'taxNumber': '09977799400'
+            }
+        }
+
+        request = HttpRequest(body=body, headers=headers, query_params={})
 
         response = await PaybrokersWebhookController().execute(request)
 

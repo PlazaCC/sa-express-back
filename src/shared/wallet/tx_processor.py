@@ -127,10 +127,10 @@ class TXProcessor:
                 state['vaults'][vault_key] = vault_state
 
         return state
-
-    def get_tx_from_webhook(self, webhook_auth_header: str) -> TX | None:
+    
+    def get_tx_from_webhook(self, webhook_ref_header: str) -> TX | None:
         try:
-            qs = dict(parse.parse_qsl(webhook_auth_header))
+            qs = dict(parse.parse_qsl(webhook_ref_header))
         except:
             return None
         

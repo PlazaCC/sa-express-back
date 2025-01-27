@@ -1,10 +1,16 @@
+import json
+import hmac
+import hashlib
+
+from src.environments import Environments
+
 from src.shared.infra.repositories.repository import Repository
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
-from src.shared.helpers.errors.errors import MissingParameters
+from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest, Forbidden
+from src.shared.helpers.errors.errors import MissingParameters, ForbiddenAction
 
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
@@ -15,16 +21,35 @@ class Controller:
     @staticmethod
     async def execute(request: IRequest) -> IResponse:
         try:
-            if 'PAYGATE_AUTH' not in request.headers:
-                raise MissingParameters('PAYGATE_AUTH')
-            
-            webhook_auth_header = request.headers.get('PAYGATE_AUTH')
+            if 'X-Webhook-Signature' not in request.headers:
+                raise MissingParameters('X-Webhook-Signature')
 
-            response = await Usecase().execute(webhook_auth_header)
+            if 'X-Webhook-Reference' not in request.headers:
+                raise MissingParameters('X-Webhook-Reference')
+            
+            body = request.body
+            
+            if 'id' not in body:
+                raise MissingParameters('id')
+            
+            if 'transactionState' not in body:
+                raise MissingParameters('transactionState')
+            
+            webhook_sig_header = request.headers['X-Webhook-Signature']
+            webhook_ref_header = request.headers.get('X-Webhook-Reference')
+            
+            usecase = Usecase()
+
+            if usecase.verify_signature(webhook_sig_header, body):
+                raise ForbiddenAction('Verificação do sig-header falhou')
+
+            response = await usecase.execute(webhook_ref_header)
 
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
+        except ForbiddenAction as error:
+            return Forbidden(error.message)
         except Exception as _:
             return InternalServerError('Erro interno de servidor')
         
@@ -48,9 +73,59 @@ class Usecase:
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )
         )
+
+    def parse_sig_header(self, webhook_sig_header: str) -> dict | None:
+        try:
+            header_split = webhook_sig_header.split('HMAC-SHA256')
+
+            if len(header_split) != 2:
+                return None
+            
+            header_fields = header_split.pop()
+            header_fields = header_fields.split(',')
+
+            if len(header_fields) != 3:
+                return None
+
+            result = {}
+
+            for raw_field in header_fields:
+                (key, value) = raw_field.strip().split('=')
+                
+                result[key] = value
+
+            if 'Sign' not in result:
+                return None
+            
+            if 'Nonce' not in result:
+                return None
+            
+            if 'TS' not in result:
+                return None
+
+            return result
+        except:
+            return None
+
+    def verify_signature(self, webhook_sig_header: str, body: dict) -> bool:
+        sig_params = self.parse_sig_header(webhook_sig_header)
+
+        if sig_params is None:
+            return True
+        
+        try:
+            message = sig_params['Nonce'] + ':' + sig_params['TS'] + ':' + json.dumps(body, separators=(',', ':'))
+        except:
+            return True
+        
+
+
+        print(message)
+        
+        return False
     
-    async def execute(self, webhook_auth_header: str) -> dict:
-        tx = self.tx_proc.get_tx_from_webhook(webhook_auth_header)
+    async def execute(self, webhook_ref_header: str) -> dict:
+        tx = self.tx_proc.get_tx_from_webhook(webhook_ref_header)
 
         if tx is None:
             return {}
