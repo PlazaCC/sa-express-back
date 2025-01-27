@@ -29,7 +29,7 @@ class Controller:
             if 'X-Webhook-Reference' not in headers:
                 raise MissingParameters('X-Webhook-Reference')
             
-            webhook_sig_header = headers.get['X-Webhook-Signature']
+            webhook_sig_header = headers.get('X-Webhook-Signature')
             webhook_ref_header = headers.get('X-Webhook-Reference')
             
             webhook_body = request.body
@@ -49,9 +49,7 @@ class Controller:
             return BadRequest(error.message)
         except ForbiddenAction as error:
             return Forbidden(error.message)
-        except Exception as error:
-            print(error)
-
+        except Exception as _:
             return InternalServerError('Erro interno de servidor')
         
 class Usecase:

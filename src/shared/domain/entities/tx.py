@@ -87,3 +87,24 @@ class TX(BaseModel):
 
     def to_tx_snapshot(self) -> dict:
         return self.to_dict()
+    
+    def to_user_public(self) -> dict:
+        result = {
+            'tx_id': self.tx_id,
+            'user_id': self.user_id,
+            'create_timestamp': self.create_timestamp,
+            'instruction': self.instruction.to_tx_snapshot(),
+            'status': self.status.value,
+            'metadata': self.metadata
+        }
+
+        if self.logs is not None:
+            result['logs'] = self.logs.to_tx_snapshot()
+        
+        if self.sign_result is not None:
+            result['sign_result'] = self.sign_result.to_tx_snapshot()
+
+        if self.commit_result is not None:
+            result['commit_result'] = self.commit_result.to_tx_snapshot()
+
+        return result
