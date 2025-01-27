@@ -23,7 +23,7 @@ class Test_Deposit:
             'X-Webhook-Signature': 'HMAC-SHA256 Sign=5D90499D59FB0D9FAD44A15112936CFCABA73A6EE666AAA63B60A0FC03F40EA5,Nonce=b7891a74-ca9a-4770-bedd-8fd8341b122b,TS=1684633816',
             'X-Webhook-Reference': Paybrokers.get_paygate_ref_header(deposit_tx.tx_id, deposit_tx.nonce)
         }
-
+        
         body = {
             'id': 'f6431a0f-970a-4be9-9c6d-f444f729adc3',
             'transactionState': 'Completed',

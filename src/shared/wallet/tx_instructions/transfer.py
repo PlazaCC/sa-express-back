@@ -124,7 +124,7 @@ class TXTransferInstruction(TXBaseInstruction):
 
         vault_ids.sort()
 
-        return vault_ids
+        return ':'.join(vault_ids)
     
     async def execute(self, state: dict, from_sign: bool) -> tuple[dict, TXTransferInstructionResult]:
         from_vault = self.from_vault
