@@ -1,8 +1,9 @@
 import uuid
+import base64
+from random import randbytes
 from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
-from src.shared.domain.entities.vault import Vault
 from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_instructions.base import TXBaseInstruction
 from src.shared.wallet.tx_instructions.mutate import TXMutateInstruction
@@ -14,26 +15,28 @@ class TX(BaseModel):
 
     tx_id: str
     user_id: int
+    nonce: str
     create_timestamp: str
     instruction: TXBaseInstruction
     logs: TXLogs | None
     status: TX_STATUS
     sign_result: TXSignResult | None
     commit_result: TXCommitResult | None
-    description: str = ''
-
+    metadata: dict
+    
     @staticmethod
     def from_dict_static(data: dict) -> 'TX':
         return TX(
             tx_id=data['tx_id'],
             user_id=data['user_id'],
+            nonce=data['nonce'],
             create_timestamp=data['create_timestamp'],
             instruction=TXMutateInstruction.from_tx_snapshot(data['instruction']),
             logs=TXLogs.from_tx_snapshot(data['logs']) if 'logs' in data else None,
             status=TX_STATUS[data['status']],
             sign_result=TXSignResult.from_tx_snapshot(data['sign_result']) if 'sign_result' in data else None,
             commit_result=TXCommitResult.from_tx_snapshot(data['commit_result']) if 'commit_result' in data else None,
-            description=data['description']
+            metadata=data['metadata']
         )
     
     @staticmethod
@@ -43,6 +46,10 @@ class TX(BaseModel):
     @staticmethod
     def random_id():
         return str(uuid.uuid4())
+    
+    @staticmethod
+    def random_nonce():
+        return base64.b64encode(randbytes(8)).decode('ascii')
 
     @staticmethod
     def invalid_tx_id(tx_id: str) -> bool:
@@ -57,10 +64,11 @@ class TX(BaseModel):
         result = {
             'tx_id': self.tx_id,
             'user_id': self.user_id,
+            'nonce': self.nonce,
             'create_timestamp': self.create_timestamp,
             'instruction': self.instruction.to_tx_snapshot(),
             'status': self.status.value,
-            'description': self.description
+            'metadata': self.metadata
         }
 
         if self.logs is not None:

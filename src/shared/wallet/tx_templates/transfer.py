@@ -21,11 +21,12 @@ def create_transfer_tx(build_params: dict) -> TX:
     return TX(
         tx_id=TX.random_id(),
         user_id=user_id,
+        nonce=TX.random_nonce(),
         create_timestamp=now_timestamp(),
         instruction=transfer_instr,
         logs=None,
         status=TX_STATUS.NEW,
         sign_result=None,
         commit_result=None,
-        description=build_params['description'] if 'description' in build_params else ''
+        metadata={},
     )
