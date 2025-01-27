@@ -29,7 +29,7 @@ class Controller:
             if 'X-Webhook-Reference' not in headers:
                 raise MissingParameters('X-Webhook-Reference')
             
-            webhook_sig_header = headers['X-Webhook-Signature']
+            webhook_sig_header = headers.get['X-Webhook-Signature']
             webhook_ref_header = headers.get('X-Webhook-Reference')
             
             webhook_body = request.body
