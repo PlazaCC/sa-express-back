@@ -74,33 +74,30 @@ class Usecase:
         )
 
     def parse_sig_header(self, webhook_sig_header: str) -> dict | None:
-        try:
-            header_split = webhook_sig_header.split('HMAC-SHA256')
+        header_split = webhook_sig_header.split('HMAC-SHA256')
 
-            if len(header_split) != 2:
-                return None
-            
-            header_fields = header_split.pop()
-            header_fields = header_fields.split(',')
-
-            if len(header_fields) != 3:
-                return None
-
-            result = {}
-
-            for raw_field in header_fields:
-                (key, value) = raw_field.strip().split('=')
-                
-                result[key] = value
-
-            if 'Sign' not in result or 'Nonce' \
-                not in result or 'TS' \
-                not in result:
-                return None
-
-            return result
-        except:
+        if len(header_split) != 2:
             return None
+        
+        header_fields = header_split.pop()
+        header_fields = header_fields.split(',')
+
+        if len(header_fields) != 3:
+            return None
+
+        result = {}
+
+        for raw_field in header_fields:
+            (key, value) = raw_field.strip().split('=')
+            
+            result[key] = value
+
+        if 'Sign' not in result or 'Nonce' \
+            not in result or 'TS' \
+            not in result:
+            return None
+        
+        return result
 
     def verify_signature(self, webhook_sig_header: str, webhook_body: dict) -> bool:
         sig_params = self.parse_sig_header(webhook_sig_header)
@@ -108,10 +105,7 @@ class Usecase:
         if sig_params is None:
             return True
         
-        try:
-            message = sig_params['Nonce'] + ':' + sig_params['TS'] + ':' + json.dumps(webhook_body, separators=(',', ':'))
-        except:
-            return True
+        message = sig_params['Nonce'] + ':' + sig_params['TS'] + ':' + json.dumps(webhook_body, separators=(',', ':'))
         
         key = Environments.paybrokers_webhook_key.encode('utf8')
         hash = hmac.new(key, message.encode(), hashlib.sha256)
