@@ -13,7 +13,6 @@ from src.shared.domain.repositories.wallet_repository_interface import IWalletRe
 
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.vault_processor import VaultProcessor
-from src.shared.wallet.tx_logs import TXLogs
 from src.shared.wallet.tx_instruction_results.base import TXBaseInstructionResult
 from src.shared.wallet.tx_results.sign import TXSignResult
 from src.shared.wallet.tx_results.commit import TXCommitResult
@@ -92,10 +91,10 @@ class TXProcessor:
 
     def validate_tx_fields_before_sign(self, tx: TX) -> str | None:
         if tx.status != TX_STATUS.NEW:
-            return 'Unsignable transaction status'
+            return f'Não é possível assinar transações no estado "{tx.status.value}"'
 
         if tx.sign_result is not None or tx.commit_result is not None:
-            return 'Transaction already signed'
+            return 'Transação já foi assinada'
 
         instr_fields_error = tx.instruction.validate_fields_before_sign()
 
@@ -225,15 +224,15 @@ class TXProcessor:
         return tx.sign_result
     
     ### COMMIT METHODS ###
-    async def commit_tx_failed(self, tx: TX, error: str = 'Unknown reason') -> TXCommitResult:
+    async def commit_tx_failed(self, tx: TX, error: str = 'Motivo desconhecido') -> TXCommitResult:
         if tx.status != TX_STATUS.SIGNED:
-            return TXCommitResult.failed(f'Can\'t commit transaction with status "{tx.status.value}"')
+            return TXCommitResult.failed(f'Não é possível comitar transação no estado "{tx.status.value}"')
 
         if tx.logs is None:
-            return TXCommitResult.failed('Transaction logs is null')
+            return TXCommitResult.failed('Transação não possui logs')
 
         if tx.logs.resolved:
-            return TXCommitResult.failed(f'Transaction logs already resolved')
+            return TXCommitResult.failed(f'Transação já foi comitada')
 
         state = self.get_tx_state(tx)
 
@@ -265,13 +264,13 @@ class TXProcessor:
 
     async def commit_tx_confirmed(self, tx: TX) -> TXCommitResult:
         if tx.status != TX_STATUS.SIGNED:
-            return TXCommitResult.failed(f'Can\'t commit transaction with status "{tx.status.value}"')
+            return TXCommitResult.failed(f'Não é possível comitar transação no estado "{tx.status.value}"')
         
         if tx.logs is None:
-            return TXCommitResult.failed('Transaction logs is null')
+            return TXCommitResult.failed('Transação não possui logs')
 
         if tx.logs.resolved:
-            return TXCommitResult.failed(f'Transaction log already resolved')
+            return TXCommitResult.failed(f'Transação já foi comitada')
 
         state = self.get_tx_state(tx)
 

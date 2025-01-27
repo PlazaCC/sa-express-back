@@ -45,22 +45,22 @@ class TXTransferInstruction(TXBaseInstruction):
         amount = self.amount
 
         if amount == 0:
-            return "Can't transfer zero amount"
+            return 'Não é possível transferir valor nulo'
         
         if amount < 0:
-            return "Can't transfer negative amount"
+            return 'Não é possível transferir valor negativo'
         
         from_vault = self.from_vault
         to_vault = self.to_vault
 
         if from_vault.to_identity_key() == to_vault.to_identity_key():
-            return 'Useless transfer'
+            return 'Transferência não teria efeito nenhum'
 
         if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
             return None
 
         if amount > from_vault.total_balance():
-            return 'Amount is greater than vault balance'
+            return 'Valor é maior que o saldo do remetente'
         
         return None
     
@@ -73,29 +73,29 @@ class TXTransferInstruction(TXBaseInstruction):
         if from_vault.type == VAULT_TYPE.USER:
             return self.validate_signer_access_from_user(signer)
 
-        return 'Validate logic not implemented for this vault type'
+        return f'Validação de assinante ainda não foi implementada para o tipo de vault "{from_vault.type.value}"'
     
     def validate_signer_access_from_server_unlimited(self, signer: User | UserApiGatewayDTO) -> str | None:
         to_vault = self.to_vault
 
         if to_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
-            return 'Useless transfer'
+            return 'Transferência não teria efeito nenhum'
         
         if signer.role == ROLE.ADMIN:
             return None
         
         if to_vault.type == VAULT_TYPE.USER and signer.user_id != to_vault.user_id:
-            return "Can't transfer from server to other users"
+            return 'Não é permitido transferir do servidor para terceiros'
         
         return None
 
     def validate_signer_access_from_user(self, signer: User | UserApiGatewayDTO) -> str | None:
         if signer.role != ROLE.ADMIN:
             if signer.user_id != self.from_vault.user_id:
-                return "Can't transfer from other users vaults"
+                return 'Não é permitido transferir saldo de terceiros'
             
         return None
-    
+
     def get_vaults(self) -> list[Vault]:
         return [ self.from_vault, self.to_vault ]
     
@@ -139,7 +139,7 @@ class TXTransferInstruction(TXBaseInstruction):
                 from_vault_state['balance'] -= self.amount
 
             if Vault.get_tx_execution_state_total_balance(from_vault_state) < 0:
-                return state, TXTransferInstructionResult.failed(f'Amount too low on vault "{from_vault_key}"')
+                return state, TXTransferInstructionResult.failed(f'Remetente não possui saldo suficiente')
             
         if to_vault.type != VAULT_TYPE.SERVER_UNLIMITED:
             to_vault_state = state['vaults'][to_vault_key]
@@ -158,7 +158,7 @@ class TXTransferInstruction(TXBaseInstruction):
             withdrawal_pix_key = from_vault.pix_key
 
             if withdrawal_pix_key is None:
-                return state, TXTransferInstructionResult.failed(f"PIX key isn't defined for vault \"{from_vault_key}\"")
+                return state, TXTransferInstructionResult.failed('Remetente não possui uma chave PIX')
 
             return state, TXTransferInstructionResult.successful(
                 TXPIXWithdrawalPromise(
