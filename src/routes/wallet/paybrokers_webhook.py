@@ -27,12 +27,9 @@ class Controller:
             if 'X-Webhook-Reference' not in request.headers:
                 raise MissingParameters('X-Webhook-Reference')
             
-            body = request.body
+            webhook_body = request.body
             
-            if 'id' not in body:
-                raise MissingParameters('id')
-            
-            if 'transactionState' not in body:
+            if 'transactionState' not in webhook_body:
                 raise MissingParameters('transactionState')
             
             webhook_sig_header = request.headers['X-Webhook-Signature']
@@ -40,17 +37,19 @@ class Controller:
             
             usecase = Usecase()
 
-            if usecase.verify_signature(webhook_sig_header, body):
+            if usecase.verify_signature(webhook_sig_header, webhook_body):
                 raise ForbiddenAction('Verificação do sig-header falhou')
 
-            response = await usecase.execute(webhook_ref_header)
+            response = await usecase.execute(webhook_ref_header, webhook_body)
 
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except ForbiddenAction as error:
             return Forbidden(error.message)
-        except Exception as _:
+        except Exception as error:
+            print(error)
+
             return InternalServerError('Erro interno de servidor')
         
 class Usecase:
@@ -94,37 +93,37 @@ class Usecase:
                 
                 result[key] = value
 
-            if 'Sign' not in result:
-                return None
-            
-            if 'Nonce' not in result:
-                return None
-            
-            if 'TS' not in result:
+            if 'Sign' not in result or 'Nonce' \
+                not in result or 'TS' \
+                not in result:
                 return None
 
             return result
         except:
             return None
 
-    def verify_signature(self, webhook_sig_header: str, body: dict) -> bool:
+    def verify_signature(self, webhook_sig_header: str, webhook_body: dict) -> bool:
         sig_params = self.parse_sig_header(webhook_sig_header)
 
         if sig_params is None:
             return True
         
         try:
-            message = sig_params['Nonce'] + ':' + sig_params['TS'] + ':' + json.dumps(body, separators=(',', ':'))
+            message = sig_params['Nonce'] + ':' + sig_params['TS'] + ':' + json.dumps(webhook_body, separators=(',', ':'))
         except:
             return True
         
+        key = Environments.paybrokers_webhook_key.encode('utf8')
+        hash = hmac.new(key, message.encode(), hashlib.sha256)
 
+        generated_sig = hash.hexdigest().upper()
 
-        print(message)
-        
+        if generated_sig != sig_params['Sign']:
+            return True
+
         return False
     
-    async def execute(self, webhook_ref_header: str) -> dict:
+    async def execute(self, webhook_ref_header: str, webhook_body: dict) -> dict:
         tx = self.tx_proc.get_tx_from_webhook(webhook_ref_header)
 
         if tx is None:
@@ -133,8 +132,12 @@ class Usecase:
         async def pop_callback(pop_result: TXPopResult):
             pass
         
-        await self.tx_proc.pop_tx_with_callback(pop_callback, tx)
+        transactionState = webhook_body['transactionState']
 
+        error = None if transactionState == 'Completed' else f'Transação da paybrokers falhou com estado "{transactionState}"'
+        
+        await self.tx_proc.pop_tx_with_callback(pop_callback, tx, error)
+        
         return {}
         
 async def function_handler(event, context) -> LambdaHttpResponse:
