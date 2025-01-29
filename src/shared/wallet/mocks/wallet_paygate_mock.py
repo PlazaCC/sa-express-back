@@ -1,10 +1,13 @@
 from src.environments import Environments
 
+from src.shared.wallet.enums.paygate import PAYGATE
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class WalletPayGateMock(IWalletPayGate):
+    name: PAYGATE = PAYGATE.MOCK
+
     @staticmethod
     def get_paygate_ref_header(tx_id: str, nonce: str):
         webhook_token = Environments.paygate_webhook_token

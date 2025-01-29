@@ -8,7 +8,6 @@ from src.shared.domain.entities.tx import TX
 
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
-from src.shared.wallet.enums.paygate_tx_status import PAYGATE_TX_STATUS
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
 from src.shared.wallet.tx_results.pop import TXPopResult
 from src.shared.wallet.tx_results.push import TXPushResult
@@ -21,7 +20,7 @@ pytest_plugins = ('pytest_asyncio')
 
 class Test_TXSyntax:
     ### UTILITY METHODS ###
-    async def sign_txs(self, tx_proc: TXProcessor, txs: list[TX], paygate_tx_status: list[PAYGATE_TX_STATUS]):
+    async def sign_txs(self, tx_proc: TXProcessor, txs: list[TX], can_fail: bool = False):
         webhooks = []
 
         async def random_paygate_webhook():
@@ -32,15 +31,15 @@ class Test_TXSyntax:
             tx = tx_proc.get_tx_from_webhook(webhook_ref_header)
 
             assert tx is not None
+            
+            confirmed = random.choice([ True, False ]) if can_fail else True
 
-            ptx_status = random.choice(paygate_tx_status)
-
-            if ptx_status == PAYGATE_TX_STATUS.CONFIRMED:
+            if confirmed:
                 commit_result = await tx_proc.commit_tx_confirmed(tx)
 
                 assert commit_result.without_error()
-            elif ptx_status == PAYGATE_TX_STATUS.FAILED:
-                commit_result = await tx_proc.commit_tx_failed(tx, f'Transaction failed on paygate with status "{ptx_status.value}"')
+            else:
+                commit_result = await tx_proc.commit_tx_failed(tx, 'Transaction failed on paygate')
 
                 assert commit_result.with_error()
         
@@ -50,7 +49,7 @@ class Test_TXSyntax:
             assert sign_result.without_error()
 
             webhooks.append(random_paygate_webhook())
-
+        
         await asyncio.gather(*webhooks)
 
     ### TEST METHODS ###
@@ -105,7 +104,7 @@ class Test_TXSyntax:
 
         assert(len(txs) > 0)
 
-        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
+        await self.sign_txs(tx_proc, txs)
 
         assert True
     
@@ -137,7 +136,7 @@ class Test_TXSyntax:
 
         assert(len(txs) > 0)
 
-        await self.sign_txs(tx_proc, txs, [ PAYGATE_TX_STATUS.CONFIRMED ])
+        await self.sign_txs(tx_proc, txs)
 
         assert True
     

@@ -3,11 +3,14 @@ import requests
 
 from src.environments import Environments
 
+from src.shared.wallet.enums.paygate import PAYGATE
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.wrappers.paygate import IWalletPayGate
 
 class Paybrokers(IWalletPayGate):
+    name: PAYGATE = PAYGATE.PAYBROKERS
+
     @staticmethod
     def get_paygate_ref_header(tx_id: str, nonce: str):
         webhook_token = Environments.paygate_webhook_token
@@ -15,7 +18,7 @@ class Paybrokers(IWalletPayGate):
         return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
     
     def __init__(self):
-        self.base_url = 'https://api.sandbox.paybrokers.solutions/v1/partners-int/accounts'
+        self.base_url = Environments.paybrokers_base_url
         self.auth_token = Environments.paybrokers_auth_token
     
     ### PIX ###
@@ -38,7 +41,7 @@ class Paybrokers(IWalletPayGate):
             }
         }
 
-        url = f'{self.base_url}/pix/cashin'
+        url = f'{self.base_url}/v1/partners-int/accounts/pix/cashin'
 
         headers = {
             'accept': 'application/json',
@@ -74,7 +77,7 @@ class Paybrokers(IWalletPayGate):
             }
         }
 
-        url = f'{self.base_url}/pix/cashout'
+        url = f'{self.base_url}/v1/partners-int/accounts/pix/cashout'
 
         headers = {
             'accept': 'application/json',

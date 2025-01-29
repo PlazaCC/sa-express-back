@@ -39,6 +39,7 @@ class TXPIXWithdrawalPromise(TXBasePromise):
         api_data = api_res['data']
 
         data = {
+            'paygate': tx_proc.paygate.name.value,
             'paygate_tx_id': api_data['transaction']['id'],
             'pix_key': self.pix_key.to_dict(),
         }
