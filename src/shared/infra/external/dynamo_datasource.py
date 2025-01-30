@@ -18,11 +18,10 @@ class DynamoDatasource:
         self.key_mapping = {
             "main_table": {"partition_key": "PK", "sort_key": "SK"},
             "gsis": {
-                "GetProposalsByUser": {"partition_key": "PROPOSAL#<UserId>", "sort_key": "SEND/RECEIVED#TYPE#<ProposalId>#<Status>"},
-                "GetDataFromSpecificProposal": {"partition_key": "PROPOSAL#<ProposalId>", "sort_key": "METADATA"},
-                "AdmGetAllUsers": {"partition_key": "PROFILE", "sort_key": "userId#<role>#<email>#<name>#<status>"},
-                "GetAffiliationTopUsersData": {"partition_key": "DEAL#<DealId>", "sort_key": "AFFILIATION#<n° cadastros total>#<n° FTDs total>#<n° CPAs total>#<UserId>"},
-                "GetAllCompetitions": {"partition_key": "COMPETITION", "sort_key": "<CompId>#<Status>#<createdAt>#<endAt>"}
+                "AllEntitiesMetadata": {
+                    "partition_key": "GSI1_PK",
+                    "sort_key": "GSI1_SK"
+                }
             }
         }
 
