@@ -19,8 +19,8 @@ class DynamoDatasource:
             "main_table": {"partition_key": "PK", "sort_key": "SK"},
             "gsis": {
                 "AllEntitiesMetadata": {
-                    "partition_key": "GSI1_PK",
-                    "sort_key": "GSI1_SK"
+                    "partition_key": "GSI#ENTITY",
+                    "sort_key": "created_at",
                 }
             }
         }
@@ -66,12 +66,10 @@ class DynamoDatasource:
         """
         key_config = self._get_key_config(index_name=index_name)
 
-        # Define a KeyConditionExpression obrigatória
         key_condition = Key(key_config["partition_key"]).eq(partition_key)
         if sort_key and key_config.get("sort_key"):
             key_condition &= Key(key_config["sort_key"]).eq(sort_key)
 
-        # Prepara os argumentos da consulta
         kwargs = {
             "KeyConditionExpression": key_condition,
         }
@@ -84,10 +82,8 @@ class DynamoDatasource:
         if exclusive_start_key:
             kwargs["ExclusiveStartKey"] = exclusive_start_key
 
-        # Executa a consulta
         response = self.dynamo_table.query(**kwargs)
 
-        # Retorna os itens e a chave para a próxima página, se houver
         return {
             "items": response.get("Items", []),
             "last_evaluated_key": response.get("LastEvaluatedKey")
