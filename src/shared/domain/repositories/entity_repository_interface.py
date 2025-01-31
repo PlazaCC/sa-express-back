@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List
-from xml.dom.minidom import Entity
 
 from src.shared.domain.entities.deal import Deal
+from src.shared.domain.entities.entity import Entity
 
 
 class IEntityRepository(ABC):
