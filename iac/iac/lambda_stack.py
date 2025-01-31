@@ -15,13 +15,7 @@ class LambdaStack(Construct):
 
         function = lambda_.Function(
             self, module_name.title(),
-            code=lambda_.Code.from_asset(f"../src/routes/{module_name}", bundling={
-                "image": lambda_.Runtime.PYTHON_3_9.bundling_image,
-                "command": [
-                    "bash", "-c",
-                    "pip install -r requirements.txt -t /asset-output && cp -r . /asset-output"
-                ]
-            }),
+            code=lambda_.Code.from_asset(f"../src/routes/{module_name}"),
             handler=f"{module_name}.lambda_handler",
             runtime=lambda_.Runtime.PYTHON_3_9,
             layers=[self.lambda_layer],
