@@ -74,7 +74,7 @@ class Controller:
         except EntityError as error:
             return BadRequest(error.message)
         except ValueError as error:
-            return BadRequest(error.message)
+            return BadRequest({"validation_errors": error.errors()})
         except Exception as error:
             return InternalServerError(str(error))
 
