@@ -24,7 +24,7 @@ class IEntityRepository(ABC):
         pass
 
     @abstractmethod
-    def create_deal(self, entity_id: str, deal: Deal) -> Deal:
+    def create_deal(self, deal: Deal) -> Deal:
         pass
 
     @abstractmethod

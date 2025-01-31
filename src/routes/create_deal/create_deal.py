@@ -4,7 +4,7 @@ import uuid
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
 from src.shared.domain.enums.role_enum import ROLE
-from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
+from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters, NoItemsFound
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Created, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
@@ -66,6 +66,11 @@ class Usecase:
         self.entity_repo = self.repository.entity_repo
 
     def execute(self, entity_id: str, baseline: str, cpa: str, rev_share: str, conditions: str) -> dict:
+        entity = self.entity_repo.get_entity(entity_id)
+
+        if entity is None:
+            raise NoItemsFound('Entidade não encontrada')
+        
         deal = Deal(
             deal_id=str(uuid.uuid4()),
             entity_id=entity_id,
