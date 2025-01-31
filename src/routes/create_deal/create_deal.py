@@ -83,7 +83,7 @@ class Usecase:
 
         return deal_created.to_dict()
 
-def function_handler(event, context):
+def lambda_handler(event, context):
     http_request = LambdaHttpRequest(data=event)
     http_request.data['requester_user'] = event.get('requestContext', {}).get('authorizer', {}).get('claims', None)
     response = Controller.execute(http_request)
