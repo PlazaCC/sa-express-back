@@ -37,7 +37,7 @@ class DynamoStack(Construct):
             ),
             sort_key=aws_dynamodb.Attribute(
                 name="created_at",
-                type=aws_dynamodb.AttributeType.STRING
+                type=aws_dynamodb.AttributeType.NUMBER
             ),
             index_name="AllEntitiesMetadata"
         )
