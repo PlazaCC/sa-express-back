@@ -19,7 +19,7 @@ class Usecase:
     
     def execute(self, name: str, logo_url: str, color: str, description: str) -> dict:
         entity = Entity(
-            entity_id=uuid.uuid4(),
+            entity_id=str(str(uuid.uuid4())),
             name=name,
             description=description,
             banner=Banner(

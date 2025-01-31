@@ -60,7 +60,7 @@ class Usecase:
         
     def execute(self, name: str, email: str, phone: str, role: ROLE):
         user = User(
-            user_id=str(uuid.uuid4()), 
+            user_id=str(str(uuid.uuid4())), 
             name=name,
             email=email,
             phone=phone,

@@ -68,7 +68,7 @@ class Usecase:
 
     def execute(self, entity_id: str, baseline: str, cpa: str, rev_share: str, conditions: str) -> dict:
         deal = Deal(
-            deal_id=uuid.uuid4(),
+            deal_id=str(uuid.uuid4()),
             entity_id=entity_id,
             baseline=float(baseline),
             cpa=float(cpa),
