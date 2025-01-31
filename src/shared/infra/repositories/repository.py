@@ -30,8 +30,8 @@ class Repository:
         
     def _initialize_database_repositories(self, entity_repo, auth_repo):
         dynamo = DynamoDatasource(
-            dynamo_table_name=Environments.get_envs().dynamo_table_name,
-            region=Environments.get_envs().region,
+            dynamo_table_name=Environments.dynamo_table_name,
+            region=Environments.region,
         )
         if entity_repo:
             self.entity_repo = EntityRepositoryDynamo(dynamo)
