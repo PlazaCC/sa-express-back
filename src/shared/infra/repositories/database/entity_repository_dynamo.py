@@ -70,7 +70,7 @@ class EntityRepositoryDynamo(IEntityRepository):
     def create_deal(self, deal: Deal) -> Deal:
         item = deal.to_dict()
         item["PK"] = self.entity_partition_key_format(deal.entity_id)
-        item["SK"] = self.deal_sort_key_format(deal.deal_id)
+        item["SK"] = self.deal_sort_key_format(deal_id=deal.deal_id, status=deal.deal_status.value)
 
         self.dynamo.put_item(item=item)
 
