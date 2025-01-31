@@ -6,7 +6,7 @@ import subprocess
 IAC_DIRECTORY_NAME = "iac"
 SOURCE_DIRECTORY_NAME = "src"
 LAMBDA_LAYER_PREFIX = os.path.join("python", "src")
-REQUIREMENTS_FILE = "requirements-lambda.txt"
+REQUIREMENTS_FILE = "requirements.txt"
 
 
 def adjust_layer_directory(shared_dir_name: str, destination: str):
