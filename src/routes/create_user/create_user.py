@@ -1,4 +1,5 @@
 from datetime import time
+from http.client import CREATED
 import uuid
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.role_enum import ROLE
@@ -38,7 +39,7 @@ class Controller:
                 phone=request.data.get('phone'),
                 role=ROLE[request.data.get('role')]
             )
-            return OK(body=response)
+            return CREATED(body=response)
             
         except MissingParameters as error:
             return BadRequest(error.message)

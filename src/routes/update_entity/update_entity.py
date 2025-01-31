@@ -1,4 +1,4 @@
-from http.client import CREATED
+from http.client import CREATED, OK
 import uuid
 from datetime import time
 from src.shared.domain.entities.entity import Banner, Entity
@@ -38,6 +38,8 @@ class Usecase:
         if description is not None:
             entity.description = description
 
+        entity.updated_at = int(round(time.time() * 1000))
+
         entity_updated = self.entity_repo.update_entity(entity)
 
         return entity_updated.to_dict()
@@ -65,7 +67,7 @@ class Controller:
                 description=request.data.get('description'),
             )
         
-            return CREATED(body=response)
+            return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except ForbiddenAction as error:

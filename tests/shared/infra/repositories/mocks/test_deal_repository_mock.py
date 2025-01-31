@@ -1,6 +1,6 @@
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
-from src.shared.infra.repositories.mocks.deal_repository_mock import DealRepositoryMock
+from src.shared.infra.repositories.mocks.entity_repository_mock import DealRepositoryMock
 
 
 class Test_DealRepositoryMock:

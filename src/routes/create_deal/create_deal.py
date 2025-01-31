@@ -1,5 +1,6 @@
 
 from datetime import time
+from http.client import CREATED
 import uuid
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
@@ -46,7 +47,7 @@ class Controller:
                 rev_share=request.data.get('rev_share'),
                 conditions=request.data.get('conditions'),
             )
-            return OK(body=response)
+            return CREATED(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except ForbiddenAction as error:
@@ -62,8 +63,8 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(deal_repo=True)
-        self.deal_repo = self.repository.deal_repo
+        self.repository = Repository(entity_repo=True)
+        self.entity_repo = self.repository.entity_repo
 
     def execute(self, entity_id: str, baseline: str, cpa: str, rev_share: str, conditions: str) -> dict:
         deal = Deal(
@@ -78,7 +79,7 @@ class Usecase:
             updated_at=int(round(time.time() * 1000)),
         )
 
-        deal_created = self.deal_repo.create_deal(deal)
+        deal_created = self.entity_repo.create_deal(deal)
 
         return deal_created.to_dict()
 
