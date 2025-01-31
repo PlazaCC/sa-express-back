@@ -38,13 +38,13 @@ class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:         
-            if request.data.get('requester_user') is None:
-                raise MissingParameters('requester_user')
+            # if request.data.get('requester_user') is None:
+            #     raise MissingParameters('requester_user')
             
-            requester_user = request.data.get('requester_user')
+            # requester_user = request.data.get('requester_user')
 
-            if requester_user.role != ROLE.ADMIN:
-                raise ForbiddenAction('Usuário não autorizado')
+            # if requester_user.role != ROLE.ADMIN:
+            #     raise ForbiddenAction('Usuário não autorizado')
             
             if request.data.get('name') is None:
                 raise MissingParameters('name')
