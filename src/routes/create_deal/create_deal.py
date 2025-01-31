@@ -53,9 +53,9 @@ class Controller:
         except ForbiddenAction as error:
             return Forbidden(error.message)
         except EntityError as error:
-            return BadRequest(error.args[0])
+            return BadRequest(error.message)
         except ValueError as error:
-            return BadRequest(error.args[0])
+            return BadRequest(error.message)
         except Exception as error:
             return InternalServerError(str(error))
 
