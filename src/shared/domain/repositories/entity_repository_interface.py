@@ -20,10 +20,6 @@ class IEntityRepository(ABC):
         pass
 
     @abstractmethod
-    def delete_entity(self, entity_id: str) -> Entity:
-        pass
-
-    @abstractmethod
     def get_all_entities(self) -> List[Entity]:
         pass
 

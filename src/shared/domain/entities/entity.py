@@ -21,6 +21,7 @@ class Banner(BaseModel):
 class Entity(BaseModel):  # METADATA
     entity_id: str = Field(..., description="String with 36 characters")
     name: str
+    description: str
     banner: Banner
     created_at: int = Field(..., description="Timestamp in seconds", gt=0)
     updated_at: int = Field(..., description="Timestamp in seconds", gt=0)
@@ -36,6 +37,7 @@ class Entity(BaseModel):  # METADATA
         return {
             "entity_id": self.entity_id,
             "name": self.name,
+            "description": self.description,
             "banner": self.banner.to_dict(),
             "created_at": self.created_at,
             "updated_at": self.updated_at
@@ -46,6 +48,7 @@ class Entity(BaseModel):  # METADATA
         return cls(
             entity_id=data.get("entity_id"),
             name=data.get("name"),
+            description=data.get("description"),
             banner=Banner.from_dict(data.get("banner")),
             created_at=data.get("created_at"),
             updated_at=data.get("updated_at")
