@@ -42,7 +42,7 @@ class LambdaStack(Construct):
             method="PUT",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            # authorizer=authorizer
+            authorizer=authorizer
         )
         
         self.create_deal = self.create_lambda_api_gateway_integration(
