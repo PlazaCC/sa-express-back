@@ -42,7 +42,7 @@ class LambdaStack(Construct):
             method="PUT",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
         
         self.create_deal = self.create_lambda_api_gateway_integration(
@@ -50,7 +50,7 @@ class LambdaStack(Construct):
             method="POST",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.create_entity = self.create_lambda_api_gateway_integration(
@@ -58,7 +58,7 @@ class LambdaStack(Construct):
             method="POST",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.create_user = self.create_lambda_api_gateway_integration(
@@ -66,7 +66,7 @@ class LambdaStack(Construct):
             method="POST",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.get_all_entities = self.create_lambda_api_gateway_integration(
@@ -74,7 +74,7 @@ class LambdaStack(Construct):
             method="GET",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.get_all_users = self.create_lambda_api_gateway_integration(
@@ -82,7 +82,7 @@ class LambdaStack(Construct):
             method="GET",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.get_entity = self.create_lambda_api_gateway_integration(
@@ -90,7 +90,7 @@ class LambdaStack(Construct):
             method="GET",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.get_entity_actives_deals = self.create_lambda_api_gateway_integration(
@@ -98,7 +98,7 @@ class LambdaStack(Construct):
             method="GET",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.update_deal_status = self.create_lambda_api_gateway_integration(
@@ -106,7 +106,7 @@ class LambdaStack(Construct):
             method="PUT",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.update_entity = self.create_lambda_api_gateway_integration(
@@ -114,7 +114,7 @@ class LambdaStack(Construct):
             method="PUT",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
-            authorizer=authorizer
+            # authorizer=authorizer
         )
 
         self.functions_that_need_cognito_permissions = [
