@@ -9,7 +9,7 @@ class Deal(BaseModel):
     baseline: float = Field(..., ge=0, description="Valor base (deve ser maior ou igual a 0)")
     cpa: float = Field(..., ge=0, description="Custo por aquisição (deve ser maior ou igual a 0)")
     rev_share: float = Field(..., ge=0, le=1, description="Participação na receita (deve estar entre 0 e 1)")
-    conditions: List[str] = Field(..., default=[], min_items=0, description="Lista de condições")
+    conditions: List[str] = Field(default=[], min_items=0, description="Lista de condições")
     deal_status: DEAL_STATUS = Field(default=DEAL_STATUS.ACTIVATED, description="Status do negócio")
     created_at: int = Field(..., gt=0, description="Timestamp de criação (deve ser um número positivo)")
     updated_at: int = Field(..., gt=0, description="Timestamp de atualização (deve ser um número positivo)")
@@ -24,8 +24,6 @@ class Deal(BaseModel):
     def validar_conditions(cls, value: Any) -> List[str]:
         if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
             raise ValueError("O campo 'conditions' deve ser uma lista de strings.")
-        if len(value) == 0:
-            raise ValueError("O campo 'conditions' deve ter pelo menos um item.")
         return value
 
     def to_dict(self) -> Dict[str, Any]:
@@ -49,7 +47,7 @@ class Deal(BaseModel):
             baseline=data.get("baseline", 0.0),
             cpa=data.get("cpa", 0.0),
             rev_share=data.get("rev_share", 0.0),
-            conditions=data.get("conditions") or [],
+            conditions=data.get("conditions", []),
             deal_status=DEAL_STATUS[data["deal_status"]] if data.get("deal_status") in DEAL_STATUS.__members__ else DEAL_STATUS.ACTIVATED,
             created_at=data.get("created_at"),
             updated_at=data.get("updated_at"),
