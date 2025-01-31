@@ -1,4 +1,4 @@
-from http.client import CREATED, OK
+from http.client import OK
 from src.shared.domain.entities.entity import Banner, Entity
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
 from src.shared.domain.enums.role_enum import ROLE

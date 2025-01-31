@@ -1,13 +1,12 @@
 
 import time
-from http.client import CREATED
 import uuid
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
+from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Created, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.infra.repositories.repository import Repository
@@ -47,7 +46,7 @@ class Controller:
                 rev_share=request.data.get('rev_share'),
                 conditions=request.data.get('conditions'),
             )
-            return CREATED(body=response)
+            return Created(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except ForbiddenAction as error:

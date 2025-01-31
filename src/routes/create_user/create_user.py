@@ -1,12 +1,11 @@
 import time
-from http.client import CREATED
 import uuid
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
+from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Created, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.infra.repositories.repository import Repository
@@ -39,7 +38,7 @@ class Controller:
                 phone=request.data.get('phone'),
                 role=ROLE[request.data.get('role')]
             )
-            return CREATED(body=response)
+            return Created(body=response)
             
         except MissingParameters as error:
             return BadRequest(error.message)

@@ -1,11 +1,10 @@
-from http.client import CREATED
 import uuid
 import time
 from src.shared.domain.entities.entity import Banner, Entity
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
-from src.shared.helpers.external_interfaces.http_codes import BadRequest, Forbidden, InternalServerError
+from src.shared.helpers.external_interfaces.http_codes import BadRequest, Created, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.infra.repositories.repository import Repository
 
@@ -65,7 +64,7 @@ class Controller:
                 description=request.data.get('description'),
             )
         
-            return CREATED(body=response)
+            return Created(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
         except ForbiddenAction as error:
