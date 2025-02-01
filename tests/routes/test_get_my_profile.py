@@ -1,7 +1,6 @@
 from src.routes.get_my_profile.get_my_profile import Controller, Usecase
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
-from src.shared.infra.repositories.mocks.deal_repository_mock import DealRepositoryMock
 
 
 class Test_Get_my_profile:
