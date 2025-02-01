@@ -100,7 +100,7 @@ class ProfileRepositoryMock(IProfileRepository):
     def deactivate_profile(self, user_id):
         for profile in self.profiles:
             if profile.user_id == user_id:
-                profile.status = PROFILE_STATUS.INACTIVE
+                profile.status = False
                 return profile
         return None
     
