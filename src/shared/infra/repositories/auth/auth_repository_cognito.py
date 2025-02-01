@@ -16,9 +16,9 @@ class AuthRepositoryCognito(IAuthRepository):
     client_id: str
 
     def __init__(self):
-        self.client = boto3.client('cognito-idp', region_name=Environments.get_envs().region)
-        self.user_pool_id = Environments.get_envs().user_pool_id
-        self.client_id = Environments.get_envs().app_client_id
+        self.client = boto3.client('cognito-idp', region_name=Environments.region)
+        self.user_pool_id = Environments.user_pool_id
+        self.client_id = Environments.app_client_id
     
     
     def get_all_users(self, page: int) -> List[User]:

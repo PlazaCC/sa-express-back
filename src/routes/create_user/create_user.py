@@ -1,11 +1,11 @@
-from datetime import time
+import time
 import uuid
 from src.shared.domain.entities.user import User
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
-from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
+from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Created, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.infra.repositories.repository import Repository
@@ -38,7 +38,7 @@ class Controller:
                 phone=request.data.get('phone'),
                 role=ROLE[request.data.get('role')]
             )
-            return OK(body=response)
+            return Created(body=response)
             
         except MissingParameters as error:
             return BadRequest(error.message)
@@ -59,7 +59,7 @@ class Usecase:
         
     def execute(self, name: str, email: str, phone: str, role: ROLE):
         user = User(
-            user_id=str(uuid.uuid4()), 
+            user_id=str(str(uuid.uuid4())), 
             name=name,
             email=email,
             phone=phone,
@@ -77,7 +77,7 @@ class Usecase:
         return user_created.to_dict()
     
 
-def function_handler(event, context):
+def lambda_handler(event, context):
     http_request = LambdaHttpRequest(event)
     http_request.data['requester_user'] = event.get('requestContext', {}).get('authorizer', {}).get('claims', None)
     response = Controller.execute(http_request)

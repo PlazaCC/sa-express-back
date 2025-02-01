@@ -1,10 +1,9 @@
 
-from src.shared.domain.enums.role_enum import ROLE
+from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
 from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
-from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.infra.repositories.repository import Repository
 
 
@@ -15,18 +14,15 @@ class Controller:
             if request.data.get('requester_user') is None:
                 raise MissingParameters('requester_user')
             
-            requester_user = AuthAuthorizerDTO(**request.data.get('requester_user'))
+            if request.data.get('entity_id') is None:
+                raise MissingParameters('entity_id')
             
-            if requester_user.role != ROLE.ADMIN:
-                raise ForbiddenAction('Usuário não autorizado')
-            
-            page = request.data.get('page')
-            
-            if page is None:
-                raise MissingParameters('page')
-            
-            
-            response = Usecase().execute(page=page)
+            if request.data.get('last_evaluated_key') is None:
+                last_evaluated_key = None
+            else:
+                last_evaluated_key = request.data.get('last_evaluated_key')
+                        
+            response = Usecase().execute(entity_id=request.data.get('entity_id'), last_evaluated_key=last_evaluated_key)
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
@@ -43,12 +39,16 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(auth_repo=True)
-        self.auth_repo = self.repository.auth_repo
+        self.repository = Repository(entity_repo=True)
+        self.entity_repo = self.repository.entity_repo
 
-    def execute(self, page: int) -> dict:
-        users = self.auth_repo.get_all_users(page)
-        return [user.to_dict() for user in users]
+    def execute(self, entity_id: str, last_evaluated_key: str) -> dict:
+        deals = self.entity_repo.get_entity_deals(
+            entity_id=entity_id,
+            status=DEAL_STATUS.ACTIVATED.value,
+            last_evaluated_key=last_evaluated_key
+        )
+        return [deal.to_dict() for deal in deals]
 
 def lambda_handler(event, context):
     http_request = LambdaHttpRequest(data=event)

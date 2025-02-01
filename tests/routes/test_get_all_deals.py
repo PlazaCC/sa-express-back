@@ -1,6 +1,6 @@
-from src.routes.get_all_deals.get_all_deals import Controller, Usecase
+from src.routes.get_entity_deals.get_all_deals import Controller, Usecase
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
-from src.shared.infra.repositories.mocks.deal_repository_mock import DealRepositoryMock
+from src.shared.infra.repositories.mocks.entity_repository_mock import DealRepositoryMock
 
 
 class Test_GetAllDeals:

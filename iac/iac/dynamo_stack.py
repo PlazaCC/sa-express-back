@@ -30,72 +30,18 @@ class DynamoStack(Construct):
             removal_policy=removal_policy
         )
 
-        # GSI: GetProposalsByUser
         self.dynamo_table.add_global_secondary_index(
             partition_key=aws_dynamodb.Attribute(
-                name="PROPOSAL#<UserId>",
+                name="GSI#ENTITY",
                 type=aws_dynamodb.AttributeType.STRING
             ),
             sort_key=aws_dynamodb.Attribute(
-                name="SEND/RECEIVED#TYPE#<ProposalId>#<Status>",
-                type=aws_dynamodb.AttributeType.STRING
+                name="created_at",
+                type=aws_dynamodb.AttributeType.NUMBER
             ),
-            index_name="GetProposalsByUser"
+            index_name="AllEntitiesMetadata"
         )
 
-        # GSI: GetDataFromSpecificProposal
-        self.dynamo_table.add_global_secondary_index(
-            partition_key=aws_dynamodb.Attribute(
-                name="PROPOSAL#<ProposalId>",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            sort_key=aws_dynamodb.Attribute(
-                name="METADATA",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            index_name="GetDataFromSpecificProposal"
-        )
-
-        # GSI: AdmGetAllUsers
-        self.dynamo_table.add_global_secondary_index(
-            partition_key=aws_dynamodb.Attribute(
-                name="PROFILE",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            sort_key=aws_dynamodb.Attribute(
-                name="userId#<role>#<email>#<name>#<status>",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            index_name="AdmGetAllUsers"
-        )
-
-        # GSI: GetAffiliationTopUsersData
-        self.dynamo_table.add_global_secondary_index(
-            partition_key=aws_dynamodb.Attribute(
-                name="DEAL#<DealId>",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            sort_key=aws_dynamodb.Attribute(
-                name="AFFILIATION#<n° cadastros total>#<n° FTDs total>#<n° CPAs total>#<UserId>",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            index_name="GetAffiliationTopUsersData"
-        )
-
-        # GSI: GetAllCompetitions
-        self.dynamo_table.add_global_secondary_index(
-            partition_key=aws_dynamodb.Attribute(
-                name="COMPETITION",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            sort_key=aws_dynamodb.Attribute(
-                name="<CompId>#<Status>#<createdAt>#<endAt>",
-                type=aws_dynamodb.AttributeType.STRING
-            ),
-            index_name="GetAllCompetitions"
-        )
-
-        # Saída de configuração da tabela
         CfnOutput(self, 'DynamoTableName',
                   value=self.dynamo_table.table_name,
                   export_name=f"SAExpress{github_ref_name}TableName")
