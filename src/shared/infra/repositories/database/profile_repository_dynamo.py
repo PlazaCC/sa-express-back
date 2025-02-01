@@ -52,7 +52,7 @@ class ProfileRepositoryDynamo(IProfileRepository):
     def deactivate_profile(self, user_id):
         try:
             profile = self.get_profile_by_id(user_id)
-            profile.status = "INACTIVE"
+            profile.status = False
             self.dynamo.update_item(
                 partition_key=self.profile_partition_key_format(user_id),
                 update_dict=profile.to_dict(),
