@@ -52,7 +52,7 @@ class Test_ProfileRepositoryMock:
     assert profile.role == ROLE.ADMIN
     assert profile.created_at == 1610000000
     assert profile.updated_at == 1610000000
-    assert profile.status == PROFILE_STATUS.INACTIVE
+    assert profile.status == False
     
     
   def test_create_affiliation(self):
