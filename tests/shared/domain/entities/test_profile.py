@@ -25,6 +25,10 @@ class Test_Profile:
     with pytest.raises(ValueError):
       Profile(user_id="1", game_data_id="00000000-0000-0000-0000-000000000000", affiliations=["00000000-0000-0000-0000-000000000000"], wallet_id="00000000-0000-0000-0000-000000000000", role=ROLE.ADMIN, created_at=1, updated_at=1)
       
+  def test_role_not_operador_to_entity_id(self):
+    with pytest.raises(ValueError):
+      Profile(user_id="00000000-0000-0000-0000-000000000000", game_data_id="00000000-0000-0000-0000-000000000000", affiliations=["00000000-0000-0000-0000-000000000000"], wallet_id="00000000-0000-0000-0000-000000000000", role=ROLE.ADMIN, entity_id="00000000-0000-0000-0000-000000000000", created_at=1, updated_at=1)
+  
   def test_entity_id_not_string(self):
     with pytest.raises(ValueError):
       Profile(user_id="00000000-0000-0000-0000-000000000000", entity_id=1, game_data_id="00000000-0000-0000-0000-000000000000", affiliations=["00000000-0000-0000-0000-000000000000"], wallet_id="00000000-0000-0000-0000-000000000000", role=ROLE.OPERADOR, created_at=1, updated_at=1)
