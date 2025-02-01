@@ -18,7 +18,7 @@ class Test_DeactivateProfile:
         response = usecase.execute(requester_user)
         
         assert response.get("message") == "Perfil desativado com sucesso"
-        assert response.get("profile").get("status") == "INACTIVE"
+        assert response.get("profile").get("status") == False
         
     def test_usecase_with_non_existent_profile(self):
         usecase = Usecase()
