@@ -8,16 +8,16 @@ from src.shared.helpers.errors.errors import EntityError
 
 class Profile(BaseModel):
   user_id: str = Field(..., description="String with 32 characters")
-  entity_id: str = Field(..., description="String with 32 characters")
+  role: ROLE = Field(..., description="Role of the user")
+  entity_id: str = Field(None, description="String with 32 characters")
   game_data_id: str = Field(..., description="String with 32 characters")
   affiliations: List[str]
   wallet_id: str = Field(..., description="String with 32 characters")
-  status: bool = Field(..., description="Status of the profile")
-  role: ROLE = Field(..., description="Role of the user")
+  status: bool = Field(default=True, description="Status of the profile")
   created_at: int = Field(..., description="Timestamp in seconds")
   updated_at: int = Field(..., description="Timestamp in seconds")
   
-  @field_validator('user_id', 'entity_id', 'game_data_id', 'wallet_id')
+  @field_validator('user_id', 'game_data_id', 'wallet_id')
   @staticmethod
   def validate_uuid(value: str) -> str:
       if not isinstance(value, str):
@@ -26,13 +26,22 @@ class Profile(BaseModel):
           raise ValueError("uuids devem ter exatamente 36 caracteres")
       return value
     
-  # make a logic for entity_id only be valid if the field role is ROLE.OPERADOR
-  @field_validator('entity_id', 'role')
-  @staticmethod
-  def validate_entity_id(value: str, role: ROLE) -> str:
-      if role != ROLE.OPERADOR and len(value) != 36:
-          raise ValueError("Cargo não autorizado e entity_id deve ter exatamente 36 caracteres para operadores")
-      return value
+  @field_validator('entity_id')
+  @classmethod
+  def validate_entity_id(cls, v, values):
+      role = values.data.get('role')
+    
+      if role == ROLE.OPERADOR:
+          if not isinstance(v, str) or len(v) != 36:
+              raise ValueError(
+                  "entity_id deve ser um UUID de 36 caracteres quando o cargo é ROLE.OPERADOR"
+              )
+      else:
+          if v not in (None, ''):
+              raise ValueError(
+                  "Apenas usuários com cargo ROLE.OPERADOR podem ter entity_id preenchido."
+              )
+      return v
   
   @field_validator('created_at', 'updated_at')
   @staticmethod
