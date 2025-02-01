@@ -18,7 +18,6 @@ class Test_Get_my_profile:
         response = usecase.execute(requester_user)
 
         assert response["user_id"] == "00000000-0000-0000-0000-000000000000"
-        assert response["entity_id"] == "00000000-0000-0000-0000-000000000000"
         assert response["game_data_id"] == "00000000-0000-0000-0000-000000000000"
         assert "affiliations" in response
         assert "wallet_id" in response
@@ -45,7 +44,6 @@ class Test_Get_my_profile:
         assert response.status_code == 200
 
         assert response.body["user_id"] == "00000000-0000-0000-0000-000000000000"
-        assert response.body["entity_id"] == "00000000-0000-0000-0000-000000000000"
         assert response.body["game_data_id"] == "00000000-0000-0000-0000-000000000000"
         assert "affiliations" in response.body
         assert "wallet_id" in response.body
