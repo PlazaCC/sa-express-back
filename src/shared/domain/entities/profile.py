@@ -12,12 +12,10 @@ class Profile(BaseModel):
   game_data_id: str = Field(..., description="String with 32 characters")
   affiliations: List[str]
   wallet_id: str = Field(..., description="String with 32 characters")
-  status: PROFILE_STATUS = Field(default=PROFILE_STATUS.ACTIVE)
-  role: ROLE
+  status: bool = Field(..., description="Status of the profile")
+  role: ROLE = Field(..., description="Role of the user")
   created_at: int = Field(..., description="Timestamp in seconds")
   updated_at: int = Field(..., description="Timestamp in seconds")
-  # tools needed new entity?
-  # subscriptions needed new entity?
   
   @field_validator('user_id', 'entity_id', 'game_data_id', 'wallet_id')
   @staticmethod
@@ -28,6 +26,14 @@ class Profile(BaseModel):
           raise ValueError("uuids devem ter exatamente 36 caracteres")
       return value
     
+  # make a logic for entity_id only be valid if the field role is ROLE.OPERADOR
+  @field_validator('entity_id', 'role')
+  @staticmethod
+  def validate_entity_id(value: str, role: ROLE) -> str:
+      if role != ROLE.OPERADOR and len(value) != 36:
+          raise ValueError("Cargo não autorizado e entity_id deve ter exatamente 36 caracteres para operadores")
+      return value
+  
   @field_validator('created_at', 'updated_at')
   @staticmethod
   def validate_timestamp(value: Any) -> int:
@@ -44,7 +50,7 @@ class Profile(BaseModel):
       "game_data_id": self.game_data_id,
       "affiliations": self.affiliations,
       "wallet_id": self.wallet_id,
-      "status": self.status.value,
+      "status": self.status,
       "role": self.role.value,
     }
     
@@ -56,7 +62,7 @@ class Profile(BaseModel):
       game_data_id=data.get("game_data_id"),
       affiliations=data.get("affiliations"),
       wallet_id=data.get("wallet_id"),
-      status=PROFILE_STATUS[data.get("status")],
+      status=data.get("status"),
       role=ROLE[data.get("role")],
       created_at=data.get("created_at"),
       updated_at=data.get("updated_at"),
