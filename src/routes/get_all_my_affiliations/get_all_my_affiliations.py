@@ -34,8 +34,8 @@ class Usecase:
   repository: Repository
   
   def __init__(self):
-        self.repository = Repository(affiliation_repo=True)
-        self.affiliation_repo = self.repository.affiliation_repo
+        self.repository = Repository(profile_repo=True)
+        self.affiliation_repo = self.repository.profile_repo
         
   def execute(self, requester_user: AuthAuthorizerDTO):
     user_id = requester_user.user_id
