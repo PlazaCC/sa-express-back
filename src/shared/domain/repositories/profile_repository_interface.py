@@ -15,7 +15,7 @@ class IProfileRepository(ABC):
         pass
     
     @abstractmethod
-    def deactivate_profile(self, user_id: str) -> Profile:
+    def update_profile(self, new_profile: Profile) -> Profile:
         pass
     
     @abstractmethod

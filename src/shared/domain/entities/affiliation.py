@@ -5,6 +5,7 @@ class Affiliation(BaseModel):
     affiliation_id: str = Field(..., description="String with 32 characters")
     user_id: str = Field(..., description="String with 32 characters")
     deal_id: str = Field(..., description="String with 32 characters")
+    entity_id: str = Field(..., description="String with 32 characters")
     invoiced_amount: float
     amount_to_pay: float
     commission: float
@@ -19,7 +20,7 @@ class Affiliation(BaseModel):
     created_at: int = Field(..., description="Timestamp in seconds", gt=0)
     updated_at: int = Field(..., description="Timestamp in seconds", gt=0)
 
-    @field_validator('affiliation_id', 'user_id', 'deal_id')
+    @field_validator('affiliation_id', 'user_id', 'deal_id', 'entity_id')
     @staticmethod
     def validate_id_length(value: str) -> str:
         if len(value) != 32:
@@ -31,6 +32,7 @@ class Affiliation(BaseModel):
             "affiliation_id": self.affiliation_id,
             "user_id": self.user_id,
             "deal_id": self.deal_id,
+            "entity_id": self.entity_id,
             "invoiced_amount": self.invoiced_amount,
             "amount_to_pay": self.amount_to_pay,
             "commission": self.commission,
@@ -52,6 +54,7 @@ class Affiliation(BaseModel):
             affiliation_id=data.get("affiliation_id"),
             user_id=data.get("user_id"),
             deal_id=data.get("deal_id"),
+            entity_id=data.get("entity_id"),
             invoiced_amount=data.get("invoiced_amount"),
             amount_to_pay=data.get("amount_to_pay"),
             commission=data.get("commission"),

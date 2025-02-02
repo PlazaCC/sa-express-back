@@ -96,7 +96,7 @@ class ProfileRepositoryMock(IProfileRepository):
         self.profiles.append(profile)
         return profile
     
-    def deactivate_profile(self, user_id):
+    def update_profile(self, user_id):
         for profile in self.profiles:
             if profile.user_id == user_id:
                 profile.status = False

@@ -32,16 +32,26 @@ class Usecase:
   repository: Repository
   
   def __init__(self):
-    self.repository = Repository(profile_repo=True)
+    self.repository = Repository(profile_repo=True, auth_repo=True)
     self.profile_repo = self.repository.profile_repo
+    self.auth_repo = self.repository.auth_repo
   
-  def execute(self, requester_user: AuthAuthorizerDTO):
-    profile_exists = self.profile_repo.get_profile_by_id(requester_user.user_id)
+  def execute(self, user_id: str, email: str):
+    profile = self.profile_repo.get_profile_by_id(user_id)
     
-    if not profile_exists:
+    if not profile:
       raise NoItemsFound("perfil não encontrado")
     
-    profile = self.profile_repo.deactivate_profile(requester_user.user_id)
+    if profile.status == False:
+      raise NoItemsFound("perfil desativado")
+    
+    self.auth_repo.disable_user(email)
+    
+    profile.status = False
+    
+    profile = self.profile_repo.update_profile(
+      new_profile=profile
+    )
     
     dict_response = {
       "profile": profile.to_dict(),

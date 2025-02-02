@@ -22,53 +22,25 @@ class Controller:
       user_id = requester_user.user_id
       role = requester_user.role
       entity_id = request.data.get("entity_id")
-      game_data_id = request.data.get("game_data_id")
-      affiliations = request.data.get("affiliations")
-      wallet_id = request.data.get("wallet_id")
-      status = request.data.get("status")
       
       if not user_id:
         raise MissingParameters("user_id")
       if not role:
         raise MissingParameters("role")
-      if not entity_id:
+      
+      if role not in ROLE._member_names_:
+        raise EntityError('Cargo inválido')
+      
+      role = ROLE[role]
+
+      if (role == ROLE.OPERADOR) and (entity_id is None):
         raise MissingParameters("entity_id")
-      if not game_data_id:
-        raise MissingParameters("game_data_id")
-      if not affiliations:
-        raise MissingParameters("affiliations")
-      if not wallet_id:
-        raise MissingParameters("wallet_id")
       
-      if status and not isinstance(status, str):
-        raise WrongTypeParametersError("status", "str", type(status))
-      
-      if role not in ["AFILIADO", "SUBAFILIADO", "INFLUENCER", "EMBAIXADOR", "OPERADOR", "ADMIN"]:
-        raise ValueError('Cargo inválido')
-      
-      if type(user_id) != str:
-        raise WrongTypeParametersError("user_id", "str", type(user_id))
-      
-      if type(entity_id) != str:
-        raise WrongTypeParametersError("entity_id", "str", type(entity_id))
-      
-      if type(game_data_id) != str:
-        raise WrongTypeParametersError("game_data_id", "str", type(game_data_id))
-      
-      if affiliations and not isinstance(affiliations, list):
-        raise WrongTypeParametersError("affiliations", "list", type(affiliations))
-      
-      for affiliation in affiliations:
-        if not isinstance(affiliation, Affiliation):
-          raise WrongTypeParametersError("affiliation", "Affiliation", type(affiliation))
-      
-      if type(wallet_id) != str:
-        raise WrongTypeParametersError("wallet_id", "str", type(wallet_id))
-      
-      if status and status not in ["ACTIVE", "INACTIVE"]:
-        raise ValueError("Status deve ser 'ACTIVE' ou 'INACTIVE'")
-      
-      response = Usecase().execute(user_id, entity_id, game_data_id, affiliations, wallet_id, status, role)
+      response = Usecase().execute(
+        user_id=user_id,
+        role=role,
+        entity_id=entity_id
+      )
       
       return Created(body=response)
     
@@ -90,12 +62,23 @@ class Usecase:
     self.repository = Repository(profile_repo=True)
     self.profile_repo = self.repository.profile_repo
     
-  def execute(self, user_id: str, entity_id: str, game_data_id: str, affiliations: List[Affiliation], wallet_id: str, status: bool, role: str) -> dict:
+  def execute(self, user_id: str, role: ROLE, entity_id: str = None) -> dict:
     profile_exists = self.profile_repo.get_profile_by_user_id(user_id)
+    
     if profile_exists:
-      raise DuplicatedItem("perfil já existente")
-    profile = Profile(user_id, entity_id, game_data_id, affiliations, wallet_id, status, ROLE[role], datetime.now().timestamp(), datetime.now().timestamp())
-    self.profile_repo.create_profile(profile)
+      raise DuplicatedItem("perfil")
+    
+    profile = Profile(
+      user_id=user_id,
+      role=role,
+      entity_id=entity_id,
+      status=True,
+      created_at=int(datetime.now().timestamp()),
+      updated_at=int(datetime.now().timestamp())
+    )
+    
+    profile = self.profile_repo.create_profile(profile=profile)
+
     return {
       "profile": profile.to_dict(), 
       "message": "Perfil criado com sucesso"

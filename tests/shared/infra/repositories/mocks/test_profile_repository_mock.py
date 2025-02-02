@@ -42,7 +42,7 @@ class Test_ProfileRepositoryMock:
   def test_deactivate_profile(self):
     repo = ProfileRepositoryMock()
     
-    profile = repo.deactivate_profile("00000000-0000-0000-0000-000000000000")
+    profile = repo.update_profile("00000000-0000-0000-0000-000000000000")
     
     assert profile.user_id == "00000000-0000-0000-0000-000000000000"
     assert profile.game_data_id == "00000000-0000-0000-0000-000000000000"

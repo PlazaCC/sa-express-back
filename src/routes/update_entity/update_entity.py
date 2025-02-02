@@ -1,5 +1,4 @@
 from http.client import OK
-import time
 from src.shared.domain.entities.entity import Banner, Entity
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
@@ -37,8 +36,6 @@ class Usecase:
         if description is not None:
             entity.description = description
 
-        entity.updated_at = int(round(time.time() * 1000))
-
         entity_updated = self.entity_repo.update_entity(entity)
 
         return entity_updated.to_dict()
@@ -46,7 +43,7 @@ class Usecase:
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
-        try:         
+        try:
             if request.data.get('requester_user') is None:
                 raise MissingParameters('requester_user')
             

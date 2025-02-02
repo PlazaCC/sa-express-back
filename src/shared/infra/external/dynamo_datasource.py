@@ -21,7 +21,11 @@ class DynamoDatasource:
                 "AllEntitiesMetadata": {
                     "partition_key": "GSI#ENTITY",
                     "sort_key": "created_at",
-                }
+                },
+                "EntityGetAllAfiliations": {
+                    "partition_key": "GSI#AFFILIATION#entityId",
+                    "sort_key": "deal_id",
+                },
             }
         }
 
