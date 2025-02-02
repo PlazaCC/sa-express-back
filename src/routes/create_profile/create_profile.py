@@ -49,7 +49,7 @@ class Controller:
     except WrongTypeParametersError as error:
       return BadRequest(error.message)
     except EntityError as error:
-      return BadRequest(error.args[0])
+      return BadRequest(error.message)
     except ValueError as error:
       return BadRequest(error.args[0])
     except Exception as error:
