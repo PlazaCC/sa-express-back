@@ -37,16 +37,9 @@ class Usecase:
         self.repository = Repository(profile_repo=True)
         self.affiliation_repo = self.repository.profile_repo
         
-  def execute(self, requester_user: AuthAuthorizerDTO):
-    user_id = requester_user.user_id
-    
-    affiliations = self.affiliation_repo.get_all_my_affiliations(user_id)
-    
-    return {
-      "affiliations": [affiliation.to_dict() for affiliation in affiliations],
-      "message": "Afiliações encontradas com sucesso"
-    }
-  
+  def execute(self, user_id: str):    
+    return self.affiliation_repo.get_all_my_affiliations(user_id)
+      
 def function_handler(event, context):
     http_request = LambdaHttpRequest(data=event)
     http_request.data['requester_user'] = event.get('requestContext', {}).get('authorizer', {}).get('claims', None)

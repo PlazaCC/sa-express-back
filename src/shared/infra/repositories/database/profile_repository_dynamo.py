@@ -70,7 +70,7 @@ class ProfileRepositoryDynamo(IProfileRepository):
         self.dynamo.put_item(item=item)
         return affiliation
         
-    def get_all_my_affiliations(self, user_id: str, limit: int = 10, last_evaluated_key: str = None):
+    def get_all_my_affiliations(self, user_id: str, limit: int = 10, last_evaluated_key: str = None) -> dict:
         resp = self.dynamo.query(
             partition_key=self.profile_partition_key_format(user_id),
             sort_key_prefix="AFFILIATION#",

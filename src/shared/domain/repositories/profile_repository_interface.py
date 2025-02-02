@@ -27,7 +27,7 @@ class IProfileRepository(ABC):
         pass
     
     @abstractmethod
-    def get_all_my_affiliations(self, user_id: str) -> List[Affiliation]:
+    def get_all_my_affiliations(self, user_id: str) -> dict:
         pass
 
   
