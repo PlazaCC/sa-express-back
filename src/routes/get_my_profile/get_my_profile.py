@@ -10,11 +10,13 @@ class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
-            if request.data.get('requester_user') is None:
-                raise MissingParameters('requester_user')
+            # if request.data.get('requester_user') is None:
+            #     raise MissingParameters('requester_user')
             
             requester_user = AuthAuthorizerDTO(**request.data.get('requester_user'))
-            response = Usecase().execute(requester_user)
+            response = Usecase().execute(
+                user_id=requester_user.user_id
+            )
             return OK(body=response)
             
         except MissingParameters as error:
@@ -37,8 +39,8 @@ class Usecase:
         self.repository = Repository(profile_repo=True)
         self.profile_repo = self.repository.profile_repo
         
-    def execute(self, requester_user: AuthAuthorizerDTO) -> dict:
-        user =  self.profile_repo.get_profile_by_id(requester_user.user_id)
+    def execute(self, user_id: str) -> dict:
+        user = self.profile_repo.get_profile_by_id(user_id)
         return user.to_dict()
     
 def function_handler(event, context):
