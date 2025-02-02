@@ -1,7 +1,6 @@
 from typing import List
 from src.shared.domain.entities.profile import Profile
 from src.shared.domain.entities.affiliation import Affiliation
-from src.shared.domain.enums.profile_status_enum import PROFILE_STATUS
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
 from src.shared.domain.entities.affiliation import Affiliation

@@ -1,7 +1,6 @@
 from typing import List
 from src.shared.domain.entities.affiliation import Affiliation
 from src.shared.domain.entities.profile import Profile
-from src.shared.domain.enums.profile_status_enum import PROFILE_STATUS
 from src.shared.domain.enums.role_enum import ROLE
 from src.shared.helpers.errors.errors import DuplicatedItem, EntityError, MissingParameters, WrongTypeParametersError
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
@@ -91,11 +90,11 @@ class Usecase:
     self.repository = Repository(profile_repo=True)
     self.profile_repo = self.repository.profile_repo
     
-  def execute(self, user_id: str, entity_id: str, game_data_id: str, affiliations: List[Affiliation], wallet_id: str, status: str, role: str) -> dict:
+  def execute(self, user_id: str, entity_id: str, game_data_id: str, affiliations: List[Affiliation], wallet_id: str, status: bool, role: str) -> dict:
     profile_exists = self.profile_repo.get_profile_by_user_id(user_id)
     if profile_exists:
       raise DuplicatedItem("perfil já existente")
-    profile = Profile(user_id, entity_id, game_data_id, affiliations, wallet_id, PROFILE_STATUS[status], ROLE[role], datetime.now().timestamp(), datetime.now().timestamp())
+    profile = Profile(user_id, entity_id, game_data_id, affiliations, wallet_id, status, ROLE[role], datetime.now().timestamp(), datetime.now().timestamp())
     self.profile_repo.create_profile(profile)
     return {
       "profile": profile.to_dict(), 
