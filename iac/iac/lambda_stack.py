@@ -61,8 +61,24 @@ class LambdaStack(Construct):
             # authorizer=authorizer
         )
 
+        self.create_profile = self.create_lambda_api_gateway_integration(
+            module_name="create_profile",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            # authorizer=authorizer
+        )
+
         self.create_user = self.create_lambda_api_gateway_integration(
             module_name="create_user",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            # authorizer=authorizer
+        )
+
+        self.deactivate_profile = self.create_lambda_api_gateway_integration(
+            module_name="deactivate_profile",
             method="POST",
             api_resource=api_gateway_resource,
             environment_variables=environment_variables,
@@ -101,6 +117,14 @@ class LambdaStack(Construct):
             # authorizer=authorizer
         )
 
+        self.get_my_profile = self.create_lambda_api_gateway_integration(
+            module_name="get_my_profile",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            # authorizer=authorizer
+        )
+
         self.update_deal_status = self.create_lambda_api_gateway_integration(
             module_name="update_deal_status",
             method="PUT",
@@ -120,7 +144,8 @@ class LambdaStack(Construct):
         self.functions_that_need_cognito_permissions = [
             self.adm_update_user,
             self.create_user,
-            self.get_all_users
+            self.get_all_users,
+            self.deactivate_profile
         ]
 
         self.functions_that_need_dynamo_permissions = [
@@ -130,5 +155,7 @@ class LambdaStack(Construct):
             self.get_entity,
             self.get_entity_actives_deals,
             self.update_deal_status,
-            self.update_entity
+            self.update_entity,
+            self.create_profile,
+            self.deactivate_profile
         ]

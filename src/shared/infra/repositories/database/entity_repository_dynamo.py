@@ -1,4 +1,5 @@
 from typing import List
+import time
 from src.shared.domain.entities.deal import Deal
 from src.shared.domain.entities.entity import Entity
 from src.shared.domain.repositories.entity_repository_interface import IEntityRepository
@@ -42,6 +43,7 @@ class EntityRepositoryDynamo(IEntityRepository):
         return entity
     
     def update_entity(self, new_entity: Entity) -> Entity:
+        new_entity.updated_at = int(round(time.time() * 1000))
         item = new_entity.to_dict()
         item["PK"] = self.entity_partition_key_format(new_entity.entity_id)
         item["SK"] = self.entity_metadata_sort_key_format()

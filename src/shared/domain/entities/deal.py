@@ -9,7 +9,7 @@ class Deal(BaseModel):
     baseline: float = Field(..., ge=0, description="Valor base (deve ser maior ou igual a 0)")
     cpa: float = Field(..., ge=0, description="Custo por aquisição (deve ser maior ou igual a 0)")
     rev_share: float = Field(..., ge=0, le=1, description="Participação na receita (deve estar entre 0 e 1)")
-    conditions: List[str] = Field(default=[], min_items=0, description="Lista de condições")
+    conditions: List[str] = Field(default=[], min_length=0, description="Lista de condições")
     deal_status: DEAL_STATUS = Field(default=DEAL_STATUS.ACTIVATED, description="Status do negócio")
     created_at: int = Field(..., gt=0, description="Timestamp de criação (deve ser um número positivo)")
     updated_at: int = Field(..., gt=0, description="Timestamp de atualização (deve ser um número positivo)")
