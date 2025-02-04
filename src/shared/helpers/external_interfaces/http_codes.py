@@ -37,6 +37,9 @@ class Conflict(HttpResponse):
     def __init__(self, body: Any) -> None:
         super().__init__(HttpStatusCodeEnum.CONFLICT.value, body)
 
+class Unauthorized(HttpResponse):
+    def __init__(self, body: Any) -> None:
+        super().__init__(HttpStatusCodeEnum.UNAUTHORIZED.value, body)
 
 class RedirectResponse(HttpResponse):
     def __init__(self, body: dict) -> None:

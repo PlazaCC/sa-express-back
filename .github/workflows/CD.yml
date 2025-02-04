@@ -1,0 +1,62 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - dev
+      - homolog
+      - prod
+
+  workflow_dispatch:
+
+jobs:
+  DeployToAWS:
+    environment:
+      name: ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GithubActionsRole
+          role-session-name: github-action
+
+      - name: Setting stage and stack name
+        run: |
+          echo "STAGE=${{ github.ref_name }}" 
+          echo "STACK_NAME=SAExpressStack${{github.ref_name}}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Installing Dependencies
+        run: |
+          npm install -g aws-cdk
+          cd iac
+          pip install -r requirements.txt
+
+      - name: DeployWithCDK
+        run: |
+          cd iac
+          cdk synth
+          cdk bootstrap
+          cdk deploy "${{env.STACK_NAME}}" --require-approval never
+
+        env:
+          STACK_NAME: ${{ env.STACK_NAME }}
+          GITHUB_REF_NAME: ${{ github.ref }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          USER_POOL_ARN: ${{ secrets.USER_POOL_ARN }}
+          USER_POOL_NAME: ${{ secrets.USER_POOL_NAME }}
+          USER_POOL_ID: ${{ secrets.USER_POOL_ID }}
+          APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}

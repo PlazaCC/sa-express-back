@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class BaseError(Exception):
     def __init__(self, message: str):
         self.__message: str = message
@@ -14,6 +17,10 @@ class EntityError(BaseError):
 class MissingParameters(BaseError):
     def __init__(self, message: str):
         super().__init__(f'Parâmetro ausente: {message}')
+        
+class WrongTypeParametersError(BaseError):
+    def __init__(self, parameter: str, expected_type: str, received_type: Any):
+        super().__init__(f'Tipo de parâmetro inválido: {parameter} esperado {expected_type}, recebido {received_type}')
 
 class NoItemsFound(BaseError):
     def __init__(self, message: str):
@@ -30,3 +37,7 @@ class ForbiddenAction(BaseError):
 class DatabaseException(BaseError):
     def __init__(self, message: str):
         super().__init__(f'Erro no banco de dados: {message}')
+
+class InvalidTokenError(BaseError):
+    def __init__(self, message: str):
+        super().__init__(f'Token inválido: {message}')
