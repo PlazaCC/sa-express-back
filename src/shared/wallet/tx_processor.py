@@ -1,7 +1,7 @@
+import os
 from urllib import parse
 from typing import Awaitable
 from collections.abc import Callable
-from src.shared.environments import Environments
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
@@ -134,7 +134,7 @@ class TXProcessor:
         except:
             return None
         
-        if 'WTK' not in qs or qs['WTK'] != Environments.paygate_webhook_token:
+        if 'WTK' not in qs or qs['WTK'] != os.environ.get('PAYGATE_WEBHOOK_TOKEN'):
             return None
         
         if 'TX' not in qs or TX.invalid_tx_id(qs['TX']):

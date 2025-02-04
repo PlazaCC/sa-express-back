@@ -1,4 +1,4 @@
-from src.shared.environments import Environments
+import os
 
 from src.shared.wallet.enums.paygate import PAYGATE
 from src.shared.wallet.decimal import Decimal
@@ -10,9 +10,7 @@ class WalletPayGateMock(IWalletPayGate):
 
     @staticmethod
     def get_paygate_ref_header(tx_id: str, nonce: str):
-        webhook_token = Environments.paygate_webhook_token
-
-        return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
+        return f'WTK={os.environ.get('PAYGATE_WEBHOOK_TOKEN')}&TX={tx_id}&NC={nonce}'
 
     def __init__(self):
         self.pending_payments = []

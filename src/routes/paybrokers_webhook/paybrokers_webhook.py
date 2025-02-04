@@ -1,8 +1,7 @@
+import os
 import json
 import hmac
 import hashlib
-
-from src.shared.environments import Environments
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
@@ -107,7 +106,7 @@ class Usecase:
         
         message = sig_params['Nonce'] + ':' + sig_params['TS'] + ':' + json.dumps(webhook_body, separators=(',', ':'))
         
-        key = Environments.paybrokers_webhook_key.encode('utf8')
+        key = os.environ.get('PAYBROKERS_WEBHOOK_KEY').encode('utf8')
         hash = hmac.new(key, message.encode(), hashlib.sha256)
 
         generated_sig = hash.hexdigest().upper()

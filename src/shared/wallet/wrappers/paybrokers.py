@@ -1,7 +1,6 @@
+import os
 import json
 import requests
-
-from src.shared.environments import Environments
 
 from src.shared.wallet.enums.paygate import PAYGATE
 from src.shared.wallet.decimal import Decimal
@@ -13,13 +12,11 @@ class Paybrokers(IWalletPayGate):
 
     @staticmethod
     def get_paygate_ref_header(tx_id: str, nonce: str):
-        webhook_token = Environments.paygate_webhook_token
-
-        return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
+        return f'WTK={os.environ.get('PAYGATE_WEBHOOK_TOKEN')}&TX={tx_id}&NC={nonce}'
     
     def __init__(self):
-        self.base_url = Environments.paybrokers_base_url
-        self.auth_token = Environments.paybrokers_auth_token
+        self.base_url = os.environ.get('PAYBROKERS_BASE_URL')
+        self.auth_token = os.environ.get('PAYBROKERS_AUTH_TOKEN')
     
     ### PIX ###
     async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal, \
