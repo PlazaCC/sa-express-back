@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
@@ -61,7 +61,7 @@ class Vault(BaseModel):
         return { 'balance': '0', 'balance_locked': '0', 'locked': False }
 
     @staticmethod
-    def from_user(user: User | UserApiGatewayDTO, config: dict = default_config()) -> 'Vault':
+    def from_user(user: User | AuthAuthorizerDTO, config: dict = default_config()) -> 'Vault':
         return Vault(
             type=VAULT_TYPE.USER,
             user_id=int(user.user_id),

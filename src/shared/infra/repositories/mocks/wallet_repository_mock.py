@@ -83,20 +83,22 @@ class WalletRepositoryMock(IWalletRepository):
 
         for i in range(num_users):
             name = 'user-mock-' + str(i)
+            email = 'user_mock_' + str(i) + '@gmail.com'
 
             role = random.choice(role_list)
             user_status = random.choice(user_status_list)
 
             user = User.from_dict_static({
-                "user_id": i,
-                "name": name,
-                "email": i,
-                "role": role,
-                "user_status": user_status,
-                "created_at": str(now.timestamp()),
-                "updated_at": str(now.timestamp()),
-                "email_verified": True,
-                "enabled": True
+                'user_id': i,
+                'name': name,
+                'email': email,
+                'role': role,
+                'user_status': user_status,
+                'created_at': str(int(now.timestamp())),
+                'updated_at': str(int(now.timestamp())),
+                'email_verified': True,
+                'enabled': True,
+                'phone': '51000000000'
             })
 
             users.append(user.to_dict())

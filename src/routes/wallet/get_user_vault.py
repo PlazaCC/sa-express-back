@@ -1,5 +1,5 @@
 from src.shared.infra.repositories.repository import Repository
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
@@ -12,7 +12,7 @@ class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
-            requester_user = UserApiGatewayDTO.from_api_gateway(request.data.get('requester_user'))
+            requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
             
             response = Usecase().execute(requester_user)
             
@@ -37,7 +37,7 @@ class Usecase:
             repository=self.wallet_repo
         )
 
-    def execute(self, requester_user: UserApiGatewayDTO) -> dict:
+    def execute(self, requester_user: AuthAuthorizerDTO) -> dict:
         vault = self.vault_proc.create_if_not_exists(requester_user)
 
         return {

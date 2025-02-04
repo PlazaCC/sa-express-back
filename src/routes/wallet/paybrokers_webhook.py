@@ -2,7 +2,7 @@ import json
 import hmac
 import hashlib
 
-from src.environments import Environments
+from src.shared.environments import Environments
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository

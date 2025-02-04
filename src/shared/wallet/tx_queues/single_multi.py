@@ -2,7 +2,7 @@ from typing import Any
 
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.wallet.tx_queues.base import TXBaseQueue
 from src.shared.wallet.tx_results.push import TXPushResult
@@ -17,7 +17,7 @@ class TXServerMultiQueue(TXBaseQueue):
     def vault_proc(self):
         pass
 
-    async def push_tx(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
+    async def push_tx(self, signer: User | AuthAuthorizerDTO, tx: TX) -> TXPushResult:
         pass
 
     async def pop_tx(self, tx: TX, error: str | None = None) -> TXPopResult:

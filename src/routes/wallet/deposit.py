@@ -1,6 +1,6 @@
-from src.environments import STAGE, Environments
+from src.shared.environments import STAGE, Environments
 from src.shared.infra.repositories.repository import Repository
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
@@ -21,7 +21,7 @@ class Controller:
     @staticmethod
     async def execute(request: IRequest) -> IResponse:
         try:
-            requester_user = UserApiGatewayDTO.from_api_gateway(request.data.get('requester_user'))
+            requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
 
             usecase = Usecase()
             
@@ -73,10 +73,10 @@ class Usecase:
             )
         )
 
-    def get_user_vault(self, requester_user: UserApiGatewayDTO) -> Vault | None:
+    def get_user_vault(self, requester_user: AuthAuthorizerDTO) -> Vault | None:
         return self.tx_proc.vault_proc.get_by_user(requester_user)
     
-    async def execute(self, requester_user: UserApiGatewayDTO, user_vault: Vault, amount: str) -> dict:
+    async def execute(self, requester_user: AuthAuthorizerDTO, user_vault: Vault, amount: str) -> dict:
         deposit_tx = create_deposit_tx({ 'to_vault': user_vault, 'amount': amount })
 
         result = await self.tx_proc.push_tx(requester_user, deposit_tx)

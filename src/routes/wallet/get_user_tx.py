@@ -1,6 +1,6 @@
 from src.shared.domain.entities.tx import TX
 from src.shared.infra.repositories.repository import Repository
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
@@ -11,7 +11,7 @@ class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
         try:
-            requester_user = UserApiGatewayDTO.from_api_gateway(request.data.get('requester_user'))
+            requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
 
             if 'tx_id' not in request.data:
                 raise MissingParameters('tx_id')
@@ -40,7 +40,7 @@ class Usecase:
 
         self.wallet_repo = self.repository.wallet_repo
 
-    def execute(self, requester_user: UserApiGatewayDTO, tx_id: str) -> dict:
+    def execute(self, requester_user: AuthAuthorizerDTO, tx_id: str) -> dict:
         rep_tx = self.wallet_repo.get_transaction(tx_id)
 
         if rep_tx is None:

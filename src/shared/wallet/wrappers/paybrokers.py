@@ -1,7 +1,7 @@
 import json
 import requests
 
-from src.environments import Environments
+from src.shared.environments import Environments
 
 from src.shared.wallet.enums.paygate import PAYGATE
 from src.shared.wallet.decimal import Decimal

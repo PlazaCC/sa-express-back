@@ -1,13 +1,13 @@
 from urllib import parse
 from typing import Awaitable
 from collections.abc import Callable
-from src.environments import Environments
+from src.shared.environments import Environments
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 
@@ -103,7 +103,7 @@ class TXProcessor:
 
         return None
     
-    def validate_signer_access(self, signer: User | UserApiGatewayDTO, tx: TX) -> str | None:
+    def validate_signer_access(self, signer: User | AuthAuthorizerDTO, tx: TX) -> str | None:
         signer_access_error = tx.instruction.validate_signer_access(signer)
 
         if signer_access_error is not None:
@@ -154,7 +154,7 @@ class TXProcessor:
         return rep_tx
     
     ### SIGN METHODS ###
-    async def sign(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXSignResult:
+    async def sign(self, signer: User | AuthAuthorizerDTO, tx: TX) -> TXSignResult:
         fields_error = self.validate_tx_fields_before_sign(tx)
         
         if fields_error is not None:
@@ -322,10 +322,10 @@ class TXProcessor:
         return tx.commit_result
     
     ### QUEUE METHODS ###
-    async def push_tx(self, signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
+    async def push_tx(self, signer: User | AuthAuthorizerDTO, tx: TX) -> TXPushResult:
         return await self.tx_queue.push_tx(signer, tx)
     
-    async def push_tx_with_callback(self, callback: Callable[[], Awaitable[TXPushResult]], signer: User | UserApiGatewayDTO, tx: TX) -> TXPushResult:
+    async def push_tx_with_callback(self, callback: Callable[[], Awaitable[TXPushResult]], signer: User | AuthAuthorizerDTO, tx: TX) -> TXPushResult:
         return await self.tx_queue.push_tx(callback, signer, tx)
     
     async def pop_tx_with_callback(self, callback: Callable[[], Awaitable[TXPopResult]], tx: TX, error: str | None = None) -> TXPopResult:

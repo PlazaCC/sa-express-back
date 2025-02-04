@@ -2,7 +2,7 @@ from src.shared.domain.enums.role_enum import ROLE
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
-from src.shared.infra.repositories.dtos.user_api_gateway_dto import UserApiGatewayDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.wallet.decimal import Decimal, quantize
 from src.shared.wallet.enums.tx_instruction_type import TX_INSTRUCTION_TYPE
@@ -64,7 +64,7 @@ class TXTransferInstruction(TXBaseInstruction):
         
         return None
     
-    def validate_signer_access(self, signer: User | UserApiGatewayDTO) -> str | None:
+    def validate_signer_access(self, signer: User | AuthAuthorizerDTO) -> str | None:
         from_vault = self.from_vault
 
         if from_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -75,7 +75,7 @@ class TXTransferInstruction(TXBaseInstruction):
 
         return f'Validação de assinante ainda não foi implementada para o tipo de vault "{from_vault.type.value}"'
     
-    def validate_signer_access_from_server_unlimited(self, signer: User | UserApiGatewayDTO) -> str | None:
+    def validate_signer_access_from_server_unlimited(self, signer: User | AuthAuthorizerDTO) -> str | None:
         to_vault = self.to_vault
 
         if to_vault.type == VAULT_TYPE.SERVER_UNLIMITED:
@@ -89,7 +89,7 @@ class TXTransferInstruction(TXBaseInstruction):
         
         return None
 
-    def validate_signer_access_from_user(self, signer: User | UserApiGatewayDTO) -> str | None:
+    def validate_signer_access_from_user(self, signer: User | AuthAuthorizerDTO) -> str | None:
         if signer.role != ROLE.ADMIN:
             if signer.user_id != self.from_vault.user_id:
                 return 'Não é permitido transferir saldo de terceiros'
