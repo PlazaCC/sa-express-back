@@ -134,7 +134,7 @@ class Usecase:
 
         return {}
         
-async def function_handler(event, context) -> LambdaHttpResponse:
+async def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
     
     response = await Controller.execute(http_request)

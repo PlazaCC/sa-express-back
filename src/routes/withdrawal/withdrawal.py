@@ -89,7 +89,7 @@ class Usecase:
             'result': result.to_dict()
         }
         
-async def function_handler(event, context) -> LambdaHttpResponse:
+async def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
 
     http_request.data['requester_user'] = event.get('requestContext', {}) \

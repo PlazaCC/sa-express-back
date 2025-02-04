@@ -51,7 +51,7 @@ class Usecase:
 
         return {}
 
-def function_handler(event, context) -> LambdaHttpResponse:
+def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
 
     http_request.data['requester_user'] = event.get('requestContext', {}) \
