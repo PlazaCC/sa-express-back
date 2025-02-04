@@ -1,6 +1,7 @@
 from typing import List
 
 from src.shared.domain.enums.role_enum import ROLE
+from src.shared.domain.entities.user import User
 
 class AuthAuthorizerDTO:
     user_id: str
