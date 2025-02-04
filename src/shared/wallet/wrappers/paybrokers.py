@@ -19,7 +19,7 @@ class Paybrokers(IWalletPayGate):
         self.auth_token = os.environ.get('PAYBROKERS_AUTH_TOKEN')
     
     def get_webhook_url(self):
-        return f'{os.environ.get('PAYBROKERS_WEBHOOK_BASE_URL')}/mss-saexpress/paybrokers_webhook'
+        return f'{os.environ.get('API_BASE_URL')}/mss-saexpress/paybrokers_webhook'
     
     ### PIX ###
     async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal, \

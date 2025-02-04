@@ -8,6 +8,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 from .dynamo_stack import DynamoStack
+from .elasticache_stack import ElastiCacheStack
 from .lambda_stack import LambdaStack
 from aws_cdk.aws_apigateway import RestApi, Cors, CognitoUserPoolsAuthorizer
 
@@ -25,6 +26,7 @@ class IacStack(Stack):
 
 
         self.dynamo_stack = DynamoStack(self)
+        self.elasticache_stack = ElastiCacheStack(self)
 
         self.cognito_auth = CognitoUserPoolsAuthorizer(self, f"saexpress_cognito_auth_{self.github_ref_name}",
                                                        cognito_user_pools=[aws_cognito.UserPool.from_user_pool_arn(
@@ -51,9 +53,9 @@ class IacStack(Stack):
             "APP_CLIENT_ID": self.app_client_id,
             "DYNAMO_TABLE_NAME": self.dynamo_stack.dynamo_table.table_name,
             "BUCKET_NAME": os.environ.get("BUCKET_NAME"),
+            "API_BASE_URL": os.environ.get("API_BASE_URL"),
             "PAYGATE_WEBHOOK_TOKEN": os.environ.get("PAYGATE_WEBHOOK_TOKEN"),
             "PAYBROKERS_BASE_URL": os.environ.get("PAYBROKERS_BASE_URL"),
-            "PAYBROKERS_WEBHOOK_BASE_URL": os.environ.get("PAYBROKERS_WEBHOOK_BASE_URL"),
             "PAYBROKERS_AUTH_TOKEN": os.environ.get("PAYBROKERS_AUTH_TOKEN"),
             "PAYBROKERS_WEBHOOK_KEY": os.environ.get("PAYBROKERS_WEBHOOK_KEY")
         }
