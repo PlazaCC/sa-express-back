@@ -1,7 +1,10 @@
 import time
 from typing import List
 from src.shared.domain.entities.affiliation import Affiliation
+from src.shared.domain.entities.deal_proposal import DealProposal, Proposal
 from src.shared.domain.entities.profile import Profile
+from src.shared.domain.enums.proposal_status_enum import PROPOSAL_STATUS
+from src.shared.domain.enums.proposal_type_enum import PROPOSAL_TYPE
 from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
 from src.shared.environments import Environments
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
@@ -23,6 +26,18 @@ class ProfileRepositoryDynamo(IProfileRepository):
     @staticmethod
     def affiliation_gsi_primary_key_format(entityId: str) -> str:
         return f'GSI#AFFILIATION#{entityId}'
+    
+    @staticmethod
+    def proposal_sort_key_format(proposal_type: PROPOSAL_TYPE, status: PROPOSAL_STATUS) -> str:
+        return f'PROPOSAL#{proposal_type.value}#{status.value}'
+    
+    @staticmethod
+    def proposal_gsi_receiver_primary_key_format(proposal_type: PROPOSAL_TYPE, receiver_id: str) -> str:
+        return f'RECEIVER#{proposal_type.value}#{receiver_id}'
+    
+    @staticmethod
+    def proposal_gsi_receiver_sort_key_format(status: PROPOSAL_STATUS, created_at: int) -> str:
+        return f'{status.value}#{created_at}'
     
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
@@ -82,3 +97,24 @@ class ProfileRepositoryDynamo(IProfileRepository):
             "affiliations": [Affiliation.from_dict(item) for item in resp.get("items", [])],
             "last_evaluated_key": resp.get("last_evaluated_key")
         }
+    
+    def create_proposal(self, proposal: Proposal) -> Proposal:
+        item = proposal.to_dict()
+        item["PK"] = self.profile_partition_key_format(proposal.user_id)
+        item["SK"] = self.proposal_sort_key_format(proposal.proposal_type, proposal.status)
+        if type(proposal) == DealProposal:
+            item["GSI#RECEIVER"] = self.proposal_gsi_receiver_primary_key_format(proposal.proposal_type, proposal.entity_id)
+        else:
+            raise Exception("Invalid proposal type")
+        item["STATUS#created_at"] = self.proposal_gsi_receiver_sort_key_format(proposal.status, proposal.created_at)
+        
+        self.dynamo.put_item(item=item)
+        return proposal
+    
+    def get_my_proposal_by_type(self, user_id: str, proposal_type: str, status: PROPOSAL_STATUS) -> List[Proposal]:
+        resp = self.dynamo.query(
+            partition_key=self.profile_partition_key_format(user_id),
+            sort_key_prefix=self.proposal_sort_key_format(proposal_type, status),
+        )
+        
+        return [Proposal.from_dict(item) for item in resp.get("items", [])]

@@ -26,6 +26,10 @@ class DynamoDatasource:
                     "partition_key": "GSI#AFFILIATION#entityId",
                     "sort_key": "deal_id",
                 },
+                "ProposalsReceived": {
+                    "partition_key": "GSI#RECEIVER",  # RECEIVER#<DEAL/MENTORSHIP/INFLUENCER>#<UserId/EntityId>
+                    "sort_key": "STATUS#created_at",
+                }
             }
         }
 
