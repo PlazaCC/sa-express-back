@@ -2,25 +2,10 @@ from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
+from src.shared.infra.external.key_formatters import tx_primary_key, tx_sort_key, vault_primary_key, vault_sort_key
 
 class WalletRepositoryDynamo(IWalletRepository):
     dynamo: DynamoDatasource
-    
-    @staticmethod
-    def vault_partition_key_format(vault_id_key: str) -> str:
-        return vault_id_key
-    
-    @staticmethod
-    def vault_sort_key_format(vault_id_key: str) -> str:
-        return vault_id_key
-    
-    @staticmethod
-    def tx_partition_key_format(tx_id: str) -> str:
-        return tx_id
-    
-    @staticmethod
-    def tx_sort_key_format(tx_id: str) -> str:
-        return tx_id
 
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
@@ -31,8 +16,8 @@ class WalletRepositoryDynamo(IWalletRepository):
 
         self.dynamo.put_item(
             item=vault.to_dict(),
-            partition_key=self.vault_partition_key_format(vault_id_key),
-            sort_key=self.vault_sort_key_format(vault_id_key),
+            partition_key=vault_primary_key(vault_id_key),
+            sort_key=vault_sort_key(vault_id_key),
             is_decimal=True
         )
 
@@ -42,8 +27,8 @@ class WalletRepositoryDynamo(IWalletRepository):
         vault_id_key = Vault.user_id_to_identity_key(user_id)
 
         vault = self.dynamo.get_item(
-            partition_key=self.vault_partition_key_format(vault_id_key), 
-            sort_key=self.vault_sort_key_format(vault_id_key)
+            partition_key=vault_primary_key(vault_id_key), 
+            sort_key=vault_sort_key(vault_id_key)
         )
 
         return Vault.from_dict_static(vault['Item']) if 'Item' in vault else None
@@ -54,8 +39,8 @@ class WalletRepositoryDynamo(IWalletRepository):
     ### TRANSACTIONS ###
     def get_transaction(self, tx_id: str) -> TX | None:
         tx = self.dynamo.get_item(
-            partition_key=self.tx_partition_key_format(tx_id),
-            sort_key=self.tx_sort_key_format(tx_id)
+            partition_key=tx_primary_key(tx_id),
+            sort_key=tx_sort_key(tx_id)
         )
 
         return TX.from_dict_static(tx['Item']) if 'Item' in tx else None
@@ -63,8 +48,8 @@ class WalletRepositoryDynamo(IWalletRepository):
     def upsert_tx(self, tx: TX) -> TX:
         self.dynamo.put_item(
             item=tx.to_dict(),
-            partition_key=self.tx_partition_key_format(tx.tx_id),
-            sort_key=self.tx_sort_key_format(tx.tx_id),
+            partition_key=tx_primary_key(tx.tx_id),
+            sort_key=tx_sort_key(tx.tx_id),
             is_decimal=True
         )
 

@@ -35,6 +35,16 @@ class Proposal(BaseModel, ABC):
             "updated_at": self.updated_at
         }
     
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Proposal':
+        return cls(
+            proposal_id=data.get("proposal_id"),
+            proposer_id=data.get("proposer_id"),
+            receiver_id=data.get("receiver_id"),
+            created_at=data.get("created_at"),
+            updated_at=data.get("updated_at")
+        )
+    
 class DealProposal(Proposal):    
     deal_id: str = Field(..., min_length=36, max_length=36, description="ID do negócio relacionado à proposta")
     entity_id: str = Field(..., min_length=36, max_length=36, description="ID da entidade relacionada à proposta")
@@ -55,3 +65,15 @@ class DealProposal(Proposal):
             "deal_id": self.deal_id
         })
         return data
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'DealProposal':
+        return cls(
+            proposal_id=data.get("proposal_id"),
+            proposer_id=data.get("proposer_id"),
+            receiver_id=data.get("receiver_id"),
+            deal_id=data.get("deal_id"),
+            entity_id=data.get("entity_id"),
+            created_at=data.get("created_at"),
+            updated_at=data.get("updated_at")
+        )

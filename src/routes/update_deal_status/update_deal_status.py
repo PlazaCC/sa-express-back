@@ -13,11 +13,11 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(entity_repo=True)
-        self.entity_repo = self.repository.entity_repo
+        self.repository = Repository(deal_repo=True)
+        self.deal_repo = self.repository.deal_repo
     
     def execute(self, deal_id: str, status: str) -> dict:
-        deal = self.entity_repo.get_entity_deal(deal_id)
+        deal = self.deal_repo.get_entity_deal(deal_id)
 
         if deal is None:
             raise NoItemsFound('Deal not found')
@@ -25,7 +25,7 @@ class Usecase:
         if deal.deal_status == status:
             raise EntityError('Status do deal nao pode ser o mesmo')
         
-        deal_updated = self.entity_repo.update_deal_status(deal=deal, new_status=status)
+        deal_updated = self.deal_repo.update_deal_status(deal=deal, new_status=status)
 
         return deal_updated.to_dict()
         

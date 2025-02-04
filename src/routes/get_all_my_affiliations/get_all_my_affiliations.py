@@ -1,4 +1,4 @@
-from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
+from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters, NoItemsFound
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
@@ -34,10 +34,16 @@ class Usecase:
   repository: Repository
   
   def __init__(self):
-        self.repository = Repository(profile_repo=True)
-        self.affiliation_repo = self.repository.profile_repo
+        self.repository = Repository(profile_repo=True, affiliation_repo=True)
+        self.profile_repo = self.repository.profile_repo
+        self.affiliation_repo = self.repository.affiliation_repo
         
-  def execute(self, user_id: str):    
+  def execute(self, user_id: str):
+    profile = self.profile_repo.get_profile_by_id(user_id)
+
+    if not profile:
+      raise NoItemsFound("perfil não encontrado")
+    
     return self.affiliation_repo.get_all_my_affiliations(user_id)
       
 def function_handler(event, context):

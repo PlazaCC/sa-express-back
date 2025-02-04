@@ -1,6 +1,6 @@
 
 from src.shared.domain.enums.deal_status_enum import DEAL_STATUS
-from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters
+from src.shared.helpers.errors.errors import EntityError, ForbiddenAction, MissingParameters, NoItemsFound
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, BadRequest, Forbidden, InternalServerError
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
@@ -39,11 +39,17 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(entity_repo=True)
+        self.repository = Repository(entity_repo=True, deal_repo=True)
         self.entity_repo = self.repository.entity_repo
+        self.deal_repo = self.repository.deal_repo
 
     def execute(self, entity_id: str, last_evaluated_key: str) -> dict:
-        deals = self.entity_repo.get_entity_deals(
+        entity = self.entity_repo.get_entity(entity_id=entity_id)
+
+        if entity is None:
+            raise NoItemsFound('entidade não encontrada')
+
+        deals = self.deal_repo.get_entity_deals(
             entity_id=entity_id,
             status=DEAL_STATUS.ACTIVATED.value,
             last_evaluated_key=last_evaluated_key

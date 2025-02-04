@@ -62,8 +62,9 @@ class Usecase:
     repository: Repository
 
     def __init__(self):
-        self.repository = Repository(entity_repo=True)
+        self.repository = Repository(entity_repo=True, deal_repo=True)
         self.entity_repo = self.repository.entity_repo
+        self.deal_repo = self.repository.deal_repo
 
     def execute(self, entity_id: str, baseline: str, cpa: str, rev_share: str, conditions: str) -> dict:
         entity = self.entity_repo.get_entity(entity_id)
@@ -83,7 +84,7 @@ class Usecase:
             updated_at=int(round(time.time() * 1000)),
         )
 
-        deal_created = self.entity_repo.create_deal(deal)
+        deal_created = self.deal_repo.create_deal(deal)
 
         return deal_created.to_dict()
 
