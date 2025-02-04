@@ -1,6 +1,6 @@
 import pytest
 
-from src.routes.wallet.set_pix_key import Controller
+from src.routes.set_pix_key.set_pix_key import Controller
 
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.helpers.external_interfaces.http_models import HttpRequest

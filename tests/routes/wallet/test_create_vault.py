@@ -1,6 +1,6 @@
 import pytest
 
-from src.routes.wallet.create_vault import Controller
+from src.routes.create_vault.create_vault import Controller
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 

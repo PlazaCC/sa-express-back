@@ -35,7 +35,7 @@ class Paybrokers(IWalletPayGate):
                 'orderDescription': 'SA-Deposit'
             },
             'webhook': {
-                'url': 'https://postman-echo.com/post?test=1',
+                'url': 'https://postman-echo.com/post?test=1', # TODO: utilizar rota real do webhook
                 'customHeaderName': 'X-Webhook-Reference',
                 'customHeaderValue': Paybrokers.get_paygate_ref_header(tx_id, nonce)
             }
@@ -49,9 +49,9 @@ class Paybrokers(IWalletPayGate):
             'authorization': f'Bearer {self.auth_token}'
         }
 
-        response = requests.post(url, json=payload, headers=headers, timeout=3)
-
         try:
+            response = requests.post(url, json=payload, headers=headers, timeout=3)
+
             return json.loads(response.text)
         except:
             return { 'error': { 'message': 'Paybrokers request failed' } }
@@ -71,7 +71,7 @@ class Paybrokers(IWalletPayGate):
                 'orderDescription': 'SA-Withdrawal'
             },
             'webhook': {
-                'url': 'https://postman-echo.com/post?test=1',
+                'url': 'https://postman-echo.com/post?test=1', # TODO: utilizar rota real do webhook
                 'customHeaderName': 'X-Webhook-Reference',
                 'customHeaderValue': Paybrokers.get_paygate_ref_header(tx_id, nonce)
             }
@@ -85,9 +85,9 @@ class Paybrokers(IWalletPayGate):
             'authorization': f'Bearer {self.auth_token}'
         }
 
-        response = requests.post(url, json=payload, headers=headers, timeout=3)
-
         try:
+            response = requests.post(url, json=payload, headers=headers, timeout=3)
+
             return json.loads(response.text)
         except:
             return { 'error': { 'message': 'Paybrokers request failed' } }

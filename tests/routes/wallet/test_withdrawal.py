@@ -1,6 +1,6 @@
 import pytest
 
-from src.routes.wallet.withdrawal import Controller
+from src.routes.withdrawal.withdrawal import Controller
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 

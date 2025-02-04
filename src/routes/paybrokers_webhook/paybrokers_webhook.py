@@ -114,7 +114,7 @@ class Usecase:
 
         if generated_sig != sig_params['Sign']:
             return True
-
+        
         return False
     
     async def execute(self, webhook_ref_header: str, webhook_body: dict) -> dict:

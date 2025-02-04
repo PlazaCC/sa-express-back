@@ -1,6 +1,6 @@
 import pytest
 
-from src.routes.wallet.deposit import Controller
+from src.routes.deposit.deposit import Controller
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 

@@ -141,6 +141,75 @@ class LambdaStack(Construct):
             # authorizer=authorizer
         )
 
+        ### WALLET FUNCTIONS ###
+        # GET
+        self.get_user_vault = self.create_lambda_api_gateway_integration(
+            module_name="get_user_vault",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        # TODO: extrair tx_id do query params
+        self.get_user_tx = self.create_lambda_api_gateway_integration(
+            module_name="get_user_tx",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        # POST
+        self.create_vault = self.create_lambda_api_gateway_integration(
+            module_name="create_vault",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.set_pix_key = self.create_lambda_api_gateway_integration(
+            module_name="set_pix_key",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+        
+        # TODO: implementar get_user_by_email no wallet_repo
+        self.transfer = self.create_lambda_api_gateway_integration(
+            module_name="transfer",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.deposit = self.create_lambda_api_gateway_integration(
+            module_name="deposit",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.withdrawal = self.create_lambda_api_gateway_integration(
+            module_name="withdrawal",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
+        self.paybrokers_webhook = self.create_lambda_api_gateway_integration(
+            module_name="paybrokers_webhook",
+            method="POST",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+        )
+        ### WALLET FUNCTIONS ###
+
         self.functions_that_need_cognito_permissions = [
             self.adm_update_user,
             self.create_user,
@@ -159,3 +228,32 @@ class LambdaStack(Construct):
             self.create_profile,
             self.deactivate_profile
         ]
+
+        self.functions_that_need_elasticache_permissions = []
+
+        wallet_functions_with_cognito_dynamo_perms = [
+            self.get_user_vault,
+            self.get_user_tx,
+            self.create_vault,
+            self.set_pix_key,
+            self.transfer,
+            self.deposit,
+            self.withdrawal
+        ]
+
+        wallet_functions_with_persist_perms = [
+            self.transfer,
+            self.deposit,
+            self.withdrawal,
+            self.paybrokers_webhook
+        ]
+
+        for fn in wallet_functions_with_cognito_dynamo_perms:
+            self.functions_that_need_cognito_permissions.append(fn)
+            self.functions_that_need_dynamo_permissions.append(fn)
+
+        for fn in wallet_functions_with_persist_perms:
+            if fn not in self.functions_that_need_dynamo_permissions:
+                self.functions_that_need_dynamo_permissions.apend(fn)
+
+            self.functions_that_need_elasticache_permissions.append(fn)

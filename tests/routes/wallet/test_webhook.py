@@ -1,6 +1,6 @@
 import pytest
 
-from src.routes.wallet.paybrokers_webhook import Controller as PaybrokersWebhookController
+from src.routes.paybrokers_webhook.paybrokers_webhook import Controller as PaybrokersWebhookController
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 

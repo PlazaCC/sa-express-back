@@ -1,6 +1,6 @@
 import pytest
 
-from src.routes.wallet.get_user_tx import Controller
+from src.routes.get_user_tx.get_user_tx import Controller
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
 
