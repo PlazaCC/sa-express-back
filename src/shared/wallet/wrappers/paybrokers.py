@@ -50,7 +50,7 @@ class Paybrokers(IWalletPayGate):
         }
 
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=3)
+            response = requests.post(url, json=payload, headers=headers, timeout=3) # TODO: async request
 
             return json.loads(response.text)
         except:
@@ -86,7 +86,7 @@ class Paybrokers(IWalletPayGate):
         }
 
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=3)
+            response = requests.post(url, json=payload, headers=headers, timeout=3) # TODO: async request
 
             return json.loads(response.text)
         except:
