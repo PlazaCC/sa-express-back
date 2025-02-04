@@ -10,7 +10,7 @@ class AffiliationRepositoryDynamo(IAffiliationRepository):
         self.dynamo = dynamo
 
     def get_affiliation_by_id(self, user_id) -> Affiliation:
-        affiliation = self.dynamo.get_item(partition_key=profile_primary_key(user_id), sort_key=self.affiliation_sort_key_format())
+        affiliation = self.dynamo.get_item(partition_key=profile_primary_key(user_id), sort_key=affiliation_sort_key())
     
         if "Item" not in affiliation:
             return None
