@@ -22,5 +22,6 @@ class Environments:
     dynamo_gsi_partition_key: str = os.environ.get("DYNAMO_GSI_PARTITION_KEY", "")
     paygate_webhook_token: str = os.environ.get("PAYGATE_WEBHOOK_TOKEN", "MOCK")
     paybrokers_base_url: str = os.environ.get("PAYBROKERS_BASE_URL", "https://api.sandbox.paybrokers.solutions")
+    paybrokers_webhook_url: str = os.environ.get("PAYBROKERS_WEBHOOK_BASE_URL", "http://127.0.0.1:3000")
     paybrokers_auth_token: str = os.environ.get("PAYBROKERS_AUTH_TOKEN", "MOCK")
     paybrokers_webhook_key: str = os.environ.get("PAYBROKERS_WEBHOOK_KEY", "bf8867f612a34346a57d4e1c5e98b1ecc53defe3cccc4b7b8ea72dfbcf74a349")

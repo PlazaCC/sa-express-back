@@ -53,6 +53,7 @@ class IacStack(Stack):
             "BUCKET_NAME": os.environ.get("BUCKET_NAME"),
             "PAYGATE_WEBHOOK_TOKEN": os.environ.get("PAYGATE_WEBHOOK_TOKEN"),
             "PAYBROKERS_BASE_URL": os.environ.get("PAYBROKERS_BASE_URL"),
+            "PAYBROKERS_WEBHOOK_BASE_URL": os.environ.get("PAYBROKERS_WEBHOOK_BASE_URL"),
             "PAYBROKERS_AUTH_TOKEN": os.environ.get("PAYBROKERS_AUTH_TOKEN"),
             "PAYBROKERS_WEBHOOK_KEY": os.environ.get("PAYBROKERS_WEBHOOK_KEY")
         }

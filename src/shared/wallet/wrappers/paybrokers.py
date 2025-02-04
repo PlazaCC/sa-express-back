@@ -18,6 +18,9 @@ class Paybrokers(IWalletPayGate):
         self.base_url = os.environ.get('PAYBROKERS_BASE_URL')
         self.auth_token = os.environ.get('PAYBROKERS_AUTH_TOKEN')
     
+    def get_webhook_url(self):
+        return f'{os.environ.get('PAYBROKERS_WEBHOOK_BASE_URL')}/mss-saexpress/paybrokers_webhook'
+    
     ### PIX ###
     async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal, \
         ref_id: str) -> dict:
@@ -32,7 +35,7 @@ class Paybrokers(IWalletPayGate):
                 'orderDescription': 'SA-Deposit'
             },
             'webhook': {
-                'url': 'https://postman-echo.com/post?test=1', # TODO: utilizar rota real do webhook
+                'url': self.get_webhook_url(),
                 'customHeaderName': 'X-Webhook-Reference',
                 'customHeaderValue': Paybrokers.get_paygate_ref_header(tx_id, nonce)
             }
@@ -68,7 +71,7 @@ class Paybrokers(IWalletPayGate):
                 'orderDescription': 'SA-Withdrawal'
             },
             'webhook': {
-                'url': 'https://postman-echo.com/post?test=1', # TODO: utilizar rota real do webhook
+                'url': self.get_webhook_url(),
                 'customHeaderName': 'X-Webhook-Reference',
                 'customHeaderValue': Paybrokers.get_paygate_ref_header(tx_id, nonce)
             }
