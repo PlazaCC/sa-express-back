@@ -51,6 +51,10 @@ class IacStack(Stack):
             "APP_CLIENT_ID": self.app_client_id,
             "DYNAMO_TABLE_NAME": self.dynamo_stack.dynamo_table.table_name,
             "BUCKET_NAME": os.environ.get("BUCKET_NAME"),
+            "PAYGATE_WEBHOOK_TOKEN": os.environ.get("PAYGATE_WEBHOOK_TOKEN"),
+            "PAYBROKERS_BASE_URL": os.environ.get("PAYBROKERS_BASE_URL"),
+            "PAYBROKERS_AUTH_TOKEN": os.environ.get("PAYBROKERS_AUTH_TOKEN"),
+            "PAYBROKERS_WEBHOOK_KEY": os.environ.get("PAYBROKERS_WEBHOOK_KEY")
         }
 
         api_gateway_resource = self.rest_api.root.add_resource("mss-saexpress", default_cors_preflight_options={

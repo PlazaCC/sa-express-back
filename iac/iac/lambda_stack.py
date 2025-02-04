@@ -21,7 +21,7 @@ class LambdaStack(Construct):
             layers=[self.lambda_layer],
             memory_size=512,
             environment=environment_variables,
-            timeout=Duration.seconds(15)
+            timeout=Duration.seconds(15),
         )
 
         api_resource.add_resource(module_name.replace("_", "-")).add_method(method, integration=LambdaIntegration(function), authorizer=authorizer)
@@ -254,6 +254,6 @@ class LambdaStack(Construct):
 
         for fn in wallet_functions_with_persist_perms:
             if fn not in self.functions_that_need_dynamo_permissions:
-                self.functions_that_need_dynamo_permissions.apend(fn)
+                self.functions_that_need_dynamo_permissions.append(fn)
 
             self.functions_that_need_elasticache_permissions.append(fn)
