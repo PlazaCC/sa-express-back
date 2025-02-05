@@ -65,7 +65,6 @@ class TXProcessor:
     
     ### UTILITY METHODS ###
     def persist_tx(self, tx: TX) -> None:
-        self.cache.upsert_transaction(tx)
         self.repository.upsert_transaction(tx)
         
         return None
@@ -150,7 +149,7 @@ class TXProcessor:
         
         if qs['NC'] != rep_tx.nonce:
             return None
-        
+
         return rep_tx
     
     ### SIGN METHODS ###
