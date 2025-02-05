@@ -43,6 +43,7 @@ class DealRepositoryDynamo(IDealRepository):
         )
 
         deal_data = deal.to_dict()
+        deal_data["deal_status"] = new_status
 
         deal_data["PK"] = entity_primary_key(deal.entity_id)
         deal_data["SK"] = deal_sort_key(deal.deal_id, new_status)
