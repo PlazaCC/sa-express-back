@@ -50,8 +50,6 @@ class Controller:
         except MissingParameters as error:
             return BadRequest(error.message)
         except Exception as _:
-            print('ERROR = ' + str(_))
-
             return InternalServerError('Erro interno de servidor')
         
 class Usecase:
