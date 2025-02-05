@@ -85,3 +85,14 @@ class IacStack(Stack):
         
         for f in self.lambda_stack.functions_that_need_dynamo_permissions:
             self.dynamo_stack.dynamo_table.grant_read_write_data(f)
+
+        cache_admin_policy = aws_iam.PolicyStatement(
+            effect=aws_iam.Effect.ALLOW,
+            actions=[
+                "elasticache:*"
+            ],
+            resources=[ "*" ]
+        )
+
+        for f in self.lambda_stack.functions_that_need_elasticache_permissions:
+            f.add_to_role_policy(cache_admin_policy)

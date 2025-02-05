@@ -2,11 +2,13 @@ from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 
-class WalletCacheElastic(IWalletCache):
-    elastic: dict
+from src.shared.infra.external.elasticache_datasource import ElastiCacheDatasource
 
-    def __init__(self):
-        self.elastic = {}
+class WalletCacheElastic(IWalletCache):
+    elastic: ElastiCacheDatasource
+
+    def __init__(self, elastic: ElastiCacheDatasource):
+        self.elastic = elastic
 
     ### VAULTS ###
     def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:

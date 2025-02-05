@@ -2,6 +2,7 @@ from src.shared.domain.repositories.entity_repository_interface import IEntityRe
 from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
 from src.shared.environments import STAGE, Environments
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
+from src.shared.infra.external.elasticache_datasource import ElastiCacheDatasource
 from src.shared.infra.repositories.auth.auth_repository_cognito import AuthRepositoryCognito
 from src.shared.infra.repositories.database.entity_repository_dynamo import EntityRepositoryDynamo
 from src.shared.infra.repositories.database.profile_repository_dynamo import ProfileRepositoryDynamo
@@ -66,7 +67,7 @@ class Repository:
             dynamo_table_name=Environments.dynamo_table_name,
             region=Environments.region,
         )
-        
+
         if entity_repo:
             self.entity_repo = EntityRepositoryDynamo(dynamo)
         
@@ -83,4 +84,6 @@ class Repository:
             self.wallet_repo = WalletRepositoryDynamo(dynamo)
 
         if wallet_cache:
-            self.wallet_cache = WalletCacheElastic()
+            elastic = ElastiCacheDatasource()
+            
+            self.wallet_cache = WalletCacheElastic(elastic)

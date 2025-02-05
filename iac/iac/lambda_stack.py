@@ -5,10 +5,10 @@ from aws_cdk import (
 from constructs import Construct
 from aws_cdk.aws_apigateway import Resource, LambdaIntegration, CognitoUserPoolsAuthorizer
 
-
 class LambdaStack(Construct):
     functions_that_need_cognito_permissions = []
     functions_that_need_dynamo_permissions = []
+    functions_that_need_elasticache_permissions = []
 
     def create_lambda_api_gateway_integration(self, module_name: str, method: str, api_resource: Resource,
                                               environment_variables: dict = {"STAGE": "TEST"}, authorizer=None):
@@ -21,7 +21,7 @@ class LambdaStack(Construct):
             layers=[self.lambda_layer],
             memory_size=512,
             environment=environment_variables,
-            timeout=Duration.seconds(15),
+            timeout=Duration.seconds(15)
         )
 
         api_resource.add_resource(module_name.replace("_", "-")).add_method(method, integration=LambdaIntegration(function), authorizer=authorizer)
@@ -209,6 +209,14 @@ class LambdaStack(Construct):
             environment_variables=environment_variables,
         )
         ### WALLET FUNCTIONS ###
+
+        ## DEBUG ONLY
+        self.cache_test = self.create_lambda_api_gateway_integration(
+            module_name="cache_test",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+        )
 
         self.functions_that_need_cognito_permissions = [
             self.adm_update_user,
