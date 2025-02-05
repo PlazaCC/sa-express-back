@@ -16,26 +16,20 @@ class WalletCacheMock(IWalletCache):
             self.transactions = {}
     
     ### OVERRIDE METHODS ###
+
+    ### VAULTS ###
+    def get_vault_by_user_id(self, user_id: int | str, deserialize: bool = True) -> Vault | None:
+        if user_id in self.vaults_by_user_id:
+            return Vault.from_dict_static(self.vaults_by_user_id[user_id]) if deserialize else self.vaults_by_user_id[user_id]
+
+        return None
+
     def upsert_vault(self, vault: Vault) -> Vault:
         if vault.user_id is not None:
             self.vaults_by_user_id[vault.user_id] = vault.to_dict()
 
         return vault
     
-    def get_vault_by_user_id(self, user_id: int | str, deserialize: bool = True) -> Vault | None:
-        if user_id in self.vaults_by_user_id:
-            return Vault.from_dict_static(self.vaults_by_user_id[user_id]) if deserialize else self.vaults_by_user_id[user_id]
-
-        return None
-    
-    def upsert_transaction(self, tx: TX) -> TX:
-        self.transactions[tx.tx_id] = tx.to_dict()
-
-        return None
-    
-    def get_transaction(self, tx_id: str) -> TX | None:
-        return TX.from_tx_snapshot(self.transactions[tx_id]) if tx_id in self.transactions else None
-
     def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
         cache_vaults = []
 

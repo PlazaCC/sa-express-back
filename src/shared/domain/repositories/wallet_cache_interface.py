@@ -20,12 +20,3 @@ class IWalletCache(ABC):
     @abstractmethod
     def unlock_vaults(self, vaults: list[Vault]) -> None | list[Vault]:
         pass
-
-    ### TRANSACTIONS ###
-    @abstractmethod
-    def get_transaction(self, tx_id: str) -> TX | None:
-        pass
-
-    @abstractmethod
-    def upsert_transaction(self, tx: TX) -> TX:
-        pass

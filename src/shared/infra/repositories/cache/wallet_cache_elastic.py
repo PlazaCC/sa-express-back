@@ -22,10 +22,3 @@ class WalletCacheElastic(IWalletCache):
     
     def unlock_vaults(self, vaults: list[Vault]) -> None | list[Vault]:
         pass
-
-    ### TRANSACTIONS ###
-    def get_transaction(self, tx_id: str) -> TX | None:
-        pass
-    
-    def upsert_transaction(self, tx: TX) -> TX:
-        pass
