@@ -150,7 +150,7 @@ class TXProcessor:
         
         if qs['NC'] != rep_tx.nonce:
             return None
-
+        
         return rep_tx
     
     ### SIGN METHODS ###
@@ -163,7 +163,7 @@ class TXProcessor:
             return tx.sign_result
         
         tx.user_id = signer.user_id
-        tx.logs = {}
+        tx.logs = None
         
         signer_access_error = self.validate_signer_access(signer, tx)
 
@@ -224,7 +224,7 @@ class TXProcessor:
 
             self.vault_proc.persist_vault(vault)
 
-        tx.status = TX_STATUS.COMMITED
+        tx.status = TX_STATUS.COMMITTED
         
         tx.sign_result = TXSignResult.successful()
         tx.commit_result = TXCommitResult.successful()
@@ -269,7 +269,7 @@ class TXProcessor:
         tx.commit_result = TXCommitResult.failed(error)
 
         self.persist_tx(tx)
-
+        
         return tx.commit_result
 
     async def commit_tx_confirmed(self, tx: TX) -> TXCommitResult:

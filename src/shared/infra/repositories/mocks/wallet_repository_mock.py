@@ -29,6 +29,12 @@ class WalletRepositoryMock(IWalletRepository):
     
     ### OVERRIDE METHODS ###
 
+    ### USERS ###
+    def get_user_by_email(self, email: str) -> User | None:
+        rep_user = next((u for u in self.users if u['email'] == email), None)
+
+        return User.from_dict_static(rep_user) if rep_user is not None else None
+
     ### VAULTS ###
     def create_vault(self, vault: Vault) -> Vault:
         item = vault.to_dict()
@@ -69,7 +75,7 @@ class WalletRepositoryMock(IWalletRepository):
         self.transactions.append(tx.to_dict())
 
         return tx
-    
+
     ### DEBUG-ONLY METHODS ###
     def _generate_users(self, config: dict) -> list[User]:
         num_users = config['num_users'] if 'num_users' in config else 1
@@ -108,7 +114,7 @@ class WalletRepositoryMock(IWalletRepository):
     def generate_users(self, config: dict) -> list[User]:
         users = self._generate_users(config)
 
-        if 'append' in config:
+        if 'singleton' in config:
             self.users += users
         else:
             self.users = users
@@ -125,11 +131,6 @@ class WalletRepositoryMock(IWalletRepository):
         rep_user = next((u for u in self.users if u['user_id'] == user_id), None)
 
         return User.from_dict_static(rep_user) if rep_user is not None else None
-    
-    def get_user_by_email(self, email: str) -> User | None:
-        rep_user = next((u for u in self.users if u['email'] == email), None)
-
-        return User.from_dict_static(rep_user) if rep_user is not None else None 
 
     def get_random_user(self) -> User:
         return User.from_dict_static(random.choice(self.users))

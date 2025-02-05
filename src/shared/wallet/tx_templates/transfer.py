@@ -20,7 +20,7 @@ def create_transfer_tx(build_params: dict) -> TX:
 
     return TX(
         tx_id=TX.random_id(),
-        user_id=user_id,
+        user_id=-1 if user_id is None else user_id,
         nonce=TX.random_nonce(),
         create_timestamp=now_timestamp(),
         instruction=transfer_instr,
@@ -28,5 +28,5 @@ def create_transfer_tx(build_params: dict) -> TX:
         status=TX_STATUS.NEW,
         sign_result=None,
         commit_result=None,
-        metadata={},
+        metadata={}
     )

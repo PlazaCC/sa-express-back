@@ -1,11 +1,19 @@
-from src.shared.domain.entities.tx import TX
+import boto3
+
+from src.shared.environments import Environments
+from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
+from src.shared.domain.entities.tx import TX
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
+from src.shared.infra.repositories.dtos.user_cognito_dto import UserCognitoDTO
 
 class WalletRepositoryDynamo(IWalletRepository):
     dynamo: DynamoDatasource
-    
+    client: boto3.client
+    user_pool_id: str
+    client_id: str
+
     @staticmethod
     def vault_partition_key_format(vault_id_key: str) -> str:
         return vault_id_key
@@ -24,6 +32,27 @@ class WalletRepositoryDynamo(IWalletRepository):
 
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
+
+        self.client = boto3.client('cognito-idp', region_name=Environments.region)
+        self.user_pool_id = Environments.user_pool_id
+        self.client_id = Environments.app_client_id
+
+    ### USERS ###
+    def get_user_by_email(self, email: str) -> User | None:
+        try:
+            response = self.client.admin_get_user(
+                UserPoolId=self.user_pool_id,
+                Username=email
+            )
+
+            if response['UserStatus'] == 'UNCONFIRMED':
+                return None
+
+            user = UserCognitoDTO.from_cognito(response).to_entity()
+                
+            return user
+        except self.client.exceptions.UserNotFoundException:
+            return None
 
     ### VAULTS ###
     def create_vault(self, vault: Vault) -> Vault:

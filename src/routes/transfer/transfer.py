@@ -35,7 +35,7 @@ class Controller:
                 raise MissingParameters('amount')
             
             (dst_error, dst_user_vault) = usecase.get_dst_user_vault(request)
-
+            
             if dst_error != '':
                 return BadRequest(dst_error)
             
@@ -50,6 +50,8 @@ class Controller:
         except MissingParameters as error:
             return BadRequest(error.message)
         except Exception as _:
+            print('ERROR = ' + str(_))
+
             return InternalServerError('Erro interno de servidor')
         
 class Usecase:
@@ -96,7 +98,7 @@ class Usecase:
     
     async def execute(self, requester_user: AuthAuthorizerDTO, src_user_vault: Vault, dst_user_vault: Vault, \
         amount: str) -> dict:
-        transfer_tx = create_transfer_tx({ 
+        transfer_tx = create_transfer_tx({
             'from_vault': src_user_vault, 
             'to_vault': dst_user_vault,
             'amount': amount
