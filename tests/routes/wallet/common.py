@@ -1,3 +1,7 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.domain.entities.tx import TX
 from src.shared.infra.repositories.mocks.wallet_cache_mock import WalletCacheMock
@@ -14,6 +18,14 @@ from src.shared.wallet.tx_templates.deposit import create_deposit_tx
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
 
 from tests.shared.wallet.mocks.common import get_back_context
+
+def load_app_env():
+    root_directory = Path(__file__).parent.parent.parent.parent
+    env_filepath = os.path.join(root_directory, 'iac', '.env')
+
+    load_dotenv(env_filepath)
+
+    os.environ['STAGE'] = 'TEST'
 
 def initialize_mocks() -> tuple[WalletCacheMock, WalletRepositoryMock, WalletPayGateMock]:
     (cache, repository, paygate) = get_back_context({

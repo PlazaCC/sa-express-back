@@ -18,8 +18,8 @@ class Controller:
 
             return OK(body=response)
         except Exception as error:
-            return InternalServerError(str(error))
-
+            return InternalServerError('ERROR: ' + str(error))
+        
 class Usecase:
     # repository: Repository
     # wallet_cache: IWalletCache

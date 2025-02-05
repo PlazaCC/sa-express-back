@@ -10,7 +10,9 @@ class WalletPayGateMock(IWalletPayGate):
 
     @staticmethod
     def get_paygate_ref_header(tx_id: str, nonce: str):
-        return f'WTK={os.environ.get('PAYGATE_WEBHOOK_TOKEN')}&TX={tx_id}&NC={nonce}'
+        webhook_token = os.environ.get('PAYGATE_WEBHOOK_TOKEN')
+
+        return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
 
     def __init__(self):
         self.pending_payments = []

@@ -12,14 +12,18 @@ class Paybrokers(IWalletPayGate):
 
     @staticmethod
     def get_paygate_ref_header(tx_id: str, nonce: str):
-        return f'WTK={os.environ.get('PAYGATE_WEBHOOK_TOKEN')}&TX={tx_id}&NC={nonce}'
+        webhook_token = os.environ.get('PAYGATE_WEBHOOK_TOKEN')
+
+        return f'WTK={webhook_token}&TX={tx_id}&NC={nonce}'
     
     def __init__(self):
         self.base_url = os.environ.get('PAYBROKERS_BASE_URL')
         self.auth_token = os.environ.get('PAYBROKERS_AUTH_TOKEN')
     
     def get_webhook_url(self):
-        return f'{os.environ.get('API_BASE_URL')}/mss-saexpress/paybrokers_webhook'
+        api_base_url = os.environ.get('API_BASE_URL')
+
+        return f'{api_base_url}/mss-saexpress/paybrokers_webhook'
     
     ### PIX ###
     async def post_pix_deposit(self, tx_id: str, nonce: str, amount: Decimal, \
@@ -50,7 +54,7 @@ class Paybrokers(IWalletPayGate):
         }
 
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=3) # TODO: async request
+            response = requests.post(url, json=payload, headers=headers, timeout=3)
 
             return json.loads(response.text)
         except:
@@ -86,7 +90,7 @@ class Paybrokers(IWalletPayGate):
         }
 
         try:
-            response = requests.post(url, json=payload, headers=headers, timeout=3) # TODO: async request
+            response = requests.post(url, json=payload, headers=headers, timeout=3)
 
             return json.loads(response.text)
         except:

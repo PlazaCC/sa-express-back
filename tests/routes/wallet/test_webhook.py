@@ -1,12 +1,13 @@
 import pytest
 
+from tests.routes.wallet.common import load_app_env, initialize_mocks, deposit_mock, withdrawal_mock
+
+load_app_env()
+
 from src.routes.paybrokers_webhook.paybrokers_webhook import Controller as PaybrokersWebhookController
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
-
 from src.shared.wallet.wrappers.paybrokers import Paybrokers
-
-from tests.routes.wallet.common import initialize_mocks, deposit_mock, withdrawal_mock
 
 pytest_plugins = ('pytest_asyncio')
 

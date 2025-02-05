@@ -1,12 +1,13 @@
 import pytest
 
+from tests.routes.wallet.common import load_app_env, initialize_mocks
+
+load_app_env()
+
 from src.routes.create_vault.create_vault import Controller
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
-
 from src.shared.wallet.enums.pix import PIX_KEY_TYPE
-
-from tests.routes.wallet.common import initialize_mocks
 
 class Test_CreateVault:
     ### TEST METHODS ###

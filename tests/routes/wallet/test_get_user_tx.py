@@ -1,10 +1,12 @@
 import pytest
 
+from tests.routes.wallet.common import load_app_env, initialize_mocks, deposit_mock
+
+load_app_env()
+
 from src.routes.get_user_tx.get_user_tx import Controller
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
-
-from tests.routes.wallet.common import initialize_mocks, deposit_mock
 
 pytest_plugins = ('pytest_asyncio')
 
@@ -20,11 +22,14 @@ class Test_GetUserTX:
         user = repository.get_user_by_user_id(deposit_tx.user_id)
 
         body = {
-            'requester_user': user.to_api_dto(),
+            'requester_user': user.to_api_dto()
+        }
+
+        query_params = {
             'tx_id': deposit_tx.tx_id
         }
         
-        request = HttpRequest(body=body, headers={}, query_params={})
+        request = HttpRequest(body=body, headers={}, query_params=query_params)
 
         response = Controller().execute(request)
 

@@ -1,4 +1,7 @@
+import os
 import random
+from pathlib import Path
+from dotenv import load_dotenv
 
 from src.shared.infra.repositories.mocks.wallet_cache_mock import WalletCacheMock
 from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRepositoryMock
@@ -7,6 +10,15 @@ from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 from src.shared.wallet.models.pix import PIXKey
 from src.shared.wallet.vault_processor import VaultProcessor
 from src.shared.wallet.mocks.wallet_paygate_mock import WalletPayGateMock
+
+def load_app_env():
+    root_directory = Path(__file__).parent.parent.parent.parent.parent
+
+    env_filepath = os.path.join(root_directory, 'iac', '.env')
+
+    load_dotenv(env_filepath)
+    
+    os.environ['STAGE'] = 'TEST'
 
 def get_back_context(config: dict) -> tuple[WalletCacheMock, WalletRepositoryMock, WalletPayGateMock]:
     repository = WalletRepositoryMock(singleton=config['singleton'] if 'singleton' in config else False)

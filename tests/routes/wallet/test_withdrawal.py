@@ -1,10 +1,12 @@
 import pytest
 
+from tests.routes.wallet.common import load_app_env, initialize_mocks
+
+load_app_env()
+
 from src.routes.withdrawal.withdrawal import Controller
 
 from src.shared.helpers.external_interfaces.http_models import HttpRequest
-
-from tests.routes.wallet.common import initialize_mocks
 
 pytest_plugins = ('pytest_asyncio')
 

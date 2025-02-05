@@ -2,6 +2,10 @@ import pytest
 import random
 import asyncio
 
+from tests.shared.wallet.mocks.common import load_app_env, get_back_context
+
+load_app_env()
+
 from src.shared.domain.enums.user_status_enum import USER_STATUS
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
@@ -15,8 +19,6 @@ from src.shared.wallet.tx_results.pop import TXPopResult
 from src.shared.wallet.tx_results.push import TXPushResult
 from src.shared.wallet.tx_templates.deposit import create_deposit_tx
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
-
-from tests.shared.wallet.mocks.common import get_back_context
 
 pytest_plugins = ('pytest_asyncio')
 

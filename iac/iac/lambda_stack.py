@@ -150,8 +150,7 @@ class LambdaStack(Construct):
             environment_variables=environment_variables,
             authorizer=authorizer
         )
-
-        # TODO: extrair tx_id do query params
+        
         self.get_user_tx = self.create_lambda_api_gateway_integration(
             module_name="get_user_tx",
             method="GET",

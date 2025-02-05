@@ -13,10 +13,10 @@ class Controller:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
 
-            if 'tx_id' not in request.data:
+            if 'tx_id' not in request.query_params:
                 raise MissingParameters('tx_id')
             
-            tx_id = request.data.get('tx_id')
+            tx_id = request.query_params.get('tx_id')
 
             if TX.invalid_tx_id(tx_id):
                 return BadRequest('ID de transação inválido')
@@ -26,9 +26,7 @@ class Controller:
             return OK(body=response)
         except MissingParameters as error:
             return BadRequest(error.message)
-        except Exception as error:
-            print(error)
-            
+        except Exception as _:
             return InternalServerError('Erro interno de servidor')
         
 class Usecase:
