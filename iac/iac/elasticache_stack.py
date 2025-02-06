@@ -20,7 +20,8 @@ class ElastiCacheStack(Construct):
             engine='redis',
             cache_node_type='cache.t3.micro',
             num_cache_nodes=1,
-            cache_security_group_names=[ 'default' ]
+            cache_security_group_names=[ 'default' ],
+            cluster_name='SACacheLayer'
         )
         
         self.redis_cluster.apply_removal_policy(policy=removal_policy)
