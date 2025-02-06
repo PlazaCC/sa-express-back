@@ -18,7 +18,7 @@ class ElastiCacheStack(Construct):
             scope=self,
             id='SAExpress_Redis',
             engine='redis',
-            cache_node_type='cache.t3.micro',
+            cache_node_type='cache.t3.small',
             num_cache_nodes=1,
             cache_security_group_names=[ 'default' ],
             cluster_name='SACacheLayer'
