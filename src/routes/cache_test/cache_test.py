@@ -2,8 +2,9 @@ from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHt
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 
-# from src.shared.infra.repositories.repository import Repository
-# from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
+from src.shared.infra.repositories.repository import Repository
+from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
+from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 
 from src.shared.environments import Environments
 
@@ -21,14 +22,17 @@ class Controller:
             return InternalServerError('ERROR: ' + str(error))
         
 class Usecase:
-    # repository: Repository
-    # wallet_cache: IWalletCache
+    repository: Repository
+    wallet_repo: IWalletRepository
+    wallet_cache: IWalletCache
 
     def __init__(self):
-        # self.repository = Repository(wallet_cache=True)
+        self.repository = Repository(wallet_repo=True, wallet_cache=True)
 
-        # self.wallet_cache = self.repository.wallet_cache
-        pass
+        self.wallet_repo = self.repository.wallet_repo
+        self.wallet_cache = self.repository.wallet_cache
+
+        print('change')
     
     def execute(self) -> dict:
         client = boto3.client('elasticache')

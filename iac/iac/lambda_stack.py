@@ -235,7 +235,7 @@ class LambdaStack(Construct):
             self.create_profile,
             self.deactivate_profile
         ]
-
+        
         self.functions_that_need_elasticache_permissions = []
 
         wallet_functions_with_cognito_dynamo_perms = [

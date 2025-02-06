@@ -1,6 +1,5 @@
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.vault import Vault
-from src.shared.domain.entities.tx import TX
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 
 class WalletCacheMock(IWalletCache):

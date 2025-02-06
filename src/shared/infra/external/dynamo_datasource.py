@@ -12,6 +12,7 @@ class DynamoDatasource:
         :param region: Região AWS.
         :param endpoint_url: URL opcional para endpoint local/teste.
         """
+
         session = boto3.Session(region_name=region)
         self.dynamo_resource = session.resource('dynamodb', endpoint_url=endpoint_url)
         self.dynamo_table = self.dynamo_resource.Table(dynamo_table_name)
