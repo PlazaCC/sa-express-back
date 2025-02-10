@@ -30,7 +30,7 @@ def adjust_layer_directory(shared_dir_name: str, destination: str):
     if os.path.exists(requirements_path):
         print(f"Installing dependencies from {requirements_path} into {layer_python_directory}...")
         subprocess.run(
-            ["pip", "install", "-r", requirements_path, "-t", layer_python_directory],
+            ["pip", "install", "-r", requirements_path, "-t", layer_python_directory, "--platform", "manylinux2014_x86_64", "--only-binary=:all:"],
             check=True
         )
     else:

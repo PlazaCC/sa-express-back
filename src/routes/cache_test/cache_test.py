@@ -9,7 +9,7 @@ from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.environments import Environments
 
 import boto3
-from pydantic import BaseModel
+import pydantic
 
 class Controller:
     @staticmethod
@@ -31,14 +31,18 @@ class Usecase:
 
         self.wallet_repo = self.repository.wallet_repo
         self.wallet_cache = self.repository.wallet_cache
-
-        print('change')
     
     def execute(self) -> dict:
         client = boto3.client('elasticache')
 
+        # TODO: give lambda redis-cluster access
         response = client.describe_cache_clusters(ShowCacheNodeInfo=True)
 
+        # rep_vault = self.wallet_repo.get_vault_by_user_id(0)
+
+        # print('rep_vault', rep_vault)
+
+        # return { 'pydantic_version': pydantic.__version__ }
         return response
 
 def lambda_handler(event, context) -> LambdaHttpResponse:

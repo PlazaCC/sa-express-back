@@ -17,13 +17,13 @@ class LambdaStack(Construct):
             self, module_name.title(),
             code=lambda_.Code.from_asset(f"../src/routes/{module_name}"),
             handler=f"{module_name}.lambda_handler",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_11,
             layers=[self.lambda_layer],
             memory_size=512,
             environment=environment_variables,
             timeout=Duration.seconds(15)
         )
-
+        
         api_resource.add_resource(module_name.replace("_", "-")).add_method(method, integration=LambdaIntegration(function), authorizer=authorizer)
 
         return function
@@ -34,7 +34,7 @@ class LambdaStack(Construct):
 
         self.lambda_layer = lambda_.LayerVersion(self, "SAExpress_Layer",
                                                  code=lambda_.Code.from_asset("./lambda_layer_out_temp"),
-                                                 compatible_runtimes=[lambda_.Runtime.PYTHON_3_9]
+                                                 compatible_runtimes=[lambda_.Runtime.PYTHON_3_11]
                                                  )
 
         self.adm_update_user = self.create_lambda_api_gateway_integration(
