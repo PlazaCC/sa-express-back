@@ -65,7 +65,7 @@ class TXProcessor:
     
     ### UTILITY METHODS ###
     def persist_tx(self, tx: TX) -> None:
-        self.repository.upsert_transaction(tx)
+        self.repository.upsert_tx(tx)
         
         return None
 
@@ -291,7 +291,7 @@ class TXProcessor:
         for vault in tx.instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
                 continue
-
+            
             vault_key = vault.to_identity_key()
             vault_state = next_state['vaults'][vault_key]
 

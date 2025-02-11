@@ -28,7 +28,7 @@ class IWalletRepository(ABC):
         pass
 
     @abstractmethod
-    def upsert_transaction(self, tx: TX) -> TX:
+    def upsert_tx(self, tx: TX) -> TX:
         pass
 
     

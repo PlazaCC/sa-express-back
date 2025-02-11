@@ -23,7 +23,7 @@ class LambdaStack(Construct):
             environment=environment_variables,
             timeout=Duration.seconds(15)
         )
-        
+
         api_resource.add_resource(module_name.replace("_", "-")).add_method(method, integration=LambdaIntegration(function), authorizer=authorizer)
 
         return function
@@ -252,7 +252,8 @@ class LambdaStack(Construct):
             self.transfer,
             self.deposit,
             self.withdrawal,
-            self.paybrokers_webhook
+            self.paybrokers_webhook,
+            self.cache_test
         ]
 
         for fn in wallet_functions_with_cognito_dynamo_perms:

@@ -66,7 +66,7 @@ class WalletRepositoryMock(IWalletRepository):
 
         return TX.from_dict_static(rep_tx) if rep_tx is not None else None
     
-    def upsert_transaction(self, tx: TX) -> TX:
+    def upsert_tx(self, tx: TX) -> TX:
         rep_tx = next((t for t in self.transactions if t['tx_id'] == tx.tx_id), None)
         
         if rep_tx is not None:
