@@ -20,10 +20,10 @@ class AuthAuthorizerDTO:
     @staticmethod
     def from_api_gateway(user_data: dict) -> 'AuthAuthorizerDTO':
         return AuthAuthorizerDTO(
-            user_id=user_data['sub'],
+            user_id=user_data['user_id'],
             name=user_data['name'],
             email=user_data['email'],
-            role=ROLE[user_data['custom:role']],
+            role=ROLE[user_data['role']],
             email_verified=user_data['email_verified'],
         )
     

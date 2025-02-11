@@ -19,16 +19,16 @@ class WalletRepositoryDynamo(IWalletRepository):
         return f'VAULT#{vault_id_key}'
     
     @staticmethod
-    def vault_metadata_sort_key_format() -> str:
-        return 'METADATA'
+    def vault_sort_key_format() -> str:
+        return 'NONE'
     
     @staticmethod
     def tx_partition_key_format(tx_id: str) -> str:
         return f'TX#{tx_id}'
     
     @staticmethod
-    def tx_metadata_sort_key_format() -> str:
-        return 'METADATA'
+    def tx_sort_key_format() -> str:
+        return 'NONE'
 
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
@@ -57,11 +57,11 @@ class WalletRepositoryDynamo(IWalletRepository):
     ### VAULTS ###
     def create_vault(self, vault: Vault) -> Vault:
         vault_id_key = vault.to_identity_key()
-
+        
         item = vault.to_dict()
         item['PK'] = self.vault_partition_key_format(vault_id_key)
-        item['SK'] = self.vault_metadata_sort_key_format()
-        
+        item['SK'] = self.vault_sort_key_format()
+
         self.dynamo.put_item(item=item)
 
         return vault
@@ -71,7 +71,7 @@ class WalletRepositoryDynamo(IWalletRepository):
 
         vault = self.dynamo.get_item(
             partition_key=self.vault_partition_key_format(vault_id_key), 
-            sort_key=self.vault_metadata_sort_key_format()
+            sort_key=self.vault_sort_key_format()
         )
 
         return Vault.from_dict_static(vault['Item']) if 'Item' in vault else None
@@ -83,7 +83,7 @@ class WalletRepositoryDynamo(IWalletRepository):
     def get_transaction(self, tx_id: str) -> TX | None:
         tx = self.dynamo.get_item(
             partition_key=self.tx_partition_key_format(tx_id),
-            sort_key=self.tx_metadata_sort_key_format()
+            sort_key=self.tx_sort_key_format()
         )
 
         return TX.from_dict_static(tx['Item']) if 'Item' in tx else None
@@ -91,7 +91,7 @@ class WalletRepositoryDynamo(IWalletRepository):
     def upsert_tx(self, tx: TX) -> TX:
         item = tx.to_dict()
         item['PK'] = self.tx_partition_key_format(tx.tx_id)
-        item['SK'] = self.tx_metadata_sort_key_format()
+        item['SK'] = self.tx_sort_key_format()
 
         self.dynamo.put_item(item=item)
 

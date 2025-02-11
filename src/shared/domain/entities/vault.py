@@ -1,5 +1,3 @@
-import uuid
-
 from pydantic import BaseModel, ConfigDict
 
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE

@@ -21,10 +21,10 @@ class Test_Repo:
         paygate = WalletPayGateMock()
 
         user = AuthAuthorizerDTO.from_api_gateway({
-            'sub': 0,
+            'user_id': 0,
             'name': 'testuser',
             'email': 'testuser@gmail.com',
-            'custom:role': 'SUBAFILIADO',
+            'role': 'SUBAFILIADO',
             'email_verified': True
         })
 
