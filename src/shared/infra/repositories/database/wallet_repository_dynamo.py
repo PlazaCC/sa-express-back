@@ -56,10 +56,12 @@ class WalletRepositoryDynamo(IWalletRepository):
 
     ### VAULTS ###
     def create_vault(self, vault: Vault) -> Vault:
-        item = vault.to_dict()
-        item['PK'] = vault.to_identity_key()
-        item['SK'] = self.vault_metadata_sort_key_format()
+        vault_id_key = vault.to_identity_key()
 
+        item = vault.to_dict()
+        item['PK'] = self.vault_partition_key_format(vault_id_key)
+        item['SK'] = self.vault_metadata_sort_key_format()
+        
         self.dynamo.put_item(item=item)
 
         return vault

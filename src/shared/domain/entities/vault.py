@@ -103,8 +103,6 @@ class Vault(BaseModel):
         
         if self.pix_key is not None:
             result['pix_key'] = self.pix_key.to_dict()
-
-        result['partition_key'] = self.to_identity_key()
         
         return result
     
