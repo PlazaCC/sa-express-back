@@ -10,23 +10,16 @@ class ElastiCacheDatasource:
 
         self.cluster_name = f'sacachelayer{github_ref_name}'
         self.boto_client = boto3.client('elasticache', region_name=region)
-        
+
         endpoint = self.get_redis_local_endpoint() if Environments.persist_local else self.get_redis_endpoint()
-        
-        print(endpoint)
 
         self.redis = redis.StrictRedis(
             host=endpoint['Address'],
             port=endpoint['Port'],
             db=0,
-            socket_timeout=5,
-            socket_connect_timeout=5
+            socket_timeout=3,
+            socket_connect_timeout=3
         )
-
-        self.redis.ping()
-        self.redis.set('mykey', 'thevalueofmykey')
-
-        print('ELASTICACHE OK')
 
     def get_redis_local_endpoint(self) -> dict:
         return { 'Address': '127.0.0.1', 'Port': 6379 }

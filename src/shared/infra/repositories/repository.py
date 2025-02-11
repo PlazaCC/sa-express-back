@@ -1,5 +1,3 @@
-import os
-
 from src.shared.environments import STAGE, Environments
 
 from src.shared.domain.repositories.entity_repository_interface import IEntityRepository
@@ -89,8 +87,6 @@ class Repository:
             self.wallet_repo = WalletRepositoryDynamo(dynamo)
         
         if wallet_cache:
-            elastic = ElastiCacheDatasource(
-                region=Environments.region
-            )
+            elastic = ElastiCacheDatasource(region=Environments.region)
             
             self.wallet_cache = WalletCacheElastic(elastic)

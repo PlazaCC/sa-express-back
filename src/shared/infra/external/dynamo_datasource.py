@@ -3,6 +3,8 @@ from decimal import Decimal
 from boto3.dynamodb.conditions import Key, Attr
 import boto3
 
+from src.shared.environments import Environments
+
 class DynamoDatasource:
     def __init__(self, dynamo_table_name: str, region: str, endpoint_url: str = None):
         """
@@ -13,7 +15,16 @@ class DynamoDatasource:
         """
 
         session = boto3.Session(region_name=region)
-        self.dynamo_resource = session.resource('dynamodb', endpoint_url=endpoint_url)
+
+        if Environments.persist_local:
+            self.dynamo_resource = session.resource('dynamodb', 
+                endpoint_url=endpoint_url,
+                aws_access_key_id=Environments.dynamo_local_key_id,
+                aws_secret_access_key=Environments.dynamo_local_access_key
+            )
+        else:
+            self.dynamo_resource = session.resource('dynamodb', endpoint_url=endpoint_url)
+
         self.dynamo_table = self.dynamo_resource.Table(dynamo_table_name)
         self.key_mapping = {
             "main_table": {"partition_key": "PK", "sort_key": "SK"},

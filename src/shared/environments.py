@@ -25,4 +25,6 @@ class Environments:
     paybrokers_base_url: str = os.environ.get("PAYBROKERS_BASE_URL", "https://api.sandbox.paybrokers.solutions")
     paybrokers_auth_token: str = os.environ.get("PAYBROKERS_AUTH_TOKEN", "MOCK")
     paybrokers_webhook_key: str = os.environ.get("PAYBROKERS_WEBHOOK_KEY", "bf8867f612a34346a57d4e1c5e98b1ecc53defe3cccc4b7b8ea72dfbcf74a349")
-    persist_local: str = bool(os.environ.get('PERSIST_LOCAL', '0'))
+    persist_local: str = bool(os.environ.get('PERSIST_LOCAL', "0"))
+    dynamo_local_key_id: str = os.environ.get('DYNAMO_LOCAL_KEY_ID', "")
+    dynamo_local_access_key: str = os.environ.get('DYNAMO_LOCAL_ACCESS_KEY', "")

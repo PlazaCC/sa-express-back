@@ -27,7 +27,7 @@ class VaultProcessor:
         
         self.cache.upsert_vault(vault)
         self.repository.create_vault(vault)
-
+        
         return vault
     
     def get_by_user(self, user: User | AuthAuthorizerDTO) -> Vault | None:
