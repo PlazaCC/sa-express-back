@@ -10,14 +10,15 @@ class ElastiCacheDatasource:
         self.boto_client = boto3.client('elasticache', region_name=region)
 
         endpoint = self.get_redis_endpoint()
-
+        
         print(endpoint)
 
-        self.redis = redis.Redis(
+        self.redis = redis.StrictRedis(
             host=endpoint['Address'],
             port=endpoint['Port'],
-            socket_timeout=1,
-            socket_connect_timeout=1
+            db=0,
+            socket_timeout=5,
+            socket_connect_timeout=5
         )
 
         self.redis.ping()

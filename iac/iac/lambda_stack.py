@@ -5,6 +5,8 @@ from aws_cdk import (
 from constructs import Construct
 from aws_cdk.aws_apigateway import Resource, LambdaIntegration, CognitoUserPoolsAuthorizer
 
+from iac.elasticache_stack import ElastiCacheStack
+
 class LambdaStack(Construct):
     functions_that_need_cognito_permissions = []
     functions_that_need_dynamo_permissions = []
@@ -12,6 +14,9 @@ class LambdaStack(Construct):
 
     def create_lambda_api_gateway_integration(self, module_name: str, method: str, api_resource: Resource,
                                               environment_variables: dict = {"STAGE": "TEST"}, authorizer=None):
+
+        elasticache_stack = self.elasticache_stack
+        include_elasticache = module_name in self.functions_that_need_redis_vpc_args
 
         function = lambda_.Function(
             self, module_name.title(),
@@ -21,7 +26,9 @@ class LambdaStack(Construct):
             layers=[self.lambda_layer],
             memory_size=512,
             environment=environment_variables,
-            timeout=Duration.seconds(15)
+            timeout=Duration.seconds(15),
+            vpc=elasticache_stack.redis_vpc if include_elasticache else None,
+            security_groups=[ elasticache_stack.redis_sg ] if include_elasticache else None
         )
 
         api_resource.add_resource(module_name.replace("_", "-")).add_method(method, integration=LambdaIntegration(function), authorizer=authorizer)
@@ -29,13 +36,22 @@ class LambdaStack(Construct):
         return function
 
     def __init__(self, scope: Construct, api_gateway_resource: Resource, environment_variables: dict,
-                 authorizer: CognitoUserPoolsAuthorizer) -> None:
+                 authorizer: CognitoUserPoolsAuthorizer, elasticache_stack: ElastiCacheStack) -> None:
         super().__init__(scope, "SAExpress_Lambda")
 
         self.lambda_layer = lambda_.LayerVersion(self, "SAExpress_Layer",
                                                  code=lambda_.Code.from_asset("./lambda_layer_out_temp"),
                                                  compatible_runtimes=[lambda_.Runtime.PYTHON_3_11]
                                                  )
+        
+        self.elasticache_stack = elasticache_stack
+        self.functions_that_need_redis_vpc_args = [
+            "transfer",
+            "deposit",
+            "withdrawal",
+            "paybrokers_webhook",
+            "cache_test" ## DEBUG ONLY
+        ]
 
         self.adm_update_user = self.create_lambda_api_gateway_integration(
             module_name="adm_update_user",
@@ -253,7 +269,7 @@ class LambdaStack(Construct):
             self.deposit,
             self.withdrawal,
             self.paybrokers_webhook,
-            self.cache_test
+            self.cache_test ## DEBUG ONLY
         ]
 
         for fn in wallet_functions_with_cognito_dynamo_perms:
