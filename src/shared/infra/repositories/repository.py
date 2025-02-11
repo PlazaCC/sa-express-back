@@ -82,8 +82,10 @@ class Repository:
 
         if wallet_repo:
             self.wallet_repo = WalletRepositoryDynamo(dynamo)
-
+        
         if wallet_cache:
-            elastic = ElastiCacheDatasource()
+            elastic = ElastiCacheDatasource(
+                region=Environments.region
+            )
             
             self.wallet_cache = WalletCacheElastic(elastic)

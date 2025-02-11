@@ -16,11 +16,9 @@ class ElastiCacheStack(Construct):
         github_ref_name = os.environ.get('GITHUB_REF_NAME', 'dev')
         removal_policy = RemovalPolicy.RETAIN if 'prod' in github_ref_name else RemovalPolicy.DESTROY
 
-        self.cluster_name = 'sacachelayer'
+        self.cluster_name = f'sacachelayer{github_ref_name}'
 
-        if self.check_if_cluster_exists():
-            print('ElastiCache layer already exists. Skipping deploy...')
-            return
+        cluster_info = self.get_cluster_if_exists()
 
         self.redis_cluster = aws_elasticache.CfnCacheCluster(
             scope=self,
@@ -29,9 +27,9 @@ class ElastiCacheStack(Construct):
             cache_node_type='cache.t3.small',
             num_cache_nodes=1,
             cache_security_group_names=[ 'default' ],
-            cluster_name=self.get_cluster_name_with_nonce()
+            cluster_name=self.get_cluster_name_with_nonce() if cluster_info is None else cluster_info['CacheClusterId']
         )
-        
+
         self.redis_cluster.apply_removal_policy(policy=removal_policy)
 
         CfnOutput(
@@ -52,18 +50,19 @@ class ElastiCacheStack(Construct):
         nonce = str(uuid.uuid4()).split('-')[0]
 
         return self.cluster_name + nonce
-
-    def check_if_cluster_exists(self):
+    
+    def get_cluster_if_exists(self) -> dict | None:
         client = boto3.client('elasticache')
 
         try:
             response = client.describe_cache_clusters()
 
-            for cluster in response['CacheClusters']:
-                if cluster['CacheClusterId'].startswith(self.cluster_name) \
-                    and cluster['CacheClusterStatus'].lower() != 'deleting':
-                    return True
+            for cluster_info in response['CacheClusters']:
+                if cluster_info['CacheClusterId'].startswith(self.cluster_name) \
+                    and cluster_info['CacheClusterStatus'].lower() != 'deleting':
+                    return cluster_info
 
-            return False
+            return None
         except:
-            return False
+            return None
+

@@ -6,8 +6,6 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 
-import boto3
-
 class Controller:
     @staticmethod
     def execute(request: IRequest) -> IResponse:
@@ -30,13 +28,7 @@ class Usecase:
         self.wallet_cache = self.repository.wallet_cache
     
     def execute(self) -> dict:
-        client = boto3.client('elasticache')
-
-        response = client.describe_cache_clusters()
-        
-        return {
-            'clusters': [ c['CacheClusterId'] for c in response['CacheClusters'] ]
-        }
+        return { 'OK': True }
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
     http_request = LambdaHttpRequest(event)
