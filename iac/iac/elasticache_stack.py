@@ -58,6 +58,7 @@ class ElastiCacheStack(Construct):
             scope=self,
             id='SAExpress_Redis',
             engine='redis',
+            engine_version='7',
             cache_node_type='cache.t3.small',
             num_cache_nodes=1,
             cluster_name=self.get_cluster_name_with_nonce() if cluster_info is None else cluster_info['CacheClusterId'],

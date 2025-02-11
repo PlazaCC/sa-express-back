@@ -2,14 +2,16 @@ import os
 import boto3
 import redis
 
+from src.shared.environments import Environments
+
 class ElastiCacheDatasource:
     def __init__(self, region: str):
         github_ref_name = os.environ.get('GITHUB_REF_NAME', 'dev')
 
         self.cluster_name = f'sacachelayer{github_ref_name}'
         self.boto_client = boto3.client('elasticache', region_name=region)
-
-        endpoint = self.get_redis_endpoint()
+        
+        endpoint = self.get_redis_local_endpoint() if Environments.persist_local else self.get_redis_endpoint()
         
         print(endpoint)
 
@@ -25,6 +27,9 @@ class ElastiCacheDatasource:
         self.redis.set('mykey', 'thevalueofmykey')
 
         print('ELASTICACHE OK')
+
+    def get_redis_local_endpoint(self) -> dict:
+        return { 'Address': '127.0.0.1', 'Port': 6379 }
 
     def get_redis_endpoint(self) -> dict:
         try:

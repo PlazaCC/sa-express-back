@@ -3,7 +3,6 @@ from decimal import Decimal
 from boto3.dynamodb.conditions import Key, Attr
 import boto3
 
-
 class DynamoDatasource:
     def __init__(self, dynamo_table_name: str, region: str, endpoint_url: str = None):
         """

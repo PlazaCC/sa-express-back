@@ -10,7 +10,16 @@ services:
       - "./docker/dynamodb:/home/dynamodblocal/data"
     working_dir: /home/dynamodblocal
     networks:
-      - dynamodb-local
+      - persist-local
+  elasticache-locaL:
+    image: "redis:7"
+    container_name: elasticache
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./docker/redis:/data"
+    networks:
+      - persist-local
 networks:
-    dynamodb-local:
-        name: dynamodb-local
+    persist-local:
+        name: persist-local

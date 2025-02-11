@@ -1,6 +1,12 @@
+import os
+
+from src.shared.environments import STAGE, Environments
+
 from src.shared.domain.repositories.entity_repository_interface import IEntityRepository
 from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
-from src.shared.environments import STAGE, Environments
+from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
+from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
+
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 from src.shared.infra.external.elasticache_datasource import ElastiCacheDatasource
 from src.shared.infra.repositories.auth.auth_repository_cognito import AuthRepositoryCognito
@@ -8,9 +14,6 @@ from src.shared.infra.repositories.database.entity_repository_dynamo import Enti
 from src.shared.infra.repositories.database.profile_repository_dynamo import ProfileRepositoryDynamo
 from src.shared.infra.repositories.mocks.entity_repository_mock import EntityRepositoryMock
 from src.shared.infra.repositories.mocks.profile_repository_mock import ProfileRepositoryMock
-
-from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
-from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.infra.repositories.database.wallet_repository_dynamo import WalletRepositoryDynamo
 from src.shared.infra.repositories.cache.wallet_cache_elastic import WalletCacheElastic
 from src.shared.infra.repositories.mocks.wallet_repository_mock import WalletRepositoryMock
@@ -63,9 +66,11 @@ class Repository:
             
     def _initialize_database_repositories(self, auth_repo: bool, profile_repo: bool, \
         entity_repo: bool, wallet_repo: bool, wallet_cache: bool) -> None:
+
         dynamo = DynamoDatasource(
             dynamo_table_name=Environments.dynamo_table_name,
             region=Environments.region,
+            endpoint_url='http://localhost:8000' if Environments.persist_local else None
         )
 
         if entity_repo:
