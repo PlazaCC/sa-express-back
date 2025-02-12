@@ -32,8 +32,7 @@ def initialize_mocks() -> tuple[WalletCacheMock, WalletRepositoryMock, WalletPay
         'num_users': 2,
         'user_status': [ USER_STATUS.CONFIRMED.value ],
         'create_vaults': {
-            'random_balance': True,
-            'locked': False
+            'random_balance': True
         },
         'singleton': True
     })

@@ -53,7 +53,7 @@ class VaultProcessor:
 
         return None
 
-    def get_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
+    def get_and_lock(self, vaults: list[Vault]) -> str | list[Vault]:
         return self.cache.get_vaults_and_lock(vaults)
 
     def unlock(self, vaults: Vault | list[Vault]) -> list[Vault]:

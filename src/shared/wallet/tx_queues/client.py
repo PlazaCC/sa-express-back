@@ -22,8 +22,11 @@ class TXClientQueue(TXBaseQueue):
     async def push_tx(self, signer: User | AuthAuthorizerDTO, tx: TX) -> TXPushResult:
         locked_vaults = self.vault_proc().get_and_lock(tx.instruction.get_vaults())
 
-        if locked_vaults is None:
+        if locked_vaults == 'LOCKED':
             return TXPushResult.locked()
+        
+        if locked_vaults == 'MISS':
+            return TXPushResult.failed('Vault cache miss')
 
         tx.instruction.update_vaults(locked_vaults)
 
@@ -36,8 +39,11 @@ class TXClientQueue(TXBaseQueue):
     async def _pop_tx(self, tx: TX, error: str | None = None) -> TXPopResult:
         locked_vaults = self.vault_proc().get_and_lock(tx.instruction.get_vaults())
 
-        if locked_vaults is None:
+        if locked_vaults == 'LOCKED':
             return TXPopResult.locked()
+        
+        if locked_vaults == 'MISS':
+            return TXPopResult.failed('Vault cache miss')
         
         tx.instruction.update_vaults(locked_vaults)
 

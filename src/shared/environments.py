@@ -28,3 +28,5 @@ class Environments:
     persist_local: str = bool(os.environ.get('PERSIST_LOCAL', "0"))
     dynamo_local_key_id: str = os.environ.get('DYNAMO_LOCAL_KEY_ID', "")
     dynamo_local_access_key: str = os.environ.get('DYNAMO_LOCAL_ACCESS_KEY', "")
+    redis_script_getandlock: str = os.environ.get('REDIS_SCRIPT_GETANDLOCK', "")
+    redis_script_unlock: str = os.environ.get('REDIS_SCRIPT_UNLOCK', "")

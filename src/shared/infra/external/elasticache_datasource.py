@@ -1,5 +1,4 @@
 import os
-import json
 import boto3
 import redis
 from redis.commands.json.path import Path
@@ -48,3 +47,6 @@ class ElastiCacheDatasource:
 
     def expire(self, key: str, seconds: int) -> None:
         self.redis.expire(key, seconds)
+
+    def evalsha(self, script_hash: str, keys: list[str]):
+        return self.redis.evalsha(script_hash, len(keys), *keys)

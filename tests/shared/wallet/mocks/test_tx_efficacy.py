@@ -122,8 +122,7 @@ class Test_TXEfficacy:
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
-                'random_balance': True,
-                'locked': False
+                'random_balance': True
             }
         })
 

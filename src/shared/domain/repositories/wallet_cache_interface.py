@@ -14,9 +14,9 @@ class IWalletCache(ABC):
         pass
     
     @abstractmethod
-    def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
+    def get_vaults_and_lock(self, vaults: list[Vault]) -> str | list[Vault]:
         pass
     
     @abstractmethod
-    def unlock_vaults(self, vaults: list[Vault]) -> None | list[Vault]:
+    def unlock_vaults(self, vaults: list[Vault]) -> list[Vault]:
         pass

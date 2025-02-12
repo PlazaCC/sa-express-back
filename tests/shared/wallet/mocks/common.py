@@ -41,7 +41,6 @@ def get_back_context(config: dict) -> tuple[WalletCacheMock, WalletRepositoryMoc
             user_vault.pix_key = PIXKey(type=PIX_KEY_TYPE.CPF, value='00000000000')
             user_vault.balance = str(random.uniform(1000, 10000)) if create_vaults_config['random_balance'] else '0'
             user_vault.balance_locked = '0'
-            user_vault.locked = create_vaults_config['locked']
 
             cache.upsert_vault(user_vault)
             repository.upsert_vault(user_vault)

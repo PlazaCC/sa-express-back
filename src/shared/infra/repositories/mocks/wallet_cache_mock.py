@@ -29,29 +29,29 @@ class WalletCacheMock(IWalletCache):
 
         return vault
     
-    def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
+    def get_vaults_and_lock(self, vaults: list[Vault]) -> str | list[Vault]:
         cache_vaults = []
 
         def _get_vault(v: Vault):
             if v.type == VAULT_TYPE.SERVER_UNLIMITED:
-                v.locked = False
+                # v.locked = False
 
                 return v.to_dict()
             
             return self.get_vault(v, deserialize=False)
         
         for cache_vault in ([ _get_vault(v) for v in vaults ]):
-            if cache_vault['locked']:
-                return None
+            # if cache_vault['locked']:
+            #     return 'LOCKED'
             
             cache_vaults.append(cache_vault)
         
-        for cache_vault in cache_vaults:
-            cache_vault['locked'] = True
+        # for cache_vault in cache_vaults:
+        #     cache_vault['locked'] = True
 
         return [ Vault.from_dict_static(v) for v in cache_vaults ]
     
-    def unlock_vaults(self, vaults: list[Vault]) -> None | list[Vault]:
+    def unlock_vaults(self, vaults: list[Vault]) -> list[Vault]:
         cache_vaults = []
 
         def _get_vault(v: Vault):
@@ -60,8 +60,8 @@ class WalletCacheMock(IWalletCache):
             
             return self.get_vault(v, deserialize=False)
 
-        for cache_vault in ([ _get_vault(v) for v in vaults ]):
-            cache_vault['locked'] = False
+        # for cache_vault in ([ _get_vault(v) for v in vaults ]):
+        #     cache_vault['locked'] = False
 
         return [ Vault.from_dict_static(v) for v in cache_vaults ]
     

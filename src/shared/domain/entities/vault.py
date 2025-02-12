@@ -14,7 +14,6 @@ class Vault(BaseModel):
     user_id: int | None
     balance: Decimal
     balance_locked: Decimal
-    locked: bool
     pix_key: PIXKey | None
     
     @staticmethod
@@ -24,7 +23,6 @@ class Vault(BaseModel):
             user_id=int(data['user_id']) if 'user_id' in data else None,
             balance=Decimal(data['balance']),
             balance_locked=Decimal(data['balance_locked']),
-            locked=data['locked'],
             pix_key=PIXKey.from_dict_static(data['pix_key']) if 'pix_key' in data else None
         )
 
@@ -35,7 +33,6 @@ class Vault(BaseModel):
             user_id=int(data['user_id']) if 'user_id' in data else None,
             balance=Decimal(data['balance']),
             balance_locked=Decimal(data['balance_locked']),
-            locked=False,
             pix_key=None
         )
     
@@ -50,13 +47,12 @@ class Vault(BaseModel):
             user_id=None,
             balance=Decimal(0),
             balance_locked=Decimal(0),
-            locked=False,
             pix_key=None
         )
     
     @staticmethod
     def default_config():
-        return { 'balance': '0', 'balance_locked': '0', 'locked': False }
+        return { 'balance': '0', 'balance_locked': '0' }
 
     @staticmethod
     def from_user(user: User | AuthAuthorizerDTO, config: dict = default_config()) -> 'Vault':
@@ -65,7 +61,6 @@ class Vault(BaseModel):
             user_id=int(user.user_id),
             balance=Decimal(config['balance']),
             balance_locked=Decimal(config['balance_locked']),
-            locked=config['locked'],
             pix_key=None
         )
     
@@ -76,7 +71,6 @@ class Vault(BaseModel):
             user_id=int(user_id),
             balance=Decimal(config['balance']),
             balance_locked=Decimal(config['balance_locked']),
-            locked=config['locked'],
             pix_key=None
         )
     
@@ -92,8 +86,7 @@ class Vault(BaseModel):
         result = {
             'type': self.type.value,
             'balance': str(self.balance),
-            'balance_locked': str(self.balance_locked),
-            'locked': self.locked
+            'balance_locked': str(self.balance_locked)
         }
 
         if self.user_id is not None:

@@ -1,11 +1,13 @@
+import json
+
+from src.shared.environments import Environments
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
-
 from src.shared.infra.external.elasticache_datasource import ElastiCacheDatasource
 
 class WalletCacheElastic(IWalletCache):
     elastic: ElastiCacheDatasource
-    
+
     VAULT_EXPIRE_SECS: int = 5
 
     def __init__(self, elastic: ElastiCacheDatasource):
@@ -27,8 +29,41 @@ class WalletCacheElastic(IWalletCache):
 
         return vault
     
-    def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
-        pass
+    def get_vaults_and_lock(self, vaults: list[Vault]) -> str | list[Vault]:
+        if len(vaults) != 2:
+            return 'MISS'
+
+        vault_1_key = vaults[0].to_identity_key()
+        vault_1_lock_key = f'LOCK:{vault_1_key}'
+
+        vault_2_key = vaults[1].to_identity_key()
+        vault_2_lock_key = f'LOCK:{vault_2_key}'
+        
+        result = self.elastic.evalsha(Environments.redis_script_getandlock, [ 
+            vault_1_key, vault_1_lock_key,
+            vault_2_key, vault_2_lock_key
+        ])
+
+        if isinstance(result, bytes):
+            return result.decode('utf8')
+        
+        vault_1_result = json.loads(result[0])[0]
+        vault_2_result = json.loads(result[1])[0]
+
+        return [ vault_1_result, vault_2_result ]
     
-    def unlock_vaults(self, vaults: list[Vault]) -> None | list[Vault]:
-        pass
+    def unlock_vaults(self, vaults: list[Vault]) -> list[Vault]:
+        if len(vaults) != 2:
+            return vaults
+        
+        vault_1_key = vaults[0].to_identity_key()
+        vault_1_lock_key = f'LOCK:{vault_1_key}'
+
+        vault_2_key = vaults[1].to_identity_key()
+        vault_2_lock_key = f'LOCK:{vault_2_key}'
+
+        self.elastic.evalsha(Environments.redis_script_unlock, [
+            vault_1_lock_key, vault_2_lock_key
+        ])
+
+        return vaults

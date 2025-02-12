@@ -62,8 +62,7 @@ class Test_TXSyntax:
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
-                'random_balance': True,
-                'locked': False
+                'random_balance': True
             }
         })
 
@@ -85,8 +84,7 @@ class Test_TXSyntax:
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
-                'random_balance': False,
-                'locked': False
+                'random_balance': False
             }
         })
         
@@ -117,8 +115,7 @@ class Test_TXSyntax:
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
-                'random_balance': True,
-                'locked': False
+                'random_balance': True
             }
         })
         
@@ -149,8 +146,7 @@ class Test_TXSyntax:
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
-                'random_balance': True,
-                'locked': False
+                'random_balance': True
             }
         })
 
@@ -196,8 +192,7 @@ class Test_TXSyntax:
             'num_users': 10,
             'user_status': [ USER_STATUS.CONFIRMED.value ],
             'create_vaults': {
-                'random_balance': True,
-                'locked': False
+                'random_balance': True
             }
         })
 
