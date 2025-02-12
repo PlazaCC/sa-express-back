@@ -11,10 +11,19 @@ class WalletCacheElastic(IWalletCache):
 
     ### VAULTS ###
     def get_vault_by_user_id(self, user_id: int | str) -> Vault | None:
-        pass
+        vault_id_key = Vault.user_id_to_identity_key(user_id)
+
+        vault_dict = self.elastic.get_json(vault_id_key)
+
+        return None if vault_dict is None else Vault.from_dict_static(vault_dict)
     
     def upsert_vault(self, vault: Vault) -> Vault:
-        pass
+        vault_id_key = vault.to_identity_key()
+
+        self.elastic.set_json(vault_id_key, vault.to_dict())
+        self.elastic.expire(vault_id_key, 5)
+
+        return vault
     
     def get_vaults_and_lock(self, vaults: list[Vault]) -> None | list[Vault]:
         pass

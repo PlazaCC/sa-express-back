@@ -13,12 +13,11 @@ from src.shared.wallet.mocks.wallet_paygate_mock import WalletPayGateMock
 class Test_Repo:
     ### TEST METHODS ###
     # @pytest.mark.skip(reason='')
-    def test_basic(self):
+    def test_create_vault(self):
         base_repository = Repository(wallet_repo=True, wallet_cache=True)
 
         cache = base_repository.wallet_cache
         repository = base_repository.wallet_repo
-        paygate = WalletPayGateMock()
 
         user = AuthAuthorizerDTO.from_api_gateway({
             'user_id': 0,
@@ -27,11 +26,15 @@ class Test_Repo:
             'role': 'SUBAFILIADO',
             'email_verified': True
         })
-
+        
         vault_proc = VaultProcessor(cache, repository)
 
-        vault = vault_proc.create_if_not_exists(user)
+        vault_proc.create_if_not_exists(user)
 
-        print(vault.to_dict())
+        cache_vault = cache.get_vault_by_user_id(user.user_id)
+
+        assert cache_vault is not None
         
-        assert True
+        rep_vault = repository.get_vault_by_user_id(user.user_id)
+
+        assert rep_vault is not None
