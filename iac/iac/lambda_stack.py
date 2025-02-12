@@ -49,8 +49,7 @@ class LambdaStack(Construct):
             "transfer",
             "deposit",
             "withdrawal",
-            "paybrokers_webhook",
-            "cache_test" ## DEBUG ONLY
+            "paybrokers_webhook"
         ]
 
         self.adm_update_user = self.create_lambda_api_gateway_integration(
@@ -225,14 +224,6 @@ class LambdaStack(Construct):
         )
         ### WALLET FUNCTIONS ###
 
-        ## DEBUG ONLY
-        self.cache_test = self.create_lambda_api_gateway_integration(
-            module_name="cache_test",
-            method="GET",
-            api_resource=api_gateway_resource,
-            environment_variables=environment_variables,
-        )
-
         self.functions_that_need_cognito_permissions = [
             self.adm_update_user,
             self.create_user,
@@ -268,8 +259,7 @@ class LambdaStack(Construct):
             self.transfer,
             self.deposit,
             self.withdrawal,
-            self.paybrokers_webhook,
-            self.cache_test ## DEBUG ONLY
+            self.paybrokers_webhook
         ]
 
         for fn in wallet_functions_with_cognito_dynamo_perms:
