@@ -19,8 +19,8 @@ local VAULT_2_DATA = redis.call("JSON.GET", VAULT_2_KEY, "$");
 
 if (not VAULT_2_DATA) then return "MISS" end;
 
-redis.call("SET", VAULT_1_LOCK_KEY, "1", "NX", "EX", "5");
-redis.call("SET", VAULT_2_LOCK_KEY, "1", "NX", "EX", "5");
+redis.call("SET", VAULT_1_LOCK_KEY, "1", "NX", "EX", "15");
+redis.call("SET", VAULT_2_LOCK_KEY, "1", "NX", "EX", "15");
 
 local RESULT = {};
 

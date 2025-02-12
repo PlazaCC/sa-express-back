@@ -8,7 +8,7 @@ from src.shared.infra.external.elasticache_datasource import ElastiCacheDatasour
 class WalletCacheElastic(IWalletCache):
     elastic: ElastiCacheDatasource
 
-    VAULT_EXPIRE_SECS: int = 5
+    VAULT_EXPIRE_SECS: int = 15
 
     def __init__(self, elastic: ElastiCacheDatasource):
         self.elastic = elastic
