@@ -1,6 +1,7 @@
 from src.shared.domain.repositories.affiliation_repository_interface import IAffiliationRepository
 from src.shared.domain.repositories.deal_repository_interface import IDealRepository
 from src.shared.domain.repositories.entity_repository_interface import IEntityRepository
+from src.shared.domain.repositories.influencer_repository_interface import IInfluencerRepository
 from src.shared.domain.repositories.profile_repository_interface import IProfileRepository
 from src.shared.domain.repositories.proposal_repository_interface import IProposalRepository
 from src.shared.environments import STAGE, Environments
@@ -9,6 +10,7 @@ from src.shared.infra.repositories.auth.auth_repository_cognito import AuthRepos
 from src.shared.infra.repositories.database.affiliation_repository_dynamo import AffiliationRepositoryDynamo
 from src.shared.infra.repositories.database.deal_repository_dynamo import DealRepositoryDynamo
 from src.shared.infra.repositories.database.entity_repository_dynamo import EntityRepositoryDynamo
+from src.shared.infra.repositories.database.influencer_repository_dynamo import InfluencerRepositoryDynamo
 from src.shared.infra.repositories.database.profile_repository_dynamo import ProfileRepositoryDynamo
 from src.shared.infra.repositories.database.proposal_repository_dynamo import ProposalRepositoryDynamo
 from src.shared.infra.repositories.mocks.entity_repository_mock import EntityRepositoryMock
@@ -30,6 +32,7 @@ class Repository:
     proposal_repo: IProposalRepository
     wallet_repo: IWalletRepository
     wallet_cache: IWalletCache
+    influencer_repo: IInfluencerRepository
 
     def __init__(
             self,
@@ -40,7 +43,8 @@ class Repository:
             deal_repo: bool = False,
             proposal_repo: bool = False,
             wallet_repo: bool = False,
-            wallet_cache: bool = False
+            wallet_cache: bool = False,
+            influencer_repo: bool = False
     ):
         if Environments.stage == STAGE.TEST:
             self._initialize_mock_repositories(
@@ -61,7 +65,8 @@ class Repository:
                 deal_repo,
                 proposal_repo,
                 wallet_repo,
-                wallet_cache
+                wallet_cache,
+                influencer_repo
             )
     
     def _initialize_mock_repositories(self, profile_repo: bool, entity_repo: bool, \
@@ -79,7 +84,7 @@ class Repository:
             self.wallet_cache = WalletCacheMock(singleton=True)
             
     def _initialize_database_repositories(self, auth_repo: bool, profile_repo: bool, \
-        entity_repo: bool, wallet_repo: bool, wallet_cache: bool, deal_repo: bool, proposal_repo: bool, affiliation_repo: bool) -> None:
+        entity_repo: bool, wallet_repo: bool, wallet_cache: bool, deal_repo: bool, proposal_repo: bool, affiliation_repo: bool, influencer_repo: bool) -> None:
         dynamo = DynamoDatasource(
             dynamo_table_name=Environments.dynamo_table_name,
             region=Environments.region,
@@ -111,3 +116,6 @@ class Repository:
 
         if wallet_cache:
             self.wallet_cache = WalletCacheElastic()
+            
+        if influencer_repo:
+            self.influencer_repo = InfluencerRepositoryDynamo(dynamo)
