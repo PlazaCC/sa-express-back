@@ -19,8 +19,10 @@ class VaultProcessor:
             return cache_vault
         
         rep_vault = self.repository.get_vault_by_user_id(user.user_id)
-        
+
         if rep_vault is not None:
+            self.cache.upsert_vault(rep_vault)
+
             return rep_vault
         
         vault = Vault.from_user(user, config)
@@ -39,6 +41,8 @@ class VaultProcessor:
         rep_vault = self.repository.get_vault_by_user_id(user.user_id)
 
         if rep_vault is not None:
+            self.cache.upsert_vault(rep_vault)
+
             return rep_vault
         
         return None

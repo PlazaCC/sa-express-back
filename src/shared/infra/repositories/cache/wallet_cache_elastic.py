@@ -5,6 +5,8 @@ from src.shared.infra.external.elasticache_datasource import ElastiCacheDatasour
 
 class WalletCacheElastic(IWalletCache):
     elastic: ElastiCacheDatasource
+    
+    VAULT_EXPIRE_SECS: int = 5
 
     def __init__(self, elastic: ElastiCacheDatasource):
         self.elastic = elastic
@@ -21,7 +23,7 @@ class WalletCacheElastic(IWalletCache):
         vault_id_key = vault.to_identity_key()
 
         self.elastic.set_json(vault_id_key, vault.to_dict())
-        self.elastic.expire(vault_id_key, 5)
+        self.elastic.expire(vault_id_key, self.VAULT_EXPIRE_SECS)
 
         return vault
     

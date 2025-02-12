@@ -26,7 +26,7 @@ class Test_Repo:
             'role': 'SUBAFILIADO',
             'email_verified': True
         })
-        
+
         vault_proc = VaultProcessor(cache, repository)
 
         vault_proc.create_if_not_exists(user)
@@ -38,3 +38,7 @@ class Test_Repo:
         rep_vault = repository.get_vault_by_user_id(user.user_id)
 
         assert rep_vault is not None
+
+    # @pytest.mark.skip(reason='')
+    def test_lock_script(self):
+        assert True
