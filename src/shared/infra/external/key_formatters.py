@@ -5,6 +5,15 @@ from src.shared.domain.enums.proposal_type_enum import PROPOSAL_TYPE
 def profile_primary_key(user_id: str) -> str:
     return f'PROFILE#{user_id}'
 
+def influencer_primary_key(user_id: str) -> str:
+    return profile_primary_key(user_id)
+
+def influencer_sort_key() -> str:
+    return f'INFLUENCER#{metadata_sort_key()}'
+
+def influencer_gsi_primary_key() -> str:
+    return f'INFLUENCER#METADATA'
+
 def metadata_sort_key() -> str:
     return f'METADATA'
 
