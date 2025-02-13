@@ -95,7 +95,7 @@ class Vault(BaseModel):
     
     @staticmethod
     def from_redis_hgetall(data: dict) -> 'Vault':
-        user_id = None if data[b'user_id'] == b'' else data[b'user_id'].decode('utf8')
+        user_id = None if data[b'user_id'] == b'' else int(data[b'user_id'].decode('utf8'))
         balance = Decimal(data[b'balance'].decode('utf8'))
         balance_locked = Decimal(data[b'balance_locked'].decode('utf8'))
         
@@ -106,7 +106,7 @@ class Vault(BaseModel):
                 type=PIX_KEY_TYPE[data[b'pix_key_type'].decode('utf8')],
                 value=data[b'pix_key_value'].decode('utf8')
             )
-
+        
         return Vault(
             type=VAULT_TYPE.USER,
             user_id=user_id,

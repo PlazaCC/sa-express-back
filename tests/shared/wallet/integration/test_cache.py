@@ -1,6 +1,6 @@
 import pytest
 
-from tests.shared.wallet.aws_lambda.common import load_app_env
+from tests.shared.wallet.integration.common import load_app_env
 
 load_app_env()
 
