@@ -11,7 +11,7 @@ from src.shared.wallet.vault_processor import VaultProcessor
 
 class Test_Cache:
     ### TEST METHODS ###
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     def test_create_vault(self):
         base_repository = Repository(wallet_repo=True, wallet_cache=True)
 
@@ -80,28 +80,5 @@ class Test_Cache:
         lock_result = cache.get_vaults_and_lock(vaults)
 
         assert lock_result != 'LOCKED'
-
-    # @pytest.mark.skip(reason='')
-    def test_hash_module(self):
-        base_repository = Repository(wallet_repo=True, wallet_cache=True)
-
-        cache = base_repository.wallet_cache
-        repository = base_repository.wallet_repo
-
-        user1 = AuthAuthorizerDTO.from_api_gateway({
-            'user_id': 0,
-            'name': 'testuser',
-            'email': 'testuser@gmail.com',
-            'role': 'SUBAFILIADO',
-            'email_verified': True
-        })
-
-        vault_proc = VaultProcessor(cache, repository)
-
-        vault1 = vault_proc.create_if_not_exists(user1)
-
-        print(vault1.to_dict())
-
-        assert True
 
 

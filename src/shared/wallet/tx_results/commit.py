@@ -2,7 +2,7 @@ from src.shared.wallet.utils import now_timestamp
 
 class TXCommitResult:
     error: str
-    timestamp: str
+    timestamp: int
 
     @staticmethod
     def successful() -> 'TXCommitResult':
@@ -19,21 +19,21 @@ class TXCommitResult:
     def from_dict_static(data: dict) -> 'TXCommitResult':
         return TXCommitResult(
             error=data['error'],
-            timestamp=data['timestamp']
+            timestamp=int(data['timestamp'])
         )
 
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'TXCommitResult':
         return TXCommitResult.from_dict_static(data)
     
-    def __init__(self, error: str, timestamp: str):
+    def __init__(self, error: str, timestamp: int):
         self.error = error
         self.timestamp = timestamp
 
     def to_dict(self):
         return {
             'error': self.error,
-            'timestamp': self.timestamp
+            'timestamp': str(self.timestamp)
         }
     
     def to_tx_snapshot(self):

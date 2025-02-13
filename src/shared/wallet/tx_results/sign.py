@@ -2,7 +2,7 @@ from src.shared.wallet.utils import now_timestamp
 
 class TXSignResult:
     error: str
-    timestamp: str
+    timestamp: int
     data: dict
 
     @staticmethod
@@ -12,7 +12,7 @@ class TXSignResult:
             timestamp=now_timestamp(),
             data=data
         )
-
+    
     @staticmethod
     def failed(error: str, data: dict = {}) -> 'TXSignResult':
         return TXSignResult(error=error, timestamp=now_timestamp(), data=data)
@@ -21,7 +21,7 @@ class TXSignResult:
     def from_dict_static(data: dict) -> 'TXSignResult':
         return TXSignResult(
             error=data['error'],
-            timestamp=data['timestamp'],
+            timestamp=int(data['timestamp']),
             data=data['data']
         )
 
@@ -29,7 +29,7 @@ class TXSignResult:
     def from_tx_snapshot(data: dict) -> 'TXSignResult':
         return TXSignResult.from_dict_static(data)
     
-    def __init__(self, error: str, timestamp: str, data: dict | None = None):
+    def __init__(self, error: str, timestamp: int, data: dict | None = None):
         self.error = error
         self.timestamp = timestamp
         self.data = data
@@ -37,7 +37,7 @@ class TXSignResult:
     def to_dict(self):
         return {
             'error': self.error,
-            'timestamp': self.timestamp,
+            'timestamp': str(self.timestamp),
             'data': self.data
         }
     

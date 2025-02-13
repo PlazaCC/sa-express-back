@@ -23,7 +23,7 @@ class TXPushResult:
     def locked() -> 'TXPushResult':
         return TXPushResult.failed('Locked')
     
-    def __init__(self, error: str, timestamp: str, sign_result: TXSignResult | None = None):
+    def __init__(self, error: str, timestamp: int, sign_result: TXSignResult | None = None):
         self.error = error
         self.timestamp = timestamp
         self.sign_result = sign_result
@@ -31,7 +31,7 @@ class TXPushResult:
     def to_dict(self):
         result = {
             'error': self.error,
-            'timestamp': self.timestamp
+            'timestamp': str(self.timestamp)
         }
 
         if self.sign_result is not None:

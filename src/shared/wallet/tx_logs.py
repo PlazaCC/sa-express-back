@@ -5,7 +5,7 @@ from src.shared.wallet.utils import now_timestamp
 
 class TXLogs:
     error: str
-    timestamp: str
+    timestamp: int
     data: dict | None
     resolved: bool
 
@@ -36,7 +36,7 @@ class TXLogs:
             timestamp=now_timestamp()
         )
     
-    def __init__(self, error: str, timestamp: str, \
+    def __init__(self, error: str, timestamp: int, \
         data: dict | None = None, resolved: bool = False):
         self.error = error
         self.timestamp = timestamp
@@ -46,7 +46,7 @@ class TXLogs:
     def to_tx_snapshot(self) -> dict:
         result = {
             'error': self.error,
-            'timestamp': self.timestamp,
+            'timestamp': str(self.timestamp),
             'resolved': self.resolved
         }
 

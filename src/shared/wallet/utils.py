@@ -1,4 +1,4 @@
-from datetime import datetime
+import time
 
-def now_timestamp() -> str:
-    return str(int(datetime.now().timestamp() * 1000))
+def now_timestamp() -> int:
+    return int(round(time.time() * 1000))

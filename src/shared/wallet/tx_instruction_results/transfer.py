@@ -7,7 +7,7 @@ from src.shared.wallet.tx_promises.base import TXBasePromise
 
 class TXTransferInstructionResult(TXBaseInstructionResult):
     error: str
-    timestamp: str
+    timestamp: int
     promise: TXBasePromise | None
 
     @staticmethod
@@ -22,7 +22,7 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
     def failed(error: str) -> 'TXTransferInstructionResult':
         return TXTransferInstructionResult(error=error, timestamp=now_timestamp())
 
-    def __init__(self, error: str, timestamp: str, promise: TXBasePromise | None = None):
+    def __init__(self, error: str, timestamp: int, promise: TXBasePromise | None = None):
         self.error = error
         self.timestamp = timestamp
         self.promise = promise
@@ -30,7 +30,7 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
     def to_dict(self) -> dict:
         result = {
             'error': self.error,
-            'timestamp': self.timestamp,
+            'timestamp': str(self.timestamp),
         }
 
         if self.promise is not None:

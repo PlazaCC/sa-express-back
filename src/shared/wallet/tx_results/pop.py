@@ -4,7 +4,7 @@ from src.shared.wallet.tx_results.commit import TXCommitResult
 
 class TXPopResult:
     error: str
-    timestamp: str
+    timestamp: int
     commit_result: TXCommitResult | None
 
     @staticmethod
@@ -23,7 +23,7 @@ class TXPopResult:
     def locked() -> 'TXPopResult':
         return TXPopResult.failed('Locked')
     
-    def __init__(self, error: str, timestamp: str, commit_result: TXCommitResult | None = None):
+    def __init__(self, error: str, timestamp: int, commit_result: TXCommitResult | None = None):
         self.error = error
         self.timestamp = timestamp
         self.commit_result = commit_result
@@ -31,7 +31,7 @@ class TXPopResult:
     def to_dict(self):
         result = {
             'error': self.error,
-            'timestamp': self.timestamp
+            'timestamp': str(self.timestamp)
         }
 
         if self.commit_result is not None:

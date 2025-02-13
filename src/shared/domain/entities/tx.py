@@ -1,7 +1,7 @@
 import uuid
 import string
 import random
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.wallet.tx_logs import TXLogs
@@ -16,7 +16,7 @@ class TX(BaseModel):
     tx_id: str
     user_id: int
     nonce: str
-    create_timestamp: str
+    create_timestamp: int = Field(..., description='Timestamp in seconds', gt=0)
     instruction: TXBaseInstruction
     logs: TXLogs | None
     status: TX_STATUS
@@ -79,7 +79,7 @@ class TX(BaseModel):
 
         if self.commit_result is not None:
             result['commit_result'] = self.commit_result.to_tx_snapshot()
-
+        
         return result
     
     def from_dict(self, data: dict) -> 'TX':
