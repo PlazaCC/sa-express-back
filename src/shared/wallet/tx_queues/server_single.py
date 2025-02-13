@@ -34,7 +34,12 @@ class TXServerSingleQueue(TXBaseQueue):
 
         self.vault_proc().unlock(tx.instruction.get_vaults())
 
-        return TXPushResult.successful(sign_result)
+        commit_result = None if tx.commit_result is None else tx.commit_result
+
+        return TXPushResult.successful(
+            sign_result=sign_result, 
+            commit_result=commit_result
+        )
 
     async def push_tx(self, callback: Callable[[], Awaitable[TXPushResult]], signer: User, tx: TX) -> None:
         push_result = await self._push_tx(signer, tx)

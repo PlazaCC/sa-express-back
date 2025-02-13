@@ -46,8 +46,10 @@ class Test_Transfer:
             assert 'sign_result' in transfer_result
 
             sign_result = transfer_result['sign_result']
+            commit_result = transfer_result['commit_result']
 
             assert sign_result['error'] == ''
+            assert commit_result['error'] == ''
             
             assert True
 

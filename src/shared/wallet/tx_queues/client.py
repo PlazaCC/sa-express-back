@@ -34,7 +34,12 @@ class TXClientQueue(TXBaseQueue):
 
         self.vault_proc().unlock(tx.instruction.get_vaults())
 
-        return TXPushResult.successful(sign_result)
+        commit_result = None if tx.commit_result is None else tx.commit_result
+
+        return TXPushResult.successful(
+            sign_result=sign_result, 
+            commit_result=commit_result
+        )
     
     async def _pop_tx(self, tx: TX, error: str | None = None) -> TXPopResult:
         locked_vaults = self.vault_proc().get_and_lock(tx.instruction.get_vaults())
