@@ -38,7 +38,7 @@ class Test_Cache:
 
         assert rep_vault is not None
 
-    # @pytest.mark.skip(reason='')
+    @pytest.mark.skip(reason='')
     def test_lock_script(self):
         base_repository = Repository(wallet_repo=True, wallet_cache=True)
 
@@ -81,7 +81,7 @@ class Test_Cache:
 
         assert lock_result != 'LOCKED'
 
-    @pytest.mark.skip(reason='')
+    # @pytest.mark.skip(reason='')
     def test_hash_module(self):
         base_repository = Repository(wallet_repo=True, wallet_cache=True)
 

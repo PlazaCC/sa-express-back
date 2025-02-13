@@ -19,12 +19,22 @@ class Vault(BaseModel):
     
     @staticmethod
     def from_dict_static(data: dict) -> 'Vault':
+        pix_key = None
+
+        if 'pix_key' in data:
+            pix_key = PIXKey.from_dict_static(data['pix_key'])
+        elif 'pix_key_type' in data:
+            pix_key = PIXKey(
+                type=PIX_KEY_TYPE[data['pix_key_type']],
+                value=data['pix_key_value']
+            )
+
         return Vault(
             type=VAULT_TYPE[data['type']],
             user_id=int(data['user_id']) if 'user_id' in data else None,
             balance=Decimal(data['balance']),
             balance_locked=Decimal(data['balance_locked']),
-            pix_key=PIXKey.from_dict_static(data['pix_key']) if 'pix_key' in data else None
+            pix_key=pix_key
         )
 
     @staticmethod
@@ -114,7 +124,7 @@ class Vault(BaseModel):
 
         return Vault.from_redis_hgetall(data_dict)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, dynamodb=False) -> dict:
         result = {
             'type': self.type.value,
             'balance': str(self.balance),
@@ -125,7 +135,11 @@ class Vault(BaseModel):
             result['user_id'] = self.user_id
         
         if self.pix_key is not None:
-            result['pix_key'] = self.pix_key.to_dict()
+            if dynamodb:
+                result['pix_key_type'] = self.pix_key.type.value
+                result['pix_key_value'] = self.pix_key.value
+            else:
+                result['pix_key'] = self.pix_key.to_dict()
         
         return result
     
