@@ -2,6 +2,7 @@ from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
+
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 class VaultProcessor:

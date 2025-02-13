@@ -13,7 +13,8 @@ def load_redis_scripts():
                 .replace('\n', '')
 
             cmd = f'SCRIPT LOAD \'{flattened_content}\''
-            print(cmd)
+            print(filename, cmd)
+            print('')
 
 if __name__ == '__main__':
     load_redis_scripts()

@@ -4,6 +4,7 @@ from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.user import User
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
+from src.shared.wallet.enums.pix import PIX_KEY_TYPE
 from src.shared.wallet.decimal import Decimal
 from src.shared.wallet.models.pix import PIXKey
 
@@ -81,6 +82,37 @@ class Vault(BaseModel):
     @staticmethod
     def user_id_to_identity_key(user_id: int) -> str:
         return 'USER_' + str(user_id)
+    
+    @staticmethod
+    def from_redis_hgetall(data: dict) -> 'Vault':
+        user_id = None if data[b'user_id'] == b'' else data[b'user_id'].decode('utf8')
+        balance = Decimal(data[b'balance'].decode('utf8'))
+        balance_locked = Decimal(data[b'balance_locked'].decode('utf8'))
+        
+        pix_key = None
+
+        if data[b'pix_key_type'] != b'':
+            pix_key = PIXKey(
+                type=PIX_KEY_TYPE[data[b'pix_key_type'].decode('utf8')],
+                value=data[b'pix_key_value'].decode('utf8')
+            )
+
+        return Vault(
+            type=VAULT_TYPE.USER,
+            user_id=user_id,
+            balance=balance,
+            balance_locked=balance_locked,
+            pix_key=pix_key
+        )
+    
+    @staticmethod
+    def from_redis_hgetall_list(data: list) -> 'Vault':
+        data_dict = {}
+
+        for i in range(0, len(data), 2):
+            data_dict[data[i]] = data[i + 1]
+
+        return Vault.from_redis_hgetall(data_dict)
 
     def to_dict(self) -> dict:
         result = {
@@ -155,3 +187,21 @@ class Vault(BaseModel):
         result['balance_locked'] = str(self.balance_locked)
         
         return result
+    
+    def to_redis_upsert_args(self) -> list[str]:
+        vault_id_key = self.to_identity_key()
+
+        return [ 
+            vault_id_key,
+            str(self.balance),
+            str(self.balance_locked),
+            '' if self.user_id is None else str(self.user_id),
+            '' if self.pix_key is None else self.pix_key.type.value,
+            '' if self.pix_key is None else self.pix_key.value
+        ]
+    
+    def lockable(self) -> bool:
+        if self.type == VAULT_TYPE.SERVER_UNLIMITED:
+            return False
+        
+        return True

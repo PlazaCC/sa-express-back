@@ -1,6 +1,7 @@
 import os
 import boto3
 import redis
+from typing import Any
 from redis.commands.json.path import Path
 
 from src.shared.environments import Environments
@@ -38,6 +39,9 @@ class ElastiCacheDatasource:
             pass
 
         raise Exception('Redis cluster not found')
+    
+    def exec(self, cmd: list[str]) -> Any:
+        return self.redis.execute_command(*cmd)
     
     def get_json(self, key: str, path: str = Path.root_path()) -> dict | None:
         return self.redis.json().get(key, path, no_escape=False)

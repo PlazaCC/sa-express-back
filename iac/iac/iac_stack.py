@@ -58,8 +58,11 @@ class IacStack(Stack):
             "PAYBROKERS_BASE_URL": os.environ.get("PAYBROKERS_BASE_URL"),
             "PAYBROKERS_AUTH_TOKEN": os.environ.get("PAYBROKERS_AUTH_TOKEN"),
             "PAYBROKERS_WEBHOOK_KEY": os.environ.get("PAYBROKERS_WEBHOOK_KEY"),
-            "REDIS_SCRIPT_GETANDLOCK": os.environ.get("REDIS_SCRIPT_GETANDLOCK"),
-            "REDIS_SCRIPT_UNLOCK": os.environ.get("REDIS_SCRIPT_UNLOCK")
+            "REDIS_SCRIPT_UPSERT_VAULT": os.environ.get("REDIS_SCRIPT_UPSERT_VAULT"),
+            "REDIS_SCRIPT_GET_LOCK_VAULT_1P": os.environ.get("REDIS_SCRIPT_GET_LOCK_VAULT_1P"),
+            "REDIS_SCRIPT_GET_LOCK_VAULT_2P": os.environ.get("REDIS_SCRIPT_GET_LOCK_VAULT_2P"),
+            "REDIS_SCRIPT_UNLOCK_VAULT_1P": os.environ.get("REDIS_SCRIPT_UNLOCK_VAULT_1P"),
+            "REDIS_SCRIPT_UNLOCK_VAULT_2P": os.environ.get("REDIS_SCRIPT_UNLOCK_VAULT_2P")
         }
 
         api_gateway_resource = self.rest_api.root.add_resource("mss-saexpress", default_cors_preflight_options={

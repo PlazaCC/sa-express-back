@@ -7,9 +7,10 @@ from src.shared.domain.enums.tx_status_enum import TX_STATUS
 from src.shared.domain.enums.vault_type_num import VAULT_TYPE
 from src.shared.domain.entities.tx import TX
 from src.shared.domain.entities.user import User
-from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
+
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.vault_processor import VaultProcessor
@@ -253,7 +254,7 @@ class TXProcessor:
         for vault in tx.instruction.get_vaults():
             if vault.type == VAULT_TYPE.SERVER_UNLIMITED:
                 continue
-
+            
             vault_key = vault.to_identity_key()
             vault_state = next_state['vaults'][vault_key]
 
