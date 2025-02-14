@@ -8,6 +8,7 @@ from src.shared.domain.entities.tx import TX
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 from src.shared.infra.repositories.dtos.user_cognito_dto import UserCognitoDTO
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 class WalletRepositoryDynamo(IWalletRepository):
     dynamo: DynamoDatasource
@@ -101,9 +102,8 @@ class WalletRepositoryDynamo(IWalletRepository):
 
         return tx
     
-    def get_transactions_by_user(self, user: User, limit: int = 10, \
-        last_evaluated_key: str = None, ini_timestamp: int | None = None, \
-        end_timestamp: int | None = None) -> list[TX]:
+    def get_transactions_by_user(self, user: User | AuthAuthorizerDTO, limit: int = 20, \
+        ini_timestamp: int | None = None, end_timestamp: int | None = None, last_evaluated_key: str = None) -> dict:
         filter_expression = None
 
         if ini_timestamp is not None and end_timestamp is not None:

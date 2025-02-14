@@ -174,6 +174,14 @@ class LambdaStack(Construct):
             authorizer=authorizer
         )
 
+        self.get_user_txs = self.create_lambda_api_gateway_integration(
+            module_name="get_user_txs",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         # POST
         self.create_vault = self.create_lambda_api_gateway_integration(
             module_name="create_vault",
@@ -248,6 +256,7 @@ class LambdaStack(Construct):
         wallet_functions_with_cognito_dynamo_perms = [
             self.get_user_vault,
             self.get_user_tx,
+            self.get_user_txs,
             self.create_vault,
             self.set_pix_key,
             self.transfer,

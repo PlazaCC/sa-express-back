@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from src.shared.domain.entities.user import User
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.entities.tx import TX
+from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 
 class IWalletRepository(ABC):
     ### USERS ###
@@ -32,9 +33,8 @@ class IWalletRepository(ABC):
         pass
     
     @abstractmethod
-    def get_transactions_by_user(self, user: User, limit: int = 10, \
-        last_evaluated_key: str = None, ini_timestamp: int | None = None, \
-        end_timestamp: int | None = None) -> list[TX]:
+    def get_transactions_by_user(self, user: User | AuthAuthorizerDTO, limit: int = 10, ini_timestamp: int | None = None, \
+        end_timestamp: int | None = None, last_evaluated_key: str = None) -> dict:
         pass
 
     
