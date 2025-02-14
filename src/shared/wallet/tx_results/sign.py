@@ -37,7 +37,7 @@ class TXSignResult:
     def to_dict(self):
         return {
             'error': self.error,
-            'timestamp': str(self.timestamp),
+            'timestamp': self.timestamp,
             'data': self.data
         }
     

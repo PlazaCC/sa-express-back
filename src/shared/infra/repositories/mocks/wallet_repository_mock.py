@@ -61,7 +61,7 @@ class WalletRepositoryMock(IWalletRepository):
         return vault
     
     ### TRANSACTIONS ###
-    def get_transaction(self, tx_id: str) -> TX | None:
+    def get_transaction_by_id(self, tx_id: str) -> TX | None:
         rep_tx = next((t for t in self.transactions if t['tx_id'] == tx_id), None)
 
         return TX.from_dict_static(rep_tx) if rep_tx is not None else None

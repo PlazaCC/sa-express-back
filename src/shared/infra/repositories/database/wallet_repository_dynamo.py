@@ -1,4 +1,5 @@
 import boto3
+from boto3.dynamodb.conditions import Key
 
 from src.shared.environments import Environments
 from src.shared.domain.entities.user import User
@@ -23,12 +24,12 @@ class WalletRepositoryDynamo(IWalletRepository):
         return 'NONE'
     
     @staticmethod
-    def tx_partition_key_format(tx_id: str) -> str:
-        return f'TX#{tx_id}'
+    def tx_partition_key_format(obj: TX | User) -> str:
+        return f'TX#{str(obj.user_id)}'
     
     @staticmethod
-    def tx_sort_key_format() -> str:
-        return 'NONE'
+    def tx_sort_key_format(obj: TX) -> str:
+        return f'TX#{str(obj.create_timestamp)}#{obj.nonce}'
 
     def __init__(self, dynamo: DynamoDatasource):
         self.dynamo = dynamo
@@ -80,19 +81,30 @@ class WalletRepositoryDynamo(IWalletRepository):
         return self.create_vault(vault)
 
     ### TRANSACTIONS ###
-    def get_transaction(self, tx_id: str) -> TX | None:
-        tx = self.dynamo.get_item(
-            partition_key=self.tx_partition_key_format(tx_id),
-            sort_key=self.tx_sort_key_format()
+    def get_transaction_by_id(self, tx_id: str) -> TX | None:
+        resp = self.dynamo.query(
+            partition_key=tx_id,
+            index_name='TXById'
         )
 
-        return TX.from_dict_static(tx['Item']) if 'Item' in tx else None
+        items = resp['items']
+
+        return TX.from_dict_static(items[0]) if len(items) > 0 else None
     
     def upsert_tx(self, tx: TX) -> TX:
         item = tx.to_dict()
-        item['PK'] = self.tx_partition_key_format(tx.tx_id)
-        item['SK'] = self.tx_sort_key_format()
+
+        item['PK'] = self.tx_partition_key_format(tx)
+        item['SK'] = self.tx_sort_key_format(tx)
 
         self.dynamo.put_item(item=item)
 
         return tx
+    
+    def get_transactions_by_user(self, user: User, limit: int = 10) -> list[TX]:
+        resp = self.dynamo.query(
+            partition_key=self.tx_partition_key_format(user),
+            limit=limit
+        )
+        
+        return [ TX.from_dict_static(item) for item in resp.get('items', []) ]

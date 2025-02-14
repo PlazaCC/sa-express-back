@@ -42,6 +42,14 @@ class DynamoStack(Construct):
             index_name="AllEntitiesMetadata"
         )
 
+        self.dynamo_table.add_global_secondary_index(
+            partition_key=aws_dynamodb.Attribute(
+                name="tx_id",
+                type=aws_dynamodb.AttributeType.STRING
+            ),
+            index_name="TXById"
+        )
+
         CfnOutput(self, 'DynamoTableName',
                   value=self.dynamo_table.table_name,
                   export_name=f"SAExpress{github_ref_name}TableName")

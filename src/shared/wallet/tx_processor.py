@@ -143,7 +143,7 @@ class TXProcessor:
         if 'NC' not in qs:
             return None
     
-        rep_tx = self.repository.get_transaction(qs['TX'])
+        rep_tx = self.repository.get_transaction_by_id(qs['TX'])
 
         if rep_tx is None:
             return None

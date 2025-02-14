@@ -37,6 +37,9 @@ class DynamoDatasource:
                     "partition_key": "GSI#AFFILIATION#entityId",
                     "sort_key": "deal_id",
                 },
+                "TXById": {
+                    "partition_key": "tx_id"
+                }
             }
         }
 

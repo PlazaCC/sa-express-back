@@ -31,7 +31,7 @@ class TXPopResult:
     def to_dict(self):
         result = {
             'error': self.error,
-            'timestamp': str(self.timestamp)
+            'timestamp': self.timestamp
         }
 
         if self.commit_result is not None:

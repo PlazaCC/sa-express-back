@@ -5,7 +5,7 @@ from src.shared.wallet.tx_results.commit import TXCommitResult
 
 class TXPushResult:
     error: str
-    timestamp: str
+    timestamp: int
     sign_result: TXSignResult | None
     commit_result: TXCommitResult | None
 
@@ -37,7 +37,7 @@ class TXPushResult:
     def to_dict(self):
         result = {
             'error': self.error,
-            'timestamp': str(self.timestamp)
+            'timestamp': self.timestamp
         }
 
         if self.sign_result is not None:

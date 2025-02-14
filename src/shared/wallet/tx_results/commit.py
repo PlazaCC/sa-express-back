@@ -21,7 +21,7 @@ class TXCommitResult:
             error=data['error'],
             timestamp=int(data['timestamp'])
         )
-
+    
     @staticmethod
     def from_tx_snapshot(data: dict) -> 'TXCommitResult':
         return TXCommitResult.from_dict_static(data)
@@ -33,7 +33,7 @@ class TXCommitResult:
     def to_dict(self):
         return {
             'error': self.error,
-            'timestamp': str(self.timestamp)
+            'timestamp': self.timestamp
         }
     
     def to_tx_snapshot(self):

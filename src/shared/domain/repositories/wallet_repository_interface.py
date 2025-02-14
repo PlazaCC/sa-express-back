@@ -24,7 +24,7 @@ class IWalletRepository(ABC):
 
     ### TRANSACTIONS ###
     @abstractmethod
-    def get_transaction(self, tx_id: str) -> TX | None:
+    def get_transaction_by_id(self, tx_id: str) -> TX | None:
         pass
 
     @abstractmethod

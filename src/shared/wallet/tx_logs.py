@@ -15,7 +15,7 @@ class TXLogs:
     def from_tx_snapshot(data: dict) -> 'TXLogs':
         return TXLogs(
             error=data['error'],
-            timestamp=data['timestamp'],
+            timestamp=int(data['timestamp']),
             data=data['data'] if 'data' in data else None,
             resolved=data['resolved']
         )
@@ -46,7 +46,7 @@ class TXLogs:
     def to_tx_snapshot(self) -> dict:
         result = {
             'error': self.error,
-            'timestamp': str(self.timestamp),
+            'timestamp': self.timestamp,
             'resolved': self.resolved
         }
 

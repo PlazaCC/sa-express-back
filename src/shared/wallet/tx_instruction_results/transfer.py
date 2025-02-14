@@ -30,7 +30,7 @@ class TXTransferInstructionResult(TXBaseInstructionResult):
     def to_dict(self) -> dict:
         result = {
             'error': self.error,
-            'timestamp': str(self.timestamp),
+            'timestamp': self.timestamp,
         }
 
         if self.promise is not None:
