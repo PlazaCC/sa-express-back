@@ -2,8 +2,6 @@ from src.shared.environments import STAGE, Environments
 from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.domain.entities.vault import Vault
-from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
-from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
@@ -12,7 +10,6 @@ from src.shared.helpers.errors.errors import MissingParameters
 from src.shared.wallet.decimal import not_decimal
 from src.shared.wallet.enums.tx_queue_type import TX_QUEUE_TYPE
 from src.shared.wallet.tx_processor import TXProcessor, TXProcessorConfig
-from src.shared.wallet.wrappers.paygate import IWalletPayGate
 from src.shared.wallet.wrappers.paybrokers import Paybrokers
 from src.shared.wallet.mocks.wallet_paygate_mock import WalletPayGateMock
 from src.shared.wallet.tx_templates.withdrawal import create_withdrawal_tx
@@ -22,6 +19,14 @@ class Controller:
     async def execute(request: IRequest) -> IResponse:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
+
+            if 'amount' not in request.data:
+                raise MissingParameters('amount')
+
+            amount = request.data.get('amount')
+
+            if not_decimal(amount):
+                return BadRequest('Valor de saque inválido')
 
             usecase = Usecase()
 
@@ -33,14 +38,6 @@ class Controller:
             if user_vault.pix_key is None:
                 return BadRequest('Usuário não possui uma chave PIX')
 
-            if 'amount' not in request.data:
-                raise MissingParameters('amount')
-
-            amount = request.data.get('amount')
-
-            if not_decimal(amount):
-                return BadRequest('Valor de saque inválido')
-
             response = await usecase.execute(requester_user, user_vault, amount)
 
             return OK(body=response)
@@ -51,26 +48,20 @@ class Controller:
         
 class Usecase:
     repository: Repository
-    wallet_repo: IWalletRepository
-    wallet_cache: IWalletCache
-    wallet_paygate: IWalletPayGate
     tx_proc: TXProcessor
 
     def __init__(self):
         self.repository = Repository(wallet_repo=True, wallet_cache=True)
 
-        self.wallet_repo = self.repository.wallet_repo
-        self.wallet_cache = self.repository.wallet_cache
-
         if Environments.stage == STAGE.TEST:
-            self.wallet_paygate = WalletPayGateMock()
+            paygate = WalletPayGateMock()
         else:
-            self.wallet_paygate = Paybrokers()
+            paygate = Paybrokers()
 
         self.tx_proc = TXProcessor(
-            cache=self.wallet_cache,
-            repository=self.wallet_repo,
-            paygate=self.wallet_paygate,
+            cache=self.repository.wallet_cache,
+            repository=self.repository.wallet_cache,
+            paygate=paygate,
             config=TXProcessorConfig(
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT
             )

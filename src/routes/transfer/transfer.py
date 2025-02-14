@@ -2,7 +2,6 @@ from src.shared.infra.repositories.repository import Repository
 from src.shared.infra.repositories.dtos.auth_authorizer_dto import AuthAuthorizerDTO
 from src.shared.domain.entities.vault import Vault
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
-from src.shared.domain.repositories.wallet_cache_interface import IWalletCache
 from src.shared.helpers.external_interfaces.external_interface import IRequest, IResponse
 from src.shared.helpers.external_interfaces.http_lambda_requests import LambdaHttpRequest, LambdaHttpResponse
 from src.shared.helpers.external_interfaces.http_codes import OK, InternalServerError, BadRequest
@@ -21,28 +20,28 @@ class Controller:
         try:
             requester_user = AuthAuthorizerDTO.from_api_gateway(request.data.get('requester_user'))
 
-            usecase = Usecase()
-            
-            src_user_vault = usecase.get_src_user_vault(requester_user)
-
-            if src_user_vault is None:
-                return BadRequest('Usuário origem não possui uma carteira')
-            
             if 'dst_user_email' not in request.data:
                 raise MissingParameters('dst_user_email')
             
             if 'amount' not in request.data:
                 raise MissingParameters('amount')
             
-            (dst_error, dst_user_vault) = usecase.get_dst_user_vault(request)
-            
-            if dst_error != '':
-                return BadRequest(dst_error)
-            
             amount = request.data.get('amount')
             
             if not_decimal(amount):
                 return BadRequest('Valor de transferência inválido')
+            
+            usecase = Usecase()
+            
+            src_user_vault = usecase.get_src_user_vault(requester_user)
+
+            if src_user_vault is None:
+                return BadRequest('Usuário origem não possui uma carteira')
+
+            (dst_error, dst_user_vault) = usecase.get_dst_user_vault(request)
+            
+            if dst_error != '':
+                return BadRequest(dst_error)
             
             response = await usecase.execute(requester_user, src_user_vault, dst_user_vault, amount)
 
@@ -55,17 +54,15 @@ class Controller:
 class Usecase:
     repository: Repository
     wallet_repo: IWalletRepository
-    wallet_cache: IWalletCache
     tx_proc: TXProcessor
 
     def __init__(self):
         self.repository = Repository(wallet_repo=True, wallet_cache=True)
 
         self.wallet_repo = self.repository.wallet_repo
-        self.wallet_cache = self.repository.wallet_cache
 
         self.tx_proc = TXProcessor(
-            cache=self.wallet_cache,
+            cache=self.repository.wallet_cache,
             repository=self.wallet_repo,
             paygate=WalletPayGateMock(),
             config=TXProcessorConfig(

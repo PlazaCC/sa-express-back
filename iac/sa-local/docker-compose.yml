@@ -11,7 +11,7 @@ services:
     working_dir: /home/dynamodblocal
     networks:
       - persist-local
-  elasticache-locaL:
+  elasticache-local:
     image: "redis/redis-stack:latest"
     container_name: elasticache
     ports:

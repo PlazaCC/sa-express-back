@@ -41,10 +41,7 @@ class Usecase:
     def execute(self, requester_user: AuthAuthorizerDTO, tx_id: str) -> dict:
         rep_tx = self.wallet_repo.get_transaction(tx_id)
 
-        if rep_tx is None:
-            return {}
-        
-        if rep_tx.user_id is None or rep_tx.user_id != int(requester_user.user_id):
+        if rep_tx is None or rep_tx.user_id != int(requester_user.user_id):
             return {}
 
         return {
