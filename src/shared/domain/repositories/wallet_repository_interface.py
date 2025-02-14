@@ -30,6 +30,12 @@ class IWalletRepository(ABC):
     @abstractmethod
     def upsert_tx(self, tx: TX) -> TX:
         pass
+    
+    @abstractmethod
+    def get_transactions_by_user(self, user: User, limit: int = 10, \
+        last_evaluated_key: str = None, ini_timestamp: int | None = None, \
+        end_timestamp: int | None = None) -> list[TX]:
+        pass
 
     
 

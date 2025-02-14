@@ -82,15 +82,22 @@ class Test_TXQuery:
 
         vault = tx_proc.vault_proc.create_if_not_exists(user)
 
-        txs = base_repository.wallet_repo.get_transactions_by_user(user)
+        user_txs = base_repository.wallet_repo.get_transactions_by_user(user, ini_timestamp=1739537211403, \
+            end_timestamp=1739537211708)
 
-        if len(txs) == 0:
-            for _ in range(0, 10):
-                amount = quantize(Decimal(random.choice([ 10, 50, 100, 125, 150, 300 ])))
+        txs = user_txs['txs']
+
+        print('')
+        for tx in txs:
+            print(tx.tx_id, tx.create_timestamp)
+
+        # if len(txs) == 0:
+        #     for _ in range(0, 10):
+        #         amount = quantize(Decimal(random.choice([ 10, 50, 100, 125, 150, 300 ])))
                 
-                tx = create_deposit_tx({ 'to_vault': vault, 'amount': amount })
+        #         tx = create_deposit_tx({ 'to_vault': vault, 'amount': amount })
 
-                await self.exec_tx(tx_proc, user, tx)
+        #         await self.exec_tx(tx_proc, user, tx)
 
         assert True
 

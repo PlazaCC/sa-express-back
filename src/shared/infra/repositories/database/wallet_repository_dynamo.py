@@ -1,5 +1,5 @@
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr
 
 from src.shared.environments import Environments
 from src.shared.domain.entities.user import User
@@ -101,10 +101,26 @@ class WalletRepositoryDynamo(IWalletRepository):
 
         return tx
     
-    def get_transactions_by_user(self, user: User, limit: int = 10) -> list[TX]:
+    def get_transactions_by_user(self, user: User, limit: int = 10, \
+        last_evaluated_key: str = None, ini_timestamp: int | None = None, \
+        end_timestamp: int | None = None) -> list[TX]:
+        filter_expression = None
+
+        if ini_timestamp is not None and end_timestamp is not None:
+            filter_expression = Attr('create_timestamp').gte(ini_timestamp) & Attr('create_timestamp').lte(end_timestamp)
+        elif ini_timestamp is not None:
+            filter_expression = Attr('create_timestamp').gte(ini_timestamp)
+        elif end_timestamp is not None:
+            filter_expression = Attr('create_timestamp').lte(end_timestamp)
+
         resp = self.dynamo.query(
             partition_key=self.tx_partition_key_format(user),
-            limit=limit
+            limit=limit,
+            filter_expression=filter_expression,
+            exclusive_start_key=last_evaluated_key
         )
-        
-        return [ TX.from_dict_static(item) for item in resp.get('items', []) ]
+
+        return {
+            'txs': [ TX.from_dict_static(item) for item in resp['items'] ],
+            'last_evaluated_key': resp['last_evaluated_key']
+        }
