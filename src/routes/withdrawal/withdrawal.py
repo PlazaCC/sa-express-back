@@ -60,7 +60,7 @@ class Usecase:
 
         self.tx_proc = TXProcessor(
             cache=self.repository.wallet_cache,
-            repository=self.repository.wallet_cache,
+            repository=self.repository.wallet_repo,
             paygate=paygate,
             config=TXProcessorConfig(
                 tx_queue_type=TX_QUEUE_TYPE.CLIENT

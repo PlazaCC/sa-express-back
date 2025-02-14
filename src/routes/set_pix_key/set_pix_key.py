@@ -17,7 +17,7 @@ class Controller:
 
             if not pix_key.valid():
                 return BadRequest('Chave PIX inválida')
-            
+
             response = Usecase().execute(requester_user, pix_key)
 
             return OK(body=response)
@@ -42,7 +42,7 @@ class Usecase:
         vault.pix_key = pix_key
 
         self.vault_proc.persist_vault(vault)
-
+        
         return {}
 
 def lambda_handler(event, context) -> LambdaHttpResponse:
