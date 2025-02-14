@@ -2,6 +2,7 @@ import os
 import json
 import hmac
 import hashlib
+import asyncio
 
 from src.shared.infra.repositories.repository import Repository
 from src.shared.domain.repositories.wallet_repository_interface import IWalletRepository
@@ -121,15 +122,19 @@ class Usecase:
 
         if tx is None:
             return {}
+        
+        deferred = asyncio.get_event_loop().create_future()
 
         async def pop_callback(pop_result: TXPopResult):
-            pass
+            deferred.set_result(True)
         
         transactionState = webhook_body['transactionState']
 
         error = None if transactionState == 'Completed' else f'Transação da paybrokers falhou com estado "{transactionState}"'
         
         await self.tx_proc.pop_tx_with_callback(pop_callback, tx, error)
+
+        await deferred
 
         return {}
         
