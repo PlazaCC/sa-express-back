@@ -13,5 +13,9 @@ class IDealRepository(ABC):
         pass
 
     @abstractmethod
+    def get_deal_by_id(self, entity_id: str, deal_id: str, status: str) -> Deal:
+        pass
+
+    @abstractmethod
     def update_deal_status(self, deal: Deal, new_status: str) -> Deal:
         pass

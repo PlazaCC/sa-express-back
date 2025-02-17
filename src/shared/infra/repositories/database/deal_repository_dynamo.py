@@ -2,6 +2,7 @@ from src.shared.domain.entities.deal import Deal
 from src.shared.domain.repositories.deal_repository_interface import IDealRepository
 from src.shared.infra.external.dynamo_datasource import DynamoDatasource
 from src.shared.infra.external.key_formatters import deal_sort_key, entity_primary_key
+from boto3.dynamodb.conditions import Key
 
 
 class DealRepositoryDynamo(IDealRepository):
@@ -17,6 +18,14 @@ class DealRepositoryDynamo(IDealRepository):
         self.dynamo.put_item(item=item)
 
         return deal
+    
+    def get_deal_by_id(self, entity_id: str, deal_id: str, status: str) -> Deal:
+        resp = self.dynamo.get_item(
+            partition_key=entity_primary_key(entity_id), 
+            sort_key=deal_sort_key(deal_id=deal_id, status=status)
+        )
+
+        return Deal.from_dict(resp['Item'])
 
     def get_entity_deals(self, entity_id: str, status: str = None, limit: int = 10, last_evaluated_key: str = None):
         if status:
@@ -26,8 +35,8 @@ class DealRepositoryDynamo(IDealRepository):
 
         resp = self.dynamo.query(
             partition_key=entity_primary_key(entity_id),
-            sort_key_prefix=sort_key_prefix,
             limit=limit,
+            sort_key=Key("SK").begins_with(sort_key_prefix),
             exclusive_start_key=last_evaluated_key
         )
 

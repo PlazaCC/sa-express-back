@@ -12,7 +12,7 @@ def entity_primary_key(entity_id: str) -> str:
     return f'ENTITY#{entity_id}'
 
 def deal_sort_key(deal_id: str, status: str) -> str:
-    return f'DEAL#{status}#{deal_id}'
+    return f'DEAL#{deal_id}#{status}'
 
 def affiliation_sort_key(deal_id: str) -> str:
     return f'AFFILIATION#{deal_id}'

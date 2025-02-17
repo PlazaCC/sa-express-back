@@ -62,7 +62,8 @@ class DealProposal(Proposal):
     def to_dict(self) -> Dict[str, Any]:
         data = super().to_dict()
         data.update({
-            "deal_id": self.deal_id
+            "deal_id": self.deal_id,
+            "entity_id": self.entity_id
         })
         return data
     

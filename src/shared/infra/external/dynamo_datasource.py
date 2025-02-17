@@ -71,16 +71,17 @@ class DynamoDatasource:
     ):
         """
         Realiza uma consulta na tabela principal ou em um GSI com suporte a filtros e paginação.
+        Agora permite expressões de chave de ordenação, como 'begins_with()'.
         """
         key_config = self._get_key_config(index_name=index_name)
 
         key_condition = Key(key_config["partition_key"]).eq(partition_key)
-        if sort_key and key_config.get("sort_key"):
-            key_condition &= Key(key_config["sort_key"]).eq(sort_key)
 
-        kwargs = {
-            "KeyConditionExpression": key_condition,
-        }
+        if sort_key and key_config.get("sort_key"):
+            key_condition &= sort_key
+
+        kwargs = {"KeyConditionExpression": key_condition}
+
         if index_name:
             kwargs["IndexName"] = index_name
         if filter_expression:
@@ -96,6 +97,7 @@ class DynamoDatasource:
             "items": response.get("Items", []),
             "last_evaluated_key": response.get("LastEvaluatedKey")
         }
+
 
     def scan_items(self, filter_expression=None, limit=None, exclusive_start_key=None):
         """

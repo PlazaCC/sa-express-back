@@ -141,6 +141,14 @@ class LambdaStack(Construct):
             # authorizer=authorizer
         )
 
+        self.get_sender_proposal_by_type = self.create_lambda_api_gateway_integration(
+            module_name="get_sender_proposal_by_type",
+            method="GET",
+            api_resource=api_gateway_resource,
+            environment_variables=environment_variables,
+            authorizer=authorizer
+        )
+
         self.functions_that_need_cognito_permissions = [
             self.adm_update_user,
             self.create_user,
@@ -157,5 +165,6 @@ class LambdaStack(Construct):
             self.update_deal_status,
             self.update_entity,
             self.create_profile,
-            self.deactivate_profile
+            self.deactivate_profile,
+            self.get_sender_proposal_by_type
         ]
